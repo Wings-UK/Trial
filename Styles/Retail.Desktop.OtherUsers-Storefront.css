@@ -1,0 +1,641 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+p {
+  font-family: roboto;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.retail-project {  /* To make the website in 3 columns */
+  display: grid; /*This is the container for left-pane, homepage and right-pane */
+  grid-template-columns: 410px 587px 487px;
+  column-gap: 5px;
+  height: 100vh;
+  overflow: hidden; /* This is to make the homepage scroll while others don't*/
+}
+.sidepane {
+  vertical-align: top;
+  border-width: 1px;
+  border-style: solid;
+  padding-left: 10px;
+  margin-left: 150px;;
+  border-color: rgb(230, 230, 230);
+}
+.right-pane {
+  margin-top: 70px;
+  vertical-align: top;
+  border-width: 1px;
+  border-style: solid;
+  padding-left: 10px;
+  padding-bottom: 20px;
+  border-color: rgb(230, 230, 230);
+  overflow: hidden;
+  
+}
+.homepage1 {
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-color: rgb(230, 230, 230);
+  overflow-y: auto;
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none;
+}
+
+.homepage1::-webkit-scrollbar {
+  display: none;
+}
+.sidepane-home, .sidepane-home1, .sidepane-home2 {
+  margin-left: 10px;
+  vertical-align: bottom;
+  font-size: 20px;
+  display: inline-block;
+  color: black;
+}
+.sidepane-home2 {
+  font-weight: bold;
+}
+.home-click {
+  text-decoration: none;
+}
+.homepage {
+  width: 570px;
+  padding-top: 10px;
+  margin-left: 5px;
+}
+.name {
+  display: inline-block;
+  vertical-align: middle;
+  width: 250px;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+.app {
+  font-family: Great Vibes;
+  font-weight: bold;
+  vertical-align: top;
+  font-size: 40px;
+  margin-top: 60px;
+  margin-left: 10px;
+}
+.homa {
+  width: 280px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.home1, .search1, .note1, .inbox1, .inbox12, .account1 {
+  width: 190px;
+  margin-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 15px;
+  padding-left: 10px;
+  padding-right: 20px;
+  border-radius: 10px;  
+  margin-top: 10px;
+}
+.inbox12 {
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+}
+
+.usera {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  object-position: top;
+  vertical-align: middle;
+  border-radius: 20px;
+  margin-right: 0;
+  padding-right: 0;
+}
+.user-name1 {
+  display: inline-block;
+  vertical-align: middle;
+}
+.user-name, .user-tag {
+  margin-left: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: black;
+}
+.user-tag {
+  font-size: 15px;
+  font-weight: normal;
+  margin-top: 3px;
+}
+.home1:hover, .search1:hover, .note1:hover, .inbox1:hover, .inbox12:hover, .account1:hover {
+  background-color: rgb(230, 230, 230);
+}
+.home, .search, .note, .inbox, .account {
+  width: 30px;
+  vertical-align: middle;
+  margin-right: 0;
+  padding-right: 0;
+}
+.lone {
+  margin-top: 10px;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.9);
+  width: 570px;
+}
+.user1 {
+  width: 50px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.user {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 100px;
+  margin-left: 10px;
+  margin-right: 0;
+}
+.profile-dash {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  column-gap: 25px;
+}
+.bio-pics {
+  vertical-align: top;
+  margin-top: 20px;
+}
+.prof {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgb(107, 7, 133);
+}
+.bio-info {
+  margin-top: 20px;
+  vertical-align: top;
+}
+.star1 {
+  display: inline-block;
+  vertical-align: middle;
+  width: 300px;
+}
+.star {
+  width: 20px;
+}
+.username {
+  color: black;
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+.tag {
+  font-size: 15px;
+  color: rgb(97, 97, 97);
+  margin-top: 5px;
+}
+.bio11 {
+  width: 340px;
+  height: 100px;
+  margin-top: 10px;
+}
+.bio1 {
+  font-size: 15px;
+  margin-right: 20px;
+  line-height: 20px;
+  color: black;
+}
+.sales1 {
+  display: inline-block;
+  width: 250px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.sales, .location {
+  font-size: 15px;
+  color: rgb(97,97, 97);
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+.follow1 {
+  width: 250px;
+}
+.follows {
+  font-size: 15px;
+  color: rgb(97, 97, 97);
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+.fol {
+  color: black;
+  font-weight: bold;
+}
+.messa {
+  margin-top: 20px;
+  margin-left: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 83px;
+  padding-right: 83px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: black;
+  border: none;
+}
+.massa {
+  margin-top: 20px;
+  margin-left: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 128px;
+  padding-right: 128px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: bold;
+  color: white;
+  background-color: rgb(107, 7, 133);
+}
+.massa:hover {
+  background-color: rgb(120, 67, 133);
+}
+.loc {
+  width: 25px;
+  vertical-align: bottom;
+  margin-right: 5px;
+}
+.messag1, .messag2, .messag3 {
+  text-align: center;
+  margin: 0;
+}
+.messag1 {
+  color: rgb(97,97, 97);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.messag2 {
+  border-bottom: 5px solid;
+  color: rgb(107, 7, 133);
+  border-color: rgb(107, 7, 133);
+  text-align: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.messag3 {
+  color: rgb(97,97, 97);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.messag1:hover, .messag2:hover, .messag3:hover{
+  background-color: rgb(230, 230, 230);
+}
+.messag {
+  width: 25px; 
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: 188px 188px 188px;
+  margin-top: 20px;
+}
+.poster {
+  display: block;
+  width: 565px;
+  border-width: 0px;
+  border-style: solid;
+  margin-top: 10px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+  padding-top: 5px;
+  padding-bottom: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.cust-name {
+  display: grid;
+  grid-template-columns: 65px 460px 1fr;
+  align-items: center;
+}
+.small-photo1 {
+  vertical-align: middle;
+}
+.small-photo {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.post1 {
+  width: 450px;
+  margin-left: 5px;
+}
+.post {
+  font-size: 15px;
+  display: inline-block;
+  margin-top: 10px;
+}
+.small-title {
+  display: inline-block;
+  vertical-align: middle;
+}
+.dot1 {
+  display: inline-block;
+  width: 30px;
+}
+.dot {
+  width: 20px;
+  vertical-align: middle;
+}
+.jerry {
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.comp {
+  font-size: 15px;
+  color: rgb(97, 97, 97);
+  margin-left: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+.time {
+  font-size: 15px;
+  margin-left: 5px;
+  color: rgb(97, 97, 97);
+  cursor: pointer;
+}
+.verify {
+  vertical-align: top;
+  width: 18px;
+}
+.laptop1 {
+  background-color: rgb(230, 230, 230);
+  width: 540px;
+  height: 540px;
+  margin-left: 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(202, 202, 202);
+  margin-top: 10px;
+  text-align: center;
+}
+.laptop {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin-right: 10px;
+}
+.tired {
+  width: 530px;
+  margin-left: 15px;
+  line-height: 20px;
+  margin-top: 10px;
+  font-size: 15px;
+}
+.follow {
+  margin-left: 10px;
+  margin-top: 10px;
+  width: 500px;
+  line-height: 25px;
+}
+.assist {
+  color: rgb(81, 79, 214);
+  cursor: pointer;
+}
+.view {
+  margin-top: 20px;
+  margin-left: 10px;
+  color: rgb(81, 79, 214);
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.line, .mid {
+  color: rgb(97, 97, 97);
+  width: 530px;
+  border-width: 0.5px;
+  margin-bottom: 15px;
+  margin-top: 10px;
+}
+.reaction {
+  display: grid;
+  grid-template-columns: 500px 1fr;
+  margin-left: 20px;
+}
+.lovi {
+  display: grid;
+  grid-template-columns: 100px 100px 100px;
+  width: 490px;
+}
+.love1, .comment1, .share1 {
+  width: 100px;
+  height: 29px;
+}
+.love, .comment, .share {
+  width: 25px;
+  vertical-align: middle;
+}
+.like, .talk, .give { 
+  color: black;
+  font-size: 15px;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+.wish1 {
+  display: inline-block;
+  width: 30px;
+}
+.wish {
+  width: 25px;
+  vertical-align: middle;
+}
+
+.lino, .lino:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tren {
+  margin-top: 20px;
+}
+.shop-group {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  font-weight: bold;
+}
+.trent {
+  margin-bottom: 10px;
+}
+.shop {
+  display: inline-block;
+  width: 25px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+.pro {
+  display: inline-block;
+  vertical-align: middle;
+}
+.list {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 14px;
+  color:  rgb(107, 7, 133);
+  margin-top: 2px;
+}
+.flat {
+  width: 30px;
+  vertical-align: middle;
+}
+.wishes-prod {
+  display: grid;
+  grid-template-columns: 148px 148px 148px;
+  margin-top: 10px;
+  column-gap: 10px;
+}
+.p11, .p12, .p15 {
+  height: 200px;
+  border-width: 0px;
+  border-style: solid;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+.p1 {
+  width: 144px;
+  height: 144px;
+  object-fit: contain;
+  border: none;
+  border-radius: 10px;
+  padding-top: 0px;
+  margin-left: 2px;
+}
+.naira {
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.product {
+  font-size: 10px;
+  margin-top: 5px;
+  margin-left: 10px;
+  padding-bottom: 10px;
+  color: rgb(97, 97, 97);
+}
+.wishes {
+  display: grid;
+  grid-template-columns: 120px 20px;
+  align-items: center;
+}
+.cart1 {
+  width: 20px;
+}
+.cart {
+  width: 20px;
+}
+.live {
+  width: 30px;
+  vertical-align: middle;
+  margin-left: 30px;
+}
+.liv {
+  font-size: 15px;
+  margin-left: 5px;
+  color: rgb(97, 97, 97);
+  font-weight: bold;
+  font-family: roboto;
+}
+.pic {
+  width: 30px;
+  vertical-align: middle;
+  margin-left: 30px;
+}
+.pics {
+  font-size: 15px;
+  margin-left: 5px;
+  color: rgb(97, 97, 97);
+  font-weight: bold;
+  font-family: roboto;
+}
+.prod {
+  width: 30px;
+  vertical-align: middle;
+  margin-left: 30px;
+}
+.prods {
+  font-size: 15px;
+  margin-left: 5px;
+  color: rgb(97, 97, 97);
+  font-weight: bold;
+  font-family: roboto;
+}
+
+.branding {
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+.rec-row {
+  border-width: 2px;
+  border-style: solid;
+  width: 450px;
+  margin-top: 10px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 10px;
+  padding-top: 20px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 10px;
+  margin-top: 10px;
+}
+.rec11{
+  display: grid;
+  grid-template-columns: 70px 250px 60px;
+  align-items: center;
+  margin-bottom: 20px;
+  column-gap: 20px;
+}
+.rec1 {
+  width: 90px;
+}
+.rec {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-left: 5px;
+}
+.rec-name1 {
+  width: 250px;
+}
+.rec-name {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.rec-desc {
+  font-size: 15px;
+  color: rgb(97, 97, 97);
+}
+.folo1 {
+  width: 60px;
+}
+.folo {
+  font-size: 15px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 20px;
+  padding-left: 20px;
+  border-radius: 5px;
+  border: none;
+  background-color: rgb(107, 7, 133);
+  color: white;
+  font-weight: bold;
+}

@@ -1,0 +1,21 @@
+.own {
+  display: grid;
+  grid-template-columns: 200px 200px 200px;
+}
+
+.ok {
+  width: 200px;
+  height: 200px;
+  background-color: rgb(35, 167, 8);
+}
+.ol {
+  width: 200px;
+  height: 200px;
+  background-color: bisque;
+}
+
+.om {
+  width: 200px;
+  height: 200px;
+  background-color: rgb(15, 9, 2);
+}

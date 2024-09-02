@@ -1,0 +1,416 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+p {
+  font-family: roboto;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.retail-project {  /* To make the website in 3 columns */
+  display: grid; /*This is the container for left-pane, homepage and right-pane */
+  grid-template-columns: 410px 587px 487px;
+  column-gap: 5px;
+  height: 100vh;
+  overflow: hidden; /* This is to make the homepage scroll while others don't*/
+}
+.sidepane {
+  vertical-align: top;
+  border-width: 1px;
+  border-style: solid;
+  padding-left: 10px;
+  margin-left: 150px;;
+  border-color: rgb(230, 230, 230);
+}
+.right-pane {
+  margin-top: 70px;
+  vertical-align: top;
+  border-width: 1px;
+  border-style: solid;
+  padding-left: 10px;
+  padding-bottom: 20px;
+  border-color: rgb(230, 230, 230);
+  overflow: hidden;
+  
+}
+.homepage1 {
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-color: rgb(230, 230, 230);
+  overflow-y: auto;
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none;
+}
+
+.homepage1::-webkit-scrollbar {
+  display: none;
+}
+.sidepane-home, .sidepane-home1, .sidepane-home2, .sol {
+  margin-left: 10px;
+  vertical-align: bottom;
+  font-size: 20px;
+  display: inline-block;
+  color: black;
+}
+.home-click {
+  text-decoration: none;
+}
+.homepage {
+  width: 570px;
+  padding-top: 10px;
+  margin-left: 5px;
+}
+.name {
+  display: inline-block;
+  vertical-align: middle;
+  width: 250px;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+.app {
+  font-family: Great Vibes;
+  font-weight: bold;
+  vertical-align: top;
+  font-size: 40px;
+  margin-top: 60px;
+  margin-left: 10px;
+}
+.homa {
+  width: 280px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.home1, .search1, .note1, .inbox1, .inbox12, .account1 {
+  width: 190px;
+  margin-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 15px;
+  padding-left: 10px;
+  padding-right: 20px;
+  border-radius: 10px;  
+  margin-top: 10px;
+}
+.inbox12 {
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+}
+
+.usera {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  object-position: top;
+  vertical-align: middle;
+  border-radius: 20px;
+  margin-right: 0;
+  padding-right: 0;
+}
+.user-name1 {
+  display: inline-block;
+  vertical-align: middle;
+}
+.user-name, .user-tag {
+  margin-left: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: black;
+}
+.user-tag {
+  font-size: 15px;
+  font-weight: normal;
+  margin-top: 3px;
+}
+.home1:hover, .search1:hover, .note1:hover, .inbox1:hover, .inbox12:hover, .account1:hover {
+  background-color: rgb(230, 230, 230);
+}
+.home, .search, .note, .inbox, .account {
+  width: 30px;
+  vertical-align: middle;
+  margin-right: 0;
+  padding-right: 0;
+}
+.lone {
+  margin-top: 10px;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.9);
+  width: 570px;
+}
+p {
+  font-family: roboto;
+  font-weight: normal;
+}
+.back {
+  width: 565px;
+  border-radius: 10px;
+}
+.wallet {
+  position: relative;
+  width: 565px;
+}
+.balance {
+  position: absolute;
+  top: 90px;
+  left: 50px;
+}
+.balnce {
+  position: absolute;
+  top: 120px;
+  left: 50px;
+}
+.bal {
+  font-size: 18px;
+  color: rgb(189, 187, 187);
+}
+
+.bala {
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+}
+
+.small-photo1 {
+  position: absolute;
+  top: 10px;
+  right: 25px;
+}
+.small-photo {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 10px;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.backs {
+  width: 25px;
+  text-align: center;
+}
+.backs1 {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 100px;
+}
+.backs1:hover {
+  background-color: rgba(230, 230, 230, 0.116);
+  color: black;
+}
+.pend1 {
+  position: absolute;
+  bottom: 80px;
+  left: 50px;
+}
+.pend {
+  font-family: changa;
+  color: rgb(189, 187, 187);
+}
+.pending {
+  font-family: roboto;
+  font-size: 20px;
+  font-weight: bold;
+  color: rgb(189, 187, 187);
+}
+.services {
+  width: 545px;
+  margin-left: 19px;
+  margin-bottom: 20px;
+}
+.send1 {
+  border-radius: 100px;
+  background-color: rgb(215, 231, 238);
+}
+.send1:hover {
+  background-color:rgb(195, 229, 243) ;
+}
+.send2 {
+  width: 85px;
+  margin-top: 50px;
+  display: inline-block;
+  text-align: center;
+}
+.recev2, .bolt2, .track2 {
+  width: 85px;
+  margin-top: 50px;
+  display: inline-block;
+  margin-left: 56px;
+  text-align: center;
+  vertical-align: top;
+}
+.send-text, .recev-text, .top-up-text, .track-text {
+  font-size: 18px;
+  margin-top: 20px;
+}
+.recev1, .bolt1, .track1 {
+  border-radius: 100px;
+}
+.send, .recev, .bolt, .track {
+  width: 50px;
+  text-align: center;
+  padding-top: 15px;
+  padding-left: 18px;
+  padding-right: 18px;
+  padding-bottom: 15px;
+}
+.recev1 {
+  background-color: rgb(206, 250, 209);
+}
+.recev1:hover {
+  background-color: rgb(185, 250, 189);
+}
+.bolt1 {
+  background-color: rgb(248, 217, 217);
+}
+.bolt1:hover {
+  background-color: rgb(250, 196, 196);
+}
+.track1 {
+  background-color: rgb(250, 206, 246);
+}
+.track1:hover {
+  background-color: rgb(248, 185, 243);
+}
+.fulfilled {
+  margin-top: 20px;
+  margin-bottom: 60px;
+}
+.shop-group {
+  font-weight: bold;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+.trent {
+  display: inline-block;
+  width: 520px;
+  margin-bottom: 10px;
+}
+.exp {
+  display: inline-block;
+  width: 30px;
+}
+.shop {
+  display: inline-block;
+  width: 25px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+.pro {
+  display: inline-block;
+  vertical-align: middle;
+}
+.flat {
+  width: 30px;
+  vertical-align: middle;
+}
+.prod0, .prod01 {
+  width: 172px;
+  height: 260px;
+  text-align: center;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 2px;
+  padding-right: 2px;
+  border-radius: 30px;
+  display: inline-block;
+  box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.3);
+}
+.prod01 {
+  margin-left: 10px;
+}
+.prod1 {
+  width: 170px;
+  height: 170px;
+  border-radius: 30px;
+  object-fit: contain;
+}
+.prod2 {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.prod3 {
+  font-size: 13px;
+  font-weight: bold;
+  color: rgb(107, 7, 133);
+  margin-top: 0;
+}
+.prod4 {
+  margin-top: 5px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.rec11{
+  margin-bottom: 2px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 565px;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+}
+.rec1, .rec2 {
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: 30px;
+  border-radius: 100px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color:rgb(215, 231, 238) ;
+  margin-left: 20px;
+  margin-right: 10px;
+}
+.rec2 {
+  background-color: rgb(250, 206, 246);
+}
+.rec {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 100px;
+}
+.rec-name1 {
+  display: inline-block;
+  vertical-align: middle;
+  width: 360px;
+}
+.rec-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.rec-namo {
+  font-size: 15px;
+}
+.folo1 {
+  display: inline-block;
+  vertical-align: middle;
+  width: 60px;
+  margin-left: 10px;
+}
+.foloin {
+  font-size: 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 20px;
+  padding-left: 20px;
+  color:rgb(244, 7, 82);
+  font-weight: bold;
+}
+.foloout {
+  font-size: 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 20px;
+  padding-left: 20px;
+  color:rgb(107, 7, 133);
+  font-weight: bold;
+}
