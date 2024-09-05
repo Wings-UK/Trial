@@ -312,6 +312,7 @@
   width: 40px;
   height: 40px;
   object-fit: cover;
+  object-position: center;
 }
 .media {
   width: 15px;
