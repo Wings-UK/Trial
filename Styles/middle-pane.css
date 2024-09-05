@@ -310,6 +310,8 @@
 }
 .soc {
   width: 40px;
+  height: 40px;
+  object-fit: cover;
 }
 .media {
   width: 15px;
