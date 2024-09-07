@@ -214,6 +214,7 @@
   width: 100%;
   line-height: 22px;
   font-size: 15px;
+  font-weight: 600;
 }
 .line, .mid {
   color: rgb(97, 97, 97);
