@@ -1,0 +1,338 @@
+.sidepane {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  vertical-align: top;
+  padding-left: 20px;
+  padding-bottom: 5px;
+  padding-right: 20px;
+  background-color: rgb(234, 237, 240);
+  border-color: rgb(230, 230, 230);
+  border-radius: 10px;
+  top: 0;
+  bottom: 0;
+  position: fixed;
+}
+.meno {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.name {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  margin-left: 7px;
+}
+.logs {
+  width: 50px;
+}
+.app {
+  font-family: Great Vibes;
+  font-weight: 600;
+  vertical-align: top;
+  font-size: 40px;
+  margin-top: 60px;
+  margin-left: 10px;
+}
+.home-click {
+  text-decoration: none;
+}
+.home1, .inbox1, .search1, .note1, .inbox1, .inbox12, .account1, .account1-profile, .inbox12-profile {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+  margin-top: 5px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 20px;  
+}
+.inbox1-profile {
+  margin-left: 12px;
+  margin-top: 0px;
+  width: 150px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  border-radius: 10px;
+}
+.notifi {
+  background-color: rgb(244, 7, 82);
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-right: 6px;
+  padding-left: 6px;
+  border-radius: 100px;
+  margin-left: 10px;
+  vertical-align: bottom;
+}
+.note-num {
+  font-size: 11px;
+  color: white;
+  font-weight: bold;
+}
+.account1-profile {
+  font-weight:bold;
+}
+.sidepane-pro {
+  font-weight: bold;
+}
+.home1:hover, .search1:hover, .note1:hover, .inbox1:hover, .inbox12:hover, .account1:hover, .account1-profile:hover, .inbox12-profile:hover, .inbox1-profile:hover {
+  background-color: rgb(220, 220, 220);
+}
+.home, .search, .note, .inbox, .account {
+  width: 25px;
+  vertical-align: middle;
+  margin-right: 0;
+  padding-right: 0;
+}
+.home-home {
+  vertical-align: bottom;
+  font-weight: bold;
+}
+.sidepane-home, .home-home, .home-profile, .sidepane-pro, .home-wishlist, .home-otheruser, .home-otheruser-storefront, .home-myaccount-storefront, .product-profile, .sidepane-home-profile, .sol, .home-wallet{
+  margin-left: 10px;
+  vertical-align: middle;
+  font-size: 20px;
+  display: inline-block;
+  color: black;
+}
+.product-profile {
+  font-size: 18px;
+  color: rgb(97, 97, 97);
+}
+.inbox12 {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+}
+.inbox12-profile {
+  margin-top: 0px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+}
+.inbox2 {
+  vertical-align: bottom;
+  width: 25px;
+}
+.usera {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 10px;
+  margin-right: 0;
+  padding-right: 0;
+}
+.user-name, .user-tag {
+  margin-left: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: black;
+}
+.user-tag {
+  font-size: 14px;
+  font-weight: normal;
+  margin-top: 3px;
+  color: rgb(60, 60, 60);
+}
+.sidepane-home2, .sol {
+  font-weight: bold;
+}
+.inb {
+  position: relative;
+  display: flex;
+  gap: 5px;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  z-index: 1000;
+  opacity: 0;
+  backdrop-filter: blur(5px);
+  transition: visibility 0s, opacity 0.5s, blur 0.5s;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+}
+.overlay-content {
+  background-color: white;
+  width: 400px;
+  height: 500px;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+  overflow: hidden;position: relative;
+}
+.o {
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-bottom: 10px;
+}
+.close {
+  position: absolute;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  border-radius: 20px;
+  justify-content:center;
+  align-items:bottom;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+.close:hover {
+  background-color: rgb(234, 237, 240);
+}
+.close-btn {
+  position: absolute;
+  text-decoration: none;
+  color: black;
+  font-size: 25px;
+  font-weight: bold;
+}
+.ov {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+.ove {
+  font-size: 20px;
+  font-weight: bold;
+}
+.over {
+  margin-top: 10px;
+  font-size: 15px;
+  color: rgb(97, 97, 97);
+  text-align: center;
+}
+.fest-ov {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  display: flex;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+  border-color: rgb(220, 220, 220);
+  align-items: center;
+  gap: 20px;
+}
+.fest-ov:hover {
+  background-color: rgb(234, 237, 240);
+}
+.mkepst {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 5px;
+}
+.mkeps {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mkep {
+  font-size: 16px;
+  font-weight: bold;
+  color: rgb(60, 60, 60);
+  margin-left: 10px;
+}
+.others {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+.sub-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: rgb(80, 80, 80);
+}
+.overla {
+  background-color: rgb(230, 230, 230);
+  height: 120px;
+  object-fit: cover;
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.invitio {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.inviti {
+  font-size: 18px;
+  font-weight: bold;
+}
+.frat {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 10px;
+  background-color:rgb(244, 7, 82);
+  border: none;
+  color: white;
+  border-radius: 5px;
+
+}
+.frat:hover {
+  background-color: rgb(68, 0, 255);
+}
+.mkepst1 {
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 5px;
+}
+.mkeps1 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mke {
+  width: 350px;
+}
+body.no-scroll {
+  overflow: hidden;
+}
+.mal {
+  position: relative;
+}
+.notifi {
+  position: absolute;
+  top: -9px;
+  right: -10px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgb(234, 237, 240);
+}
+.label, .user-name1 {
+  width: 120px;
+}
