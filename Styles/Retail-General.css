@@ -4105,14 +4105,7 @@ p {
     padding-left: 0px;
     padding-top: 65px;
   }
-  .rety .kor {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    object-position: top;
-    top: 70px;
-    right: 20px;
-  }
+
   .homepage1 .pictu {
     width: 360px;
   }
@@ -4143,6 +4136,13 @@ p {
   }
   .ewe .yeb {
     height: 50px;
+  }
+  .rety .kor {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    top: 70px;
+    right: 20px;
   }
   .rety .frin {
     height: 150px;
@@ -4352,11 +4352,15 @@ p {
   }
   .rety .kor {
     width: 130px;
-    top: 100px;
+    height: 130px;
+    object-fit: cover;
+    top: 70px;
     right: 20px;
   }
-  .homepage1 .pictu {
-    width: 353px;
+  .rety .frin {
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
   }
   .homepage1 .rety {
     width: 353px;
