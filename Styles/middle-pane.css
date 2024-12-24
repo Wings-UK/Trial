@@ -361,11 +361,11 @@
 }
 .dick {
   display: flex;
-  gap: 15px;
+  gap: 5px;
   margin-left: 10px;
 }
 .lefti {
-  width: 14px;
+  width: 13px;
 }
 .werey {
   font-weight: 600;
