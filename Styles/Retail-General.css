@@ -4141,6 +4141,7 @@ p {
     width: 130px;
     height: 130px;
     object-fit: cover;
+    object-position: top;
     top: 70px;
     right: 20px;
   }
@@ -4354,6 +4355,7 @@ p {
     width: 130px;
     height: 130px;
     object-fit: cover;
+    object-position: top;
     top: 70px;
     right: 20px;
   }
