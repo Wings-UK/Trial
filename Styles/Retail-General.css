@@ -3378,8 +3378,9 @@ p {
     padding-top: 65px;
   }
   .rety .kor {
-    width: 150px;
-    top: 120px;
+    width: 130px;
+    height: 130px;
+    top: 70px;
     right: 20px;
   }
   .homepage1 .pictu {
@@ -3414,7 +3415,7 @@ p {
     height: 50px;
   }
   .rety .frin {
-    height: 240px;
+    height: 150px;
     object-fit: cover;
     object-position: center;
   }
