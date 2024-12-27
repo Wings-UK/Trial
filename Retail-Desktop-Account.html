@@ -559,10 +559,12 @@
               event.preventDefault();
           });
 
-          // Prevent long-press contextmenu on mobile
-          document.addEventListener('touchstart', event => {
-              event.preventDefault();
-          }, { passive: false });
+           // Prevent dragging of images
+           document.querySelectorAll('img, video').forEach(element => {
+              element.addEventListener('dragstart', event => {
+                  event.preventDefault();
+              });
+          });
 
       
           // Video autoplay
