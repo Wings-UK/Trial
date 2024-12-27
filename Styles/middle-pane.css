@@ -1434,10 +1434,32 @@
   font-size: 13px;
   color: rgb(60, 60, 60);
 }
-
+.contentma{
+  padding: 5px;
+  width: 100%;
+  font-size: 15.5px;
+}
+.bioi {
+  margin-top: 15px;
+}
+.goo {
+  font-size: 13px;
+}
+.fred {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: rgb(75, 75, 75);
+}
+.masonry .brekca {
+  border-radius: 15px;
+  object-fit: cover;
+  object-position: top;
+  width: 23px;
+}
 .masonry {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 5px;
   overflow: hidden;
   position: relative;
   background: #f0f0f0;
