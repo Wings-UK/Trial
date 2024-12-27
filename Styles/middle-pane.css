@@ -1440,7 +1440,7 @@
   font-size: 15.5px;
 }
 .bioi {
-  margin-top: 15px;
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
 }
@@ -1453,7 +1453,7 @@
 .fred {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   color: rgb(75, 75, 75);
 }
 .masonry .brekca {
