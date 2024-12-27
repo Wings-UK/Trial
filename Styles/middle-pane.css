@@ -1463,6 +1463,7 @@
   display: flex;
   gap: 5px;
   width: 100%;
+  padding: 0px 5px 0px 5px;
 }
 .exp-order {
   display: flex;
