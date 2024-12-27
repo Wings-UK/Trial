@@ -1436,8 +1436,14 @@
 }
 .contentma{
   padding: 5px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
   width: 100%;
   font-size: 15.5px;
+  color: white;
 }
 .bioi {
   margin-top: 10px;
