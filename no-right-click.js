@@ -26,3 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
   
+
+document.addEventListener('DOMContentLoaded', () => {
+    const images = document.querySelectorAll('.masonry img');
+
+    images.forEach(img => {
+        img.loading ='lazy';
+        img.closest('.masonry').classList.add('loadings');
+        img.onload = function() {
+            this.closest('.masonry').classList.remove('loadings');
+        }
+    })
+})
