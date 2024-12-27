@@ -564,13 +564,7 @@
               event.preventDefault();
           }, { passive: false });
 
-          // Prevent dragging of images
-          document.querySelectorAll('img, video').forEach(element => {
-              element.addEventListener('dragstart', event => {
-                  event.preventDefault();
-              });
-          });
-
+      
           // Video autoplay
           const observer = new IntersectionObserver(entries => {
               entries.forEach(entry => {
