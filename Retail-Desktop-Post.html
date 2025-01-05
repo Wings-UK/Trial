@@ -249,6 +249,17 @@ rel="stylesheet">
                   </div>
                 </div> 
               </div>
+              <div>
+                <p class="foni" onclick="
+                  const foniElem = document.querySelector('.foni');
+                  
+                  if (foniElem.innerHTML === 'Follow') {
+                    foniElem.innerHTML = 'Following'
+                  } else {
+                    foniElem.innerHTML = 'Follow'
+                  }
+                ">Follow</p>
+              </div>
               <div class="dots">
                 <img class="dot" src="pics/duta.png">
                 <div class="tool">
@@ -592,10 +603,8 @@ rel="stylesheet">
       </main>     
     </div>
     <script>
-      //alert('Welcome to Wings!') //this code creates a pop-up. But now deactivated with comment stuff
-      
-      console.log ('You' + ' are' + ' now' + ' exploring' + ' Wings!');
-      console.log ('some' + 'text');
+     const foniElem = document.querySelector('.foni').innerHTML;
+     console.log(foniElem);
     </script>
   </body>
 </html>
