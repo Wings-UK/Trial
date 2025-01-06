@@ -49,6 +49,10 @@
   font-size: 14px;
   color: rgb(244, 7, 82);
   font-weight: 500;
+  transition: all 1s ease;
+}
+.foni.follow {
+  color: rgb(97, 97, 97);
 }
 .vre {
   margin-top: 30px;
