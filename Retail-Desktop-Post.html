@@ -254,9 +254,11 @@ rel="stylesheet">
                   const foniElem = document.querySelector('.foni');
                   
                   if (foniElem.innerHTML === 'Follow') {
-                    foniElem.innerHTML = 'Following'
+                    foniElem.innerHTML = 'Following';
+                    foniElem.classList.add('follow')
                   } else {
-                    foniElem.innerHTML = 'Follow'
+                    foniElem.innerHTML = 'Follow';
+                    foniElem.classList.remove('follow')
                   }
                 ">Follow</p>
               </div>
@@ -602,6 +604,9 @@ rel="stylesheet">
         </section>
       </main>     
     </div>
-    <script src="no-right-click.js"></script>
+    <script>
+     const foniElem = document.querySelector('.foni').innerHTML;
+     console.log(foniElem);
+    </script>
   </body>
 </html>
