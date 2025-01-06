@@ -227,6 +227,7 @@ rel="stylesheet">
               </div>
             </header>
           </header>
+          <div class="loading-bar"></div>
           
           <div class="bottom">
             <div>
@@ -1390,6 +1391,15 @@ rel="stylesheet">
     </div>
    
     <script src="no-right-click.js"></script>
+    <script>
+// Show loading bar
+document.querySelector('.loading-bar').style.display = 'block';
+
+// Hide loading bar when page is loaded
+window.addEventListener('load', () => {
+  document.querySelector('.loading-bar').style.display = 'none';
+});
+    </script>
 
     
   </body>
