@@ -38,3 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 })
+
+
+// Show loading bar
+document.querySelector('.loading-bar').style.display = 'block';
+
+// Hide loading bar when page is loaded
+window.addEventListener('load', () => {
+  document.querySelector('.loading-bar').style.display = 'none';
+});
