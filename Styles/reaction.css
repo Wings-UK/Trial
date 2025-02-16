@@ -1,0 +1,61 @@
+ body {
+            user-select: none;
+            -webkit-user-select: none;
+            /* Prevent default touch highlight */
+            -webkit-tap-highlight-color: transparent;
+            /* Prevent iOS press darkness */
+            -webkit-touch-callout: none;
+ }
+.emoji-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+        }
+
+        .emoji-wrapper {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            /* Prevent default touch highlight */
+            -webkit-tap-highlight-color: transparent;
+            /* Prevent iOS press darkness */
+            -webkit-touch-callout: none;
+        }
+
+        .emoji {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.7s ease;
+        }
+
+        .emoji-count {
+            color: black;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .selected::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -5px;
+            right: -5px;
+            bottom: -2px;
+            background: rgb(180, 180, 180, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgb(200, 200, 200);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .selected.background-visible::after {
+            opacity: 1;
+        }
+
+        .animating {
+            transform: scale(1.7);
+        }

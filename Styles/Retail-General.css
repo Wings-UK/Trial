@@ -7,6 +7,7 @@ body {
   padding-left: 380px;
   transition: padding-left 0.3s;
 }
+
 body.no-scroll {
   overflow: hidden;
 }
@@ -22,6 +23,9 @@ p {
   font-weight: normal;
   margin-top: 0px;
   margin-bottom: 0px;
+}
+button {
+  font-family: ibm plex sans, roboto;
 }
 .main-container {
   display: flex;
@@ -1755,7 +1759,7 @@ p {
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -1861,7 +1865,7 @@ p {
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -1969,7 +1973,7 @@ p {
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -2078,7 +2082,7 @@ p {
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -2189,12 +2193,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -2294,8 +2298,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -2351,7 +2355,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -2443,12 +2447,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -2536,8 +2540,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -2593,7 +2597,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -2673,12 +2677,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -2778,8 +2782,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -2835,7 +2839,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -2915,12 +2919,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -3020,8 +3024,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -3077,7 +3081,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -3157,12 +3161,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -3262,8 +3266,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -3319,7 +3323,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -3378,9 +3382,8 @@ p {
     padding-top: 65px;
   }
   .rety .kor {
-    width: 130px;
-    height: 130px;
-    top: 70px;
+    width: 150px;
+    top: 120px;
     right: 20px;
   }
   .homepage1 .pictu {
@@ -3400,12 +3403,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -3415,7 +3418,7 @@ p {
     height: 50px;
   }
   .rety .frin {
-    height: 150px;
+    height: 240px;
     object-fit: cover;
     object-position: center;
   }
@@ -3505,8 +3508,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -3562,7 +3565,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -3642,12 +3645,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -3747,8 +3750,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -3804,7 +3807,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -3885,12 +3888,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -3990,8 +3993,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -4047,7 +4050,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -4105,7 +4108,18 @@ p {
     padding-left: 0px;
     padding-top: 65px;
   }
-
+  .rety .kor {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    top: 70px;
+    right: 20px;
+  }
+  .rety .frin {
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+  }
   .homepage1 .pictu {
     width: 360px;
   }
@@ -4123,12 +4137,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -4136,14 +4150,6 @@ p {
   }
   .ewe .yeb {
     height: 50px;
-  }
-  .rety .kor {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    object-position: top;
-    top: 70px;
-    right: 20px;
   }
   .rety .frin {
     height: 150px;
@@ -4236,8 +4242,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh;
   }
   .wing .wingo {
     width: 18px;
@@ -4293,7 +4299,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -4353,16 +4359,11 @@ p {
   }
   .rety .kor {
     width: 130px;
-    height: 130px;
-    object-fit: cover;
-    object-position: top;
-    top: 70px;
+    top: 100px;
     right: 20px;
   }
-  .rety .frin {
-    height: 150px;
-    object-fit: cover;
-    object-position: center;
+  .homepage1 .pictu {
+    width: 353px;
   }
   .homepage1 .rety {
     width: 353px;
@@ -4378,12 +4379,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -4393,7 +4394,7 @@ p {
     height: 50px;
   }
   .rety .frin {
-    height: 200px;
+    height: 1300px;
     object-fit: cover;
     object-position: center;
   }
@@ -4483,8 +4484,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -4540,7 +4541,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -4625,7 +4626,7 @@ p {
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -4635,7 +4636,7 @@ p {
     height: 50px;
   }
   .rety .frin {
-    height: 180px;
+    height: 150px;
     object-fit: cover;
     object-position: center;
   }
@@ -4725,8 +4726,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -4782,7 +4783,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
@@ -4862,12 +4863,12 @@ p {
  
   .aasw {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 10px;
     background-color: rgb(244, 7, 82);
     border: none;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   .ewe .dee {
@@ -4877,7 +4878,7 @@ p {
     height: 50px;
   }
   .rety .frin {
-    height: 180px;
+    height: 120px;
     object-fit: cover;
     object-position: center;
   }
@@ -4967,8 +4968,8 @@ p {
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 75px;
-    right: 20px;
+    bottom: 5vh;
+    right: 5vh
   }
   .wing .wingo {
     width: 18px;
@@ -5024,7 +5025,7 @@ p {
     font-weight: 550;
   }
   .post1 .verify {
-    width: 15px;
+    width: 14px;
   }
   .comp1 .comp, .cll .time {
     font-size: 14px;
