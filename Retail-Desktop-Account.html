@@ -3,6 +3,7 @@
   <head>
     <title>Retail</title>
     <link rel="stylesheet" href="Styles/middle-pane.css">
+    <link rel="stylesheet" href="Styles/post-component.css">
     <link rel="stylesheet" href="Styles/right-pane.css">
     <link rel="stylesheet" href="Styles/Retail-General.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -621,22 +622,13 @@
 
     <script src="no-right-click.js"></script>
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-            const images = document.querySelectorAll('img[data-src]');
-            
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
-                    }
-                });
-            });
+      // Show loading bar
+document.querySelector('.loading-bar').style.display = 'block';
 
-            images.forEach(img => imageObserver.observe(img));
-        });
+// Hide loading bar when page is loaded
+window.addEventListener('load', () => {
+  document.querySelector('.loading-bar').style.display = 'none';
+});
     </script>
   </body>
 </html>
