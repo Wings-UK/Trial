@@ -21,6 +21,8 @@
 }
 .cimu {
   width: 40px;
+  position: absolute;
+  bottom: 5px;
 }
 .homu {
   position: absolute;
