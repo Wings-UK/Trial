@@ -11,7 +11,27 @@
   padding: 16px;
   background: #fff;
 }
-
+.humo {
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  height: 80px;
+  background-color: rgb(234, 237, 240);
+  border-radius: 20px;
+}
+.homu {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  background-color: rgb(234, 237, 240);
+  padding: 5px 15px 0px 15px;
+  font-size: 15px;
+  border: none;
+}
+.homu:focus {
+  outline: none;
+  border: none;
+}
 .video-container, .laptop1 {
   position: relative;
 }
