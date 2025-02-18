@@ -17,8 +17,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: white;
-      border-top: 1px solid #e5e7eb;
+      background-color: rgb(234, 237, 240);
     }
 
     .comment-wrapper {
@@ -28,9 +27,9 @@
 
     .comment-box {
       position: relative;
-      background-color: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
+      background-color: rgb(234, 237, 240);
+      border: none;
+      border-radius: 20px;
     }
 
     .comment-textarea {
@@ -51,6 +50,7 @@
       display: flex;
       align-items: center;
       gap: 15px;
+      margin-bottom: 10px;
     }
 
     .emoji-btn, .send-btn {
