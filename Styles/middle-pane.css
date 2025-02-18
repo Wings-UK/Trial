@@ -14,6 +14,7 @@
 
 .humo {
   position: fixed;
+  font-family: ibm plex sans, roboto;
   bottom: 0px;
   width: 100%;
   height: 90px;
