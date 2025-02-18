@@ -51,8 +51,7 @@
 
     .actions {
       position: absolute;
-      bottom: 0.5rem;
-      right: 0.5rem;
+      bottom: 5px;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -91,7 +90,7 @@
       background: #e5e7eb;
       color: #9ca3af;
       cursor: not-allowed;
-    }
+    } 
 .video-container, .laptop1 {
   position: relative;
 }
