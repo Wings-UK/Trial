@@ -13,6 +13,7 @@
 }
 
 .comment-container {
+  font-family: ibm plex sans, roboto;
       position: fixed;
       bottom: 0;
       left: 0;
@@ -50,8 +51,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
   margin-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 .caun {
   width: 30px;
@@ -64,6 +66,7 @@
 .isji {
   display: flex;
   align-items: center;
+  gap: 15px;
 }
 .emoji-btn, .send-btn {
   display: flex;
