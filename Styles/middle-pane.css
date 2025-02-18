@@ -35,6 +35,7 @@
 
 .asib {
   display: flex;
+  align-items: center;
   gap: 15px;
   height: 30px;
 }
