@@ -11,6 +11,7 @@
   padding: 16px;
   background: #fff;
 }
+
 .humo {
   position: fixed;
   bottom: 0px;
@@ -19,18 +20,22 @@
   background-color: rgb(234, 237, 240);
   border-radius: 20px 20px 0 0;
 }
+
 .cimu {
   width: 23px;
   height: 23px;
 }
+
 .caun {
   width: 27px;
 }
+
 .asib {
   display: flex;
   gap: 15px;
   height: 30px;
 }
+
 .dav {
   width: 100%;
   height: 30px;
@@ -40,15 +45,22 @@
   bottom: 10px;
   padding: 0px 15px 0px 15px;
 }
+
 .homu {
   position: absolute;
   top: 10px;
   width: 100%;
+  height: 30px; /* Added fixed height */
   background-color: rgb(234, 237, 240);
   padding: 5px 15px 0px 15px;
   font-size: 16px;
   border: none;
+  resize: none; /* Prevents resizing */
+  overflow: hidden; /* Hides scrollbar */
+  font-family: inherit; /* Maintains font consistency */
+  line-height: normal; /* Maintains line height */
 }
+
 .homu:focus {
   outline: none;
   border: none;
