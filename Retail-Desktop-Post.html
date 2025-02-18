@@ -625,5 +625,16 @@ rel="stylesheet">
         document.querySelector('.loading-bar').style.display = 'none';
       });
     </script>
+    <script>
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+    
+    // Adjust parent container
+    const container = textarea.parentElement;
+    const totalHeight = textarea.scrollHeight + 60; // Add extra space for toolbar
+    container.style.height = Math.min(Math.max(90, totalHeight), 300) + 'px';
+}
+</script>
   </body>
 </html>
