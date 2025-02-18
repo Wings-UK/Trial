@@ -24,6 +24,10 @@
   position: absolute;
   bottom: 10px;
 }
+.dav {
+  display: flex;
+  gap: 5px;
+}
 .homu {
   position: absolute;
   top: 10px;
