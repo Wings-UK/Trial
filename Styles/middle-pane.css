@@ -22,7 +22,7 @@
   border-radius: 20px 20px 0 0;
 }
 
-homu::-webkit-text-selection-handle,
+.homu::-webkit-text-selection-handle,
 .homu::-webkit-text-cursor-manipulator {
   background-color: rgb(244, 7, 82); /* To change its color */
 }
