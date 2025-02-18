@@ -23,15 +23,19 @@
   width: 23px;
 }
 .caun {
-  width: 25px;
+  width: 27px;
+}
+.asib {
+  display: flex;
+  gap: 15px;
 }
 .dav {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   position: absolute;
   bottom: 10px;
   padding: 0px 15px 0px 15px;
-  gap: 10px;
 }
 .homu {
   position: absolute;
