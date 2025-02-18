@@ -24,6 +24,7 @@
 }
 .caun {
   width: 23px;
+  height: 23px;
 }
 .dav {
   display: flex;
@@ -33,6 +34,7 @@
 }
 .homu {
   position: absolute;
+  top: 10px;
   width: 100%;
   background-color: rgb(234, 237, 240);
   padding: 5px 15px 0px 15px;
