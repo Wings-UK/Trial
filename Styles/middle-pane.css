@@ -54,8 +54,16 @@
 }
 .caun {
   width: 30px;
+  height: 30px;
 }
-
+.cinu {
+  width: 20px;
+  height: 20px;
+}
+.isji {
+  display: flex;
+  align-items: center;
+}
 .emoji-btn, .send-btn {
   display: flex;
   align-items: center;
