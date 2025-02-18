@@ -54,7 +54,7 @@
       bottom: 5px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 15px;
     }
 
     .emoji-btn, .send-btn {
