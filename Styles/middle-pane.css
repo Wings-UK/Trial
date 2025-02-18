@@ -28,6 +28,7 @@
 }
 .dav {
   display: flex;
+  justify-content: flex-end;
   position: absolute;
   bottom: 10px;
   padding: 0px 15px 0px 15px;
