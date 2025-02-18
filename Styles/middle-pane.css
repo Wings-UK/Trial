@@ -18,14 +18,11 @@
   bottom: 0px;
   width: 100%;
   height: 90px;
+  caret-color: rgb(244, 7, 82);
   background-color: rgb(234, 237, 240);
   border-radius: 20px 20px 0 0;
 }
 
-.homu::-webkit-text-selection-handle,
-.homu::-webkit-text-cursor-manipulator {
-  background-color: rgb(244, 7, 82); /* To change its color */
-}
 .cimu {
   width: 23px;
   height: 23px;
