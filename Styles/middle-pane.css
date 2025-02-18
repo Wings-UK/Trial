@@ -32,37 +32,40 @@
       border-radius: 20px;
     }
 
-    .comment-textarea {
-      width: 100%;
-      min-height: 44px;
-      max-height: 300px;
-      padding: 15px;
-      background: transparent;
-      border: none;
-      resize: none;
-      outline: none;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1.5;
-    }
+.comment-textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 300px;
+  padding: 15px;
+  background: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
 
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 10px;
-    }
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+.caun {
+  width: 30px;
+}
 
-    .emoji-btn, .send-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem;
-      border: none;
-      border-radius: 9999px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+.emoji-btn, .send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
     .emoji-btn {
       background: transparent;
