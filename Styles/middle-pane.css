@@ -12,67 +12,86 @@
   background: #fff;
 }
 
-.humo {
-  position: fixed;
-  font-family: ibm plex sans, roboto;
-  bottom: 0px;
-  width: 100%;
-  min-height: 90px;
-  max-height: 300px;
-  caret-color: rgb(244, 7, 82);
-  background-color: rgb(234, 237, 240);
-  border-radius: 20px 20px 0 0;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 50px;
-}
+.comment-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1rem;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+    }
 
-.cimu {
-  width: 20px;
-  height: 20px;
-}
+    .comment-wrapper {
+      max-width: 768px;
+      margin: 0 auto;
+    }
 
-.caun {
-  width: 30px;
-  height: 30px;
-}
+    .comment-box {
+      position: relative;
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+    }
 
-.asib {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  height: 30px;
-}
+    .comment-textarea {
+      width: 100%;
+      min-height: 44px;
+      max-height: 300px;
+      padding: 0.75rem;
+      padding-right: 6rem;
+      background: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
 
-.dav {
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: space-between;
-  position: absolute;
-  bottom: 10px;
-  padding: 0px 15px 0px 15px;
-}
+    .actions {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-.homu {
-  position: relative;
-  top: 10px;
-  width: 100%;
-  min-height: 30px; /* Added fixed height */
-  background-color: rgb(234, 237, 240);
-  padding: 5px 15px 0px 15px;
-  font-size: 16px;
-  border: none;
-  resize: vertical; /* Prevents resizing */
-  overflow: hidden; /* Hides scrollbar */
-  font-family: inherit; /* Maintains font consistency */
-  line-height: normal; /* Maintains line height */
-}
+    .emoji-btn, .send-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-.homu:focus {
-  outline: none;
-  border: none;
-}
+    .emoji-btn {
+      background: transparent;
+      color: #6b7280;
+    }
+
+    .emoji-btn:hover {
+      color: #374151;
+    }
+
+    .send-btn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .send-btn:hover {
+      background: #2563eb;
+    }
+
+    .send-btn:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
 .video-container, .laptop1 {
   position: relative;
 }
