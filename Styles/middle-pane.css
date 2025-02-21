@@ -412,11 +412,6 @@
   padding-bottom: 20px;
   border-color: rgb(230, 230, 230);
   padding-bottom: 120px;
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-.homepage1.fade-out {
-  opacity: 0;
 }
 .usi {
   background-color: aquamarine;
