@@ -11,7 +11,9 @@
   padding: 16px;
   background: #fff;
 }
-.hidden
+.hidden {
+  display: none;
+}
 .edre {
   display: flex;
   width: 100%;
