@@ -1183,28 +1183,40 @@ rel="stylesheet">
    <script src="Script/reaction.js"></script>
           <script src="Script/blockicondownload.js"></script>
    <script>
-     document.addEventListener('DOMContentLoaded', function() {
-       cont posts = [
-           {
-             id: 1,
-             avatar: "pics/koreangirls.jpg",
-             user: "@reddcinema",
-             timestamp: "3 mins ago",
-             image: "pics/man3.webp",
-             content: "my homegirl gave birth so I brought her a crossword puzzle"
-           }
-         ];
-         
-         const flyer = document.getElementById("flyer");
-         
-         function displayPost() {
-           flyer.innerHTML = posts.map(post => `
-             <h1>come</h1>
-           `)
-         }
-         
-         displayPost();
-     })
+    document.addEventListener('DOMContentLoaded', function() {
+      const posts = [
+        {
+          id: 1,
+          avatar: "pics/koreangirls.jpg",
+          user: "@reddcinema",
+          timestamp: "3 mins ago",
+          image: "pics/man3.webp",
+          content: "my homegirl gave birth so I brought her a crossword pzzle"
+        },
+        {
+          id: 1,
+          avatar: "pics/koreangirls.jpg",
+          user: "@reddcinema",
+          timestamp: "3 mins ago",
+          image: "pics/uprise.mp4",
+          content: "my homegirl gave birth so I brought her a crossword pzzle"
+        }
+      ];
+
+
+      const flyer = document.getElementById("flyer");
+
+
+      function displayPosts() {
+        flyer.innerHTML = posts.map(post => `
+            come
+        `).join('');
+      }
+
+      displayPosts();
+    })
+
+
    </script>
   </body>
 </html>
