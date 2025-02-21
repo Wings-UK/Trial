@@ -1507,16 +1507,25 @@ rel="stylesheet">
       function showPost(id) {
       const post = posts.find(p => p.id === id);
       document.getElementById("food").classList.add("hidden");
-      document.getElementById("meal").classList.remove("hidden");
-      history.pushState({ postId: id }, "", "#post" + id);
-      window.scrollTo(0, 0);
+      document.getElementById("meal").classList.add("fade-out");
+      
+      setTimeout(() => {
+        document.getElementById("meal").classList.remove("hidden");
+        history.pushState({ postId: id }, "", "#post" + id);
+        window.scrollTo(0, 0);
+      }, 200);
+      
     }
+   
 
     window.goBack = function() {
       document.getElementById("food").classList.remove("hidden");
-      document.getElementById("meal").classList.add("hidden");
-      console.log("going back")
-      history.pushState(null, "", "#home");
+      document.getElementById("meal").classList.add("fade-out");
+
+      setTimeout(() => {
+        document.getElementById("meal").classList.add("hidden");
+        history.pushState(null, "", "#home");
+      }, 200);
     }
 
 
