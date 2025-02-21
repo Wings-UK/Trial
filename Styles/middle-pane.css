@@ -11,6 +11,7 @@
   padding: 16px;
   background: #fff;
 }
+.hidden
 .edre {
   display: flex;
   width: 100%;
@@ -324,7 +325,7 @@
   background-color: rgb(75, 75, 75);
 }
 .haja:focus {
-  border: 1px solid rgb(244, 7, 82); !important
+  border: 1px solid rgb(244, 7, 82); 
 }
 .haja::placeholder {
   color: rgb(200,200, 200);
