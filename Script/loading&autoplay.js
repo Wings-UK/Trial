@@ -11,7 +11,7 @@ video.addEventListener('pause', function() {
 
 
 // Show loading bar
-document.querySelector('.loading-bar').style.display = 'block';
+document.querySelector('.loading-bar').style.display = 'none';
 
 // Hide loading bar when page is loaded
 window.addEventListener('load', () => {
