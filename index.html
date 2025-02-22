@@ -1524,6 +1524,17 @@ rel="stylesheet">
     })
 
 
+    window.onpopstate = function(event) {
+      if (event.state && event.state.postId) {
+        showPost(event.state.postId);
+      } else {
+        goBack();
+      }
+    };
+
+    history.replaceState(null, "", "#home");
+
+
    </script>
   </body>
 </html>
