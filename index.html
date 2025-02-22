@@ -1248,6 +1248,7 @@ rel="stylesheet">
           avatar: "pics/koreangirls.jpg",
           user: "@reddcinema",
           timestamp: "3 mins ago",
+          date: "Feb 28, 2025 3:56 PM"
           image: "pics/20.jpg",
           content: "Right yall, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀"
         },
@@ -1383,7 +1384,7 @@ rel="stylesheet">
              <div class="cust-name"> 
               <div class="heading">
                 <div class="small-photo1">
-                  <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="small-photo" src="pics/girl2.webp"></a>
+                  <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="small-photo" src="${post.avatar}"></a>
                
                 </div>
                 <div class="pos">
@@ -1392,7 +1393,7 @@ rel="stylesheet">
                       <a class="home-click">
                         <div class="post1">
                           <div class="jerr">
-                            <p class="jerry">@reddcinema</p>
+                            <p class="jerry">${post.user}</p>
                           </div>
                           <div>
                             <img class="verify" src="pics/verifi1.png">
@@ -1404,7 +1405,7 @@ rel="stylesheet">
                   </div>     
                   <div class="comp1">
                     <div class="cll">
-                      <p class="time">Feb 30, 2025 3:56 PM</p>
+                      <p class="time">${post.date}</p>
                       <div class="tool">
                         <p>7.23pm &#183; Sept 23, 2024 </p>
                       </div> 
@@ -1440,12 +1441,12 @@ rel="stylesheet">
             </div>
             
             <div class="tir">
-              <p class="tiri">my homegirl gave birth so i brought her a crossword puzzle to the hospital she said “thank you but do it look like i wanna do a fcking crossword puzzle?” like oh ok sista fck i thought 😭😭😭😭😭😭😭😭<br>
+              <p class="tiri">${post.content}<br>
               </p>
             </div>
             <div class="swet">
               <div class="laptop1">
-                <img class="lapto" src="pics/22.jpg">
+                <img class="lapto" src="${post.image}">
                  
               </div>
               
