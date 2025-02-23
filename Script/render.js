@@ -23,7 +23,7 @@ const posts = [
         user: "@partywithme",
         timestamp: "a day ago",
         date: "Feb 28, 2025 3:56 PM",
-        image: "pics/memo7.jpg",
+        image: "pics/memo1.jpg",
         content: "A few years agp, my city was avoided and badmouthed, now it has become a metropolitan that everyone wants to visit. You are welcome tho",
       }
   ];
