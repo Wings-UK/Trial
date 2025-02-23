@@ -10,12 +10,21 @@ const posts = [
     },
     {
         id: 2,
-        avatar: "pics/pico8.webp",
+        avatar: "pics/memo4.jpg",
         user: "@lena",
         timestamp: "14 hours ago",
         date: "Feb 28, 2025 3:56 PM",
         image: "pics/pico7.webp",
         content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      },
+      {
+        id: 3,
+        avatar: "pics/pico8.webp",
+        user: "@partywithme",
+        timestamp: "a day ago",
+        date: "Feb 28, 2025 3:56 PM",
+        image: "pics/memo7.jpg",
+        content: "A few years agp, my city was avoided and badmouthed, now it has become a metropolitan that everyone wants to visit. You are welcome tho",
       }
   ];
 
