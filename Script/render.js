@@ -293,5 +293,13 @@ function goBack() {
         document.getElementById("food").classList.remove("hidden");
     }
 }
+window.onpopstate = function(event) {
+    if (event.state && event.state.postId) {
+      showPost(event.state.postId);
+    } else {
+      goBack();
+    }
+  };
 
+history.replaceState(null, "", "#home");
 renderHomepage();
