@@ -286,4 +286,12 @@ function hideEverything() {
     document.getElementById("meal").classList.add("hidden");
 }
 
+function goBack() {
+    if (!document.getElementById("meal").classList.contains("hidden")) {
+        hideEverything();
+
+        document.getElementById("food").classList.remove("hidden");
+    }
+}
+
 renderHomepage();
