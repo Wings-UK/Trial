@@ -283,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     displayPosts();
-    showDetail();
   })
 
 
