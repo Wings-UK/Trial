@@ -120,7 +120,7 @@ function renderHomepage() {
         </div>
         `;
 
-        postContainer.innerHTML += postHTML;
+        postContainer.innerHTML = postHTML;
     });
 }
 renderHomepage();
