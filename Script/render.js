@@ -7,7 +7,16 @@ const posts = [
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/20.jpg",
       content: "Right yall, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
-    }
+    },
+    {
+        id: 2,
+        avatar: "pics/pico8.webp",
+        user: "@lena",
+        timestamp: "14 hours ago",
+        date: "Feb 28, 2025 3:56 PM",
+        image: "pics/pico7.webp",
+        content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      }
   ];
 
 
