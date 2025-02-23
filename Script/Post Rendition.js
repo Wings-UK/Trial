@@ -128,8 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     }
 
-    function showDetail() {
-      nuba.innerHTML = posts.map(post => `
+  function showDetail(postId) {
+    const postDetail = document.getElementById("meal");
+    const postContent = document.getElementById("nuba");
+
+    const post = posts.find(p => p.id === postId);
+
+    if (post) {
+      postContent.innerHTML = `
            <div class="cust-name"> 
             <div class="heading">
               <div class="small-photo1">
@@ -254,8 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>   
           </div>
-      `).join('');
+      
+      `
     }
+  }
 
 
     function showPost(id) {
