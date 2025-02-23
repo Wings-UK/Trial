@@ -85,7 +85,7 @@ function renderHomepage() {
           <div class="tir">
             <p class="tired">${post.content}<br>
 
-            <a class="home-click reer see-more" data-id="${post.id}">see more</a></p>
+            <a class="home-click reer see-more" onclick="showDetail(${post.id})">see more</a></p>
           </div>
           <div class="lefto">
             <div class="dick">
@@ -140,4 +140,149 @@ function renderHomepage() {
         postContainer.innerHTML += postHTML;
     });
 }
+
+function showDetail(postId) {
+    const postDetail = document.getElementById("meal");
+    const postContent = document.getElementById("nuba");
+
+    const post = posts.find(p => p.id === postId);
+
+    if (post) {
+        postContent.innerHTML = `
+             <div class="cust-name"> 
+            <div class="heading">
+              <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="small-photo" src="${post.avatar}"></a>
+             
+              </div>
+              <div class="pos">
+                <div>
+                  <div class="link-wrapper">
+                    <a class="home-click">
+                      <div class="post1">
+                        <div class="jerr">
+                          <p class="jerry">${post.user}</p>
+                        </div>
+                        <div>
+                          <img class="verify" src="pics/verifi1.png">
+                        </div>
+                      </div>
+                    </a>
+                    
+                  </div> 
+                </div>     
+                <div class="comp1">
+                  <div class="cll">
+                    <p class="time">${post.date}</p>
+                    <div class="tool">
+                      <p>7.23pm &#183; Sept 23, 2024 </p>
+                    </div> 
+                  </div>
+                 
+                  
+                   
+                </div>
+              </div> 
+            </div>
+
+            <div>
+              <p class="foni" onclick="
+                const foniElem = document.querySelector('.foni');
+                
+                if (foniElem.innerHTML === 'Follow') {
+                  foniElem.innerHTML = 'Following';
+                  foniElem.classList.add('follow')
+                } else {
+                  foniElem.innerHTML = 'Follow';
+                  foniElem.classList.remove('follow')
+                }
+              ">Follow</p>
+            </div>
+
+
+            <div class="dots">
+              <img class="dot" src="pics/duta.png">
+              <div class="tool">
+                <p>More</p>
+              </div> 
+            </div>      
+          </div>
+          
+          <div class="tir">
+            <p class="tiri">${post.content}<br>
+            </p>
+          </div>
+          <div class="swet">
+            <div class="laptop1">
+              <img class="lapto" src="${post.image}">
+               
+            </div>
+            
+          </div>
+          <div class="lefto">
+            <div class="dick">
+             <div>
+              <p class="viewe"><span class="werey">615</span> reactions</p>
+             </div>
+             <div>
+              <p class="viewe"><span class="werey">9</span> echoes</p>
+             </div>
+            </div>
+            <div class="twits">
+              <div>
+                <img class="lefti" src="pics/stats.png">
+              </div>
+              <div>
+                <p class="viewe">96.8K views</p>
+               </div>
+            </div>
+          </div>
+          <div class="reaction">
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+            
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/2.gif">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/3.gif">
+              </div>
+            </div>   
+          </div>
+        `;
+
+        hideEverything();
+        postDetail.classList.remove("hidden");
+    }
+}
+
+function hideEverything() {
+    document.getElementById("food").classList.add("hidden");
+    document.getElementById("meal").classList.add("hidden");
+}
+
 renderHomepage();
