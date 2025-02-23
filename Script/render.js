@@ -6,7 +6,7 @@ const posts = [
       timestamp: "3 mins ago",
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/20.jpg",
-      content: "Right yall, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
+      content: "Right y'all, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
     },
     {
         id: 2,
@@ -24,7 +24,7 @@ const posts = [
         timestamp: "a day ago",
         date: "Feb 28, 2025 3:56 PM",
         image: "pics/memo1.jpg",
-        content: "A few years agp, my city was avoided and badmouthed, now it has become a metropolitan that everyone wants to visit. You are welcome tho",
+        content: "A few years ago, my city was avoided and badmouthed, now it has become a metropolitan that everyone wants to visit. You are welcome tho",
       }
   ];
 
@@ -276,6 +276,7 @@ function showDetail(postId) {
         `;
 
         hideEverything();
+        window.scrollTo(0, 0);
         postDetail.classList.remove("hidden");
     }
 }
