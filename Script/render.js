@@ -14,7 +14,6 @@ const posts = [
 
 function renderHomepage() {
     const postContainer = document.getElementById("flyer");
-    postContainer.innerHTML = "";
 
     posts.forEach(post => {
         const postHTML = `
