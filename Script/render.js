@@ -299,7 +299,7 @@ function goBack() {
 }
 
 function switchPage(pageId) {
-    if (pageId === "meal") {
+    if (pageId === "food") {
         sessionStorage.setItem("scrollPosition", window.scrollY);
     }
 
@@ -311,12 +311,10 @@ function switchPage(pageId) {
     });
 
     const newPage = document.getElementById(pageId);
-    
-    setTimeout (() => {
-        newPage.classList.add("active");
-    }, 1000);
+    newPage.classList.add("active");
+ 
 
-    if (pageId === "meal") {
+    if (pageId === "food") {
         window.scrollTo(0, 0);
     }
 }
