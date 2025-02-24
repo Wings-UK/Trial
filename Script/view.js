@@ -194,7 +194,7 @@ function showDetail(postId) {
                     </div>
                 </div> 
             </div>
-        </div>
+       
 
          <div>
               <p class="foni" onclick="
@@ -372,6 +372,10 @@ function goBack() {
      if (pageId === "meal") {
          sessionStorage.setItem("scrollPosition", window.scrollY);
      }
+
+     if (pageId === "profile") {
+        sessionStorage.setItem("scrollPosition", window.scrollY);
+    }
  
  
     const pages = document.querySelectorAll(".page");
@@ -387,6 +391,10 @@ function goBack() {
      if (pageId === "meal") {
          window.scrollTo(0, 0);
      }
+
+     if (pageId === "profile") {
+        window.scrollTo(0, 0);
+    }
  
      history.pushState({ page:pageId }, "", `#${pageId}`);
  }
