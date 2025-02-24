@@ -275,9 +275,9 @@ function showDetail(postId) {
           </div>
         `;
 
-        hideEverything();
         window.scrollTo(0, 0);
-        postDetail.classList.remove("hidden");
+        switchPage("meal")
+        
     }
 }
 
@@ -287,19 +287,21 @@ function hideEverything() {
 }
 
 function goBack() {
-    if (!document.getElementById("meal").classList.contains("hidden")) {
-        hideEverything();
-
-        document.getElementById("food").classList.remove("hidden");
-    }
+   switchPage("food");
 }
-window.onpopstate = function(event) {
-    if (event.state && event.state.postId) {
-      showPost(event.state.postId);
-    } else {
-      goBack();
-    }
-  };
 
-history.replaceState(null, "", "#home");
+function switchPage(pageId) {
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.add("hidden");
+        page.classList.remove("active");
+    });
+
+    const newPage = document.getElementById(pageId);
+    newPage.classList.remove("hidden");
+        setTimeout(() => {
+            newPage.classList.add("active");
+        }, 10);
+}
+
+
 renderHomepage();
