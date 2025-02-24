@@ -316,6 +316,30 @@ function switchPage(pageId) {
     if (pageId === "meal") {
         window.scrollTo(0, 0);
     }
+
+    history.pushState({ page:pageId }, "", `#${pageId}`);
+}
+
+window.onpopstate = function (event) {
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+    } else {
+        switchPage("food");
+    }
+
+    if (event.state && event.state.page === "food") {
+        const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+        if (savedScrollPosition) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+            }, 0);
+        }
+    }
+}
+
+
+function goBack() {
+    history.back();
 }
 
 
