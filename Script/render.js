@@ -291,15 +291,19 @@ function goBack() {
 }
 
 function switchPage(pageId) {
-    document.querySelectorAll(".page").forEach(page => {
-        page.classList.add("hidden");
-        page.classList.remove("active");
+   const pages = document.querySelectorAll(".page");
+
+    pages.forEach(page => {
+        page.classList.remove("active", "show", "transition");
+            page.style.display = "none";
     });
 
     const newPage = document.getElementById(pageId);
-    newPage.classList.remove("hidden");
+        newPage.style.display = "block";
+        newPage.classList.add("active", "transition");
+
         setTimeout(() => {
-            newPage.classList.add("active");
+            newPage.classList.add("show");
         }, 10);
 }
 
