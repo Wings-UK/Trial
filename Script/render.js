@@ -298,26 +298,31 @@ function goBack() {
 }
 
 function switchPage(pageId) {
-    if (pageId === "meal") {
-        sessionStorage.setItem("scrollPosition", window.scrollY);
-    }
+    // Show loading animation
+    document.getElementById("loadingOverlay").classList.add("show-loading");
 
+    // Delay switch for a better effect
+    setTimeout(() => {
+        if (document.getElementById("food").classList.contains("active")) {
+            sessionStorage.setItem("scrollPosition", window.scrollY);
+        }
 
-   const pages = document.querySelectorAll(".page");
+        // Hide all pages
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
 
-    pages.forEach(page => {
-        page.classList.remove("active");
-    });
+        // Show selected page
+        document.getElementById(pageId).classList.add("active");
 
-    const newPage = document.getElementById(pageId);
-    newPage.classList.add("active");
- 
+        if (pageId === "meal") {
+            window.scrollTo(0, 0);
+        }
 
-    if (pageId === "meal") {
-        window.scrollTo(0, 0);
-    }
+        history.pushState({ page: pageId }, "", `#${pageId}`);
 
-    history.pushState({ page:pageId }, "", `#${pageId}`);
+        document.getElementById("loadingOverlay").classList.remove("show-loading");
+    }, 500);
 }
 
 window.onpopstate = function (event) {
