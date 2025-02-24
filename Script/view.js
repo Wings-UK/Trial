@@ -6,7 +6,7 @@ const users = [
       cover: "pics/pico9.png",
       avatar: "pics/koreangirls.jpg",
       bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
-      followers: "1204",
+      followers: 1204,
       following: 340,
       location: "Los Angeles, CA"
     },
@@ -14,6 +14,7 @@ const users = [
       id: 2,
       username: "@lena",
       name: "Lena Marie",
+      cover: "pics/pico5.webp",
       avatar: "pics/memo4.jpg",
       bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
       followers: 896,
