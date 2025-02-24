@@ -339,11 +339,8 @@ window.onpopstate = function (event) {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-    if (location.hash === "#meal") {
-        switchPage("meal");
-    } else {
-        switchPage("food");
-    }
+    history.replaceState({ page:"food" }, "", "#food");
+    switchPage("food");
 });
 
 
