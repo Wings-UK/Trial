@@ -3,9 +3,10 @@ const users = [
       id: 1,
       username: "@reddcinema",
       name: "Redd Cinema",
+      cover: "pics/pico9.png",
       avatar: "pics/koreangirls.jpg",
-      bio: "Film lover & storyteller. 🎬✨",
-      followers: 1204,
+      bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+      followers: "1204",
       following: 340,
       location: "Los Angeles, CA"
     },
@@ -14,7 +15,7 @@ const users = [
       username: "@lena",
       name: "Lena Marie",
       avatar: "pics/memo4.jpg",
-      bio: "Dancing through life 💃 | Coffee addict ☕",
+      bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
       followers: 896,
       following: 512,
       location: "New York, NY"
@@ -296,7 +297,7 @@ function showUserProfile(userId) {
     const profileIreti = document.getElementById("ireti");
     
     profileIreti.innerHTML = `
-         <img class="frin" src="pics/proinfo.jpg">
+         <img class="frin" src="${user.cover}">
             <div>
               <img class="kor" src="${user.avatar}">
             </div>
@@ -311,7 +312,7 @@ function showUserProfile(userId) {
               </div>
               <div class="druu">
                 <div>
-                  <p class="rkl">@Sparkme</p>
+                  <p class="rkl">${user.location}</p>
                 </div>
                 <div class="drum">
                   <p class="swe">4</p>
@@ -319,10 +320,10 @@ function showUserProfile(userId) {
                 </div>
               </div>
               <div class="nin">
-                <p class="rkl"><span class="bld">937</span>following &#183; <span class="bld">18K</span>followers</p>
+                <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
               </div>
               <div class="cha">
-                <p>Chart data, updates and donation for homeless kids through my phenomenal sales - Saprkling Store. Ambassador and GQ MAN OF THE YEAR | Fan Account</p>
+                <p>${user.bio}</p>
               </div>
               <div class="man">
                 <div class="vre">
