@@ -275,7 +275,6 @@ function showDetail(postId) {
           </div>
         `;
 
-        window.scrollTo(0, 0);
         switchPage("meal")
         
     }
@@ -299,7 +298,7 @@ function goBack() {
 }
 
 function switchPage(pageId) {
-    if (pageId === "food") {
+    if (pageId === "meal") {
         sessionStorage.setItem("scrollPosition", window.scrollY);
     }
 
@@ -314,7 +313,7 @@ function switchPage(pageId) {
     newPage.classList.add("active");
  
 
-    if (pageId === "food") {
+    if (pageId === "meal") {
         window.scrollTo(0, 0);
     }
 }
