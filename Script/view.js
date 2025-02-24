@@ -399,7 +399,11 @@ function goBack() {
         window.scrollTo(0, 0);
     }
  
-     history.pushState({ page:pageId }, "", `#${pageId}`);
+     if (pageId === "food" && history.state?.page !== "food") {
+    history.pushState({ page: "food" }, "", "#food");
+} else {
+    history.pushState({ page: pageId }, "", `#${pageId}`);
+}
  }
  
  window.onpopstate = function (event) {
