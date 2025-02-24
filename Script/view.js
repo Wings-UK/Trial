@@ -298,12 +298,12 @@ function showUserProfile(userId) {
     profileIreti.innerHTML = `
          <img class="frin" src="pics/proinfo.jpg">
             <div>
-              <img class="kor" src="pics/koreangirls.jpg">
+              <img class="kor" src="${user.avatar}">
             </div>
             <div class="klr">
               <div class="drun">
                 <div>
-                  <p class="spe">sparklinglee</p>
+                  <p class="spe">${user.username}</p>
                 </div>
                 <div>
                   <img class="verify" src="pics/verifi1.png">
