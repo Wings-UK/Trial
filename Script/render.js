@@ -343,4 +343,17 @@ function goBack() {
 }
 
 
+window.addEventListener("load", function () {
+    let currentPage = location.hash.substring(1);
+
+    if (!currentPage) {
+        currentPage = "food";
+    }
+
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+    });
+
+    document.getElementById(currentPage).classList.add("active");
+})
 renderHomepage();
