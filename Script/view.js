@@ -371,7 +371,7 @@ function goBack() {
  }
  
  function switchPage(pageId) {
-     if (pageId === "meal") {
+     if (pageId === "meal" || pageId === "profile") {
          sessionStorage.setItem("scrollPosition", window.scrollY);
      }
 
@@ -388,6 +388,13 @@ function goBack() {
  
      const newPage = document.getElementById(pageId);
      newPage.classList.add("active");
+
+
+     if (pageId === "food") {
+        history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always replaceState
+    } else {
+        history.pushState({ page: pageId }, "", `#${pageId}`);
+    }
   
  
      if (pageId === "meal") {
