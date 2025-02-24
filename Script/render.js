@@ -328,6 +328,7 @@ window.onpopstate = function (event) {
     }
 
     if (event.state && event.state.page === "food") {
+        history.replaceState({ page:"food" }, "", "#food");
         const savedScrollPosition = sessionStorage.getItem("scrollPosition");
         if (savedScrollPosition) {
             setTimeout(() => {
@@ -335,10 +336,19 @@ window.onpopstate = function (event) {
             }, 0);
         }
     }
-}
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (location.hash === "#meal") {
+        switchPage("meal");
+    } else {
+        switchPage("food");
+    }
+});
 
 
 
 
 
 renderHomepage();
+ 
