@@ -298,7 +298,10 @@ function switchPage(pageId) {
     });
 
     const newPage = document.getElementById(pageId);
-    newPage.classList.add("active");
+    
+    setTimeout (() => {
+        newPage.classList.add("active");
+    }, 10);
 }
 
 
