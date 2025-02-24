@@ -338,9 +338,6 @@ window.onpopstate = function (event) {
 }
 
 
-function goBack() {
-    history.back();
-}
 
 
 
