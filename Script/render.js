@@ -288,9 +288,22 @@ function hideEverything() {
 
 function goBack() {
    switchPage("food");
+
+   setTimeout (() => {
+    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+
+    if (savedScrollPosition) {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+    }
+   }, 50);
 }
 
 function switchPage(pageId) {
+    if (pageId === "meal") {
+        sessionStorage.setItem("scrollPosition", window.scrollY);
+    }
+
+
    const pages = document.querySelectorAll(".page");
 
     pages.forEach(page => {
@@ -301,7 +314,11 @@ function switchPage(pageId) {
     
     setTimeout (() => {
         newPage.classList.add("active");
-    }, 10);
+    }, 1000);
+
+    if (pageId === "meal") {
+        window.scrollTo(0, 0);
+    }
 }
 
 
