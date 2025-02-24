@@ -389,12 +389,7 @@ function goBack() {
      const newPage = document.getElementById(pageId);
      newPage.classList.add("active");
 
-     if (pageId === "food") {
-        if (history.state?.page !== "food") {
-            history.pushState({ page: "food" }, "", "#food");
-        }
-    }
-    
+  
  
      if (pageId === "meal") {
          window.scrollTo(0, 0);
