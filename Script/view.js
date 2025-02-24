@@ -424,12 +424,6 @@ function goBack() {
          }
      }
 
-     if (pageId === "food") {
-        if (history.state?.page !== "food") {
-            history.pushState({ page: "food" }, "", "#food");
-        }
-    }
-    
  };
  
  document.addEventListener("DOMContentLoaded", function () {
