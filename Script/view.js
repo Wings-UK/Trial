@@ -1,115 +1,421 @@
-// Function to render a post dynamically
-function renderPost(post) {
-    const user = getUserById(post.userId); // Fetch user details using the userId
-    return `
-        <div class="post" onclick="openPostDetail(${post.id})">
-            <div class="post-header">
-                <img class="profile-pic" src="${user.avatar}" alt="${user.username}">
-                <div class="post-user">
-                    <p class="username">${user.username} ${user.verified ? '<img class="verify" src="pics/verifi1.png">' : ''}</p>
-                    <p class="handle">@${user.handle} · ${post.timestamp}</p>
+const users = [
+    {
+      id: 1,
+      username: "@reddcinema",
+      name: "Redd Cinema",
+      avatar: "pics/koreangirls.jpg",
+      bio: "Film lover & storyteller. 🎬✨",
+      followers: 1204,
+      following: 340,
+      location: "Los Angeles, CA"
+    },
+    {
+      id: 2,
+      username: "@lena",
+      name: "Lena Marie",
+      avatar: "pics/memo4.jpg",
+      bio: "Dancing through life 💃 | Coffee addict ☕",
+      followers: 896,
+      following: 512,
+      location: "New York, NY"
+    }
+];
+
+const posts = [
+    {
+      id: 1,
+      userId: 1,  // Refers to user with id 1 (@reddcinema)
+      timestamp: "3 mins ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/20.jpg",
+      content: "Right y'all, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
+    },
+    {
+      id: 2,
+      userId: 2,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    }
+];
+
+
+
+function renderHomepage() {
+    const postContainer = document.getElementById("flyer");
+
+    posts.forEach(post => {
+        const user = users.find(u => u.id === post.userId); // Find user by ID
+
+        if (!user) return; // Skip if no user found (shouldn't happen)
+
+        const postHTML = `
+            <div class="poster">
+                <div class="cust-name"> 
+                    <div class="heading">
+                        <div class="small-photo1">
+                            <a class="lino" onclick="showUserProfile(${user.id})">
+                                <img class="small-photo" src="${user.avatar}" loading="lazy">
+                            </a>
+                        </div>
+                        <div class="pos">
+                            <div>
+                                <div class="link-wrapper">
+                                    <a class="home-click" onclick="showUserProfile(${user.id})">
+                                        <div class="post1">
+                                            <div class="jerr">
+                                                <p class="jerry">${user.username}</p>
+                                            </div>
+                                            <div>
+                                                <img class="verify" src="pics/verifi1.png">
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div> 
+                            </div>     
+                            <div class="comp1">
+                                <div class="cll">
+                                    <p class="time">${post.timestamp}</p>
+                                    <div class="tool">
+                                        <p>7.23pm &#183; Sept 23, 2024 </p>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="dots">
+                        <img class="dot" src="pics/duta.png">
+                        <div class="tool">
+                            <p>More</p>
+                        </div> 
+                    </div>      
                 </div>
+                <div class="laptop1">
+                    <img class="laptop" src="${post.image}" loading="lazy">
+                </div>
+                <div class="tir">
+                    <p class="tired">${post.content}<br>
+                    <a class="home-click reer see-more" onclick="showDetail(${post.id})">see more</a></p>
+                </div>
+                
+                <div class="lefto">
+                    <div class="dick">
+                    <div>
+                        <img class="lefti" src="pics/lefti.png">
+                    </div>
+                    <div>
+                    <p class="viewe">View all 142 dives</p>
+                    </div>
+                    </div>
+                    <div class="twits">
+                    <div>
+                        <img class="lefti" src="pics/stats.png">
+                    </div>
+                    <div>
+                        <p class="viewe">96.8K views</p>
+                    </div>
+                    </div>
+                </div>
+                <div class="reaction">
+                    <div class="lovi">
+                    <div class="emoji-container">
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
+                <div class="emoji-count">560</div>
             </div>
-            <p class="post-content">${post.content}</p>
-            <img class="post-image" src="${post.image}" alt="Post Image">
-            <div class="post-stats">
-                <span>${post.reactions} reactions</span> · 
-                <span>${post.views} views</span>
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
+                <div class="emoji-count">21</div>
+            </div>
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
+                <div class="emoji-count">78</div>
             </div>
         </div>
-    `;
+                    
+                        
+                    <div class="share1">
+                        <div>
+                        <img class="sharo" src="pics/plu.png">
+                        </div> 
+                    </div>
+                    </div>
+                    <div class="wish1">
+                    <img class="twito" src="pics/twito.png">
+                    </div>            
+                </div>
+            </div>
+        `;
+
+        postContainer.innerHTML += postHTML;
+    });
 }
 
-// Function to render the post detail page
-function renderPostDetail(postId) {
+
+
+function showDetail(postId) {
+    const postDetail = document.getElementById("meal");
+    const postContent = document.getElementById("nuba");
+
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-    
-    const user = getUserById(post.userId); // Fetch user details
 
-    const detailContainer = document.querySelector(".meal");
-    const detailHTML = `
-        <div class="post-detail">
-            <div class="post-header">
-                <img class="profile-pic" src="${user.avatar}" alt="${user.username}">
-                <div class="post-user">
-                    <p class="username">${user.username} ${user.verified ? '<img class="verify" src="pics/verifi1.png">' : ''}</p>
-                    <p class="handle">@${user.handle} · ${post.date}</p>
+    const user = users.find(u => u.id === post.userId);
+    if (!user) return;
+
+    postContent.innerHTML = `
+        <div class="cust-name"> 
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="showUserProfile(${user.id})">
+                        <img class="small-photo" src="${user.avatar}">
+                    </a>
                 </div>
-            </div>
-            <p class="post-content">${post.content}</p>
-            <img class="post-image" src="${post.image}" alt="Post Image">
-            <div class="post-stats">
-                <span>${post.reactions} reactions</span> · 
-                <span>${post.views} views</span>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="showUserProfile(${user.id})">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${user.username}</p>
+                                    </div>
+                                    <div>
+                                        <img class="verify" src="pics/verifi1.png">
+                                    </div>
+                                </div>
+                            </a>
+                        </div> 
+                    </div>     
+                    <div class="comp1">
+                        <div class="cll">
+                            <p class="time">${post.date}</p>
+                        </div>
+                    </div>
+                </div> 
             </div>
         </div>
+
+         <div>
+              <p class="foni" onclick="
+                const foniElem = document.querySelector('.foni');
+                
+                if (foniElem.innerHTML === 'Follow') {
+                  foniElem.innerHTML = 'Following';
+                  foniElem.classList.add('follow')
+                } else {
+                  foniElem.innerHTML = 'Follow';
+                  foniElem.classList.remove('follow')
+                }
+              ">Follow</p>
+            </div>
+
+
+            <div class="dots">
+              <img class="dot" src="pics/duta.png">
+              <div class="tool">
+                <p>More</p>
+              </div> 
+            </div>      
+          </div>
+        <div class="tir">
+            <p class="tiri">${post.content}<br></p>
+        </div>
+        <div class="swet">
+            <div class="laptop1">
+                <img class="lapto" src="${post.image}">
+            </div>
+        </div>
+
+        <div class="lefto">
+            <div class="dick">
+             <div>
+              <p class="viewe"><span class="werey">615</span> reactions</p>
+             </div>
+             <div>
+              <p class="viewe"><span class="werey">9</span> echoes</p>
+             </div>
+            </div>
+            <div class="twits">
+              <div>
+                <img class="lefti" src="pics/stats.png">
+              </div>
+              <div>
+                <p class="viewe">96.8K views</p>
+               </div>
+            </div>
+          </div>
+          <div class="reaction">
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+            
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/2.gif">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+              </div>
+            </div>   
+
+            <div class="small-photo1">
+              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
+              <div class="vrea">
+                <img class="luve" src="pics/3.gif">
+              </div>
+            </div>   
+          </div>
     `;
 
-    detailContainer.innerHTML = detailHTML;
     switchPage("meal");
 }
 
-// Function to render the user profile page
-function renderUserProfile(userId) {
-    const user = getUserById(userId);
+
+
+function showUserProfile(userId) {
+    const user = users.find(u => u.id === userId);
     if (!user) return;
 
-    const profileContainer = document.querySelector(".rety");
-
-    const profileHTML = `
-        <img class="frin" src="${user.coverPhoto}" alt="Cover Photo">
-        <div>
-            <img class="kor" src="${user.avatar}" alt="Profile Picture">
-        </div>
-        <div class="klr">
-            <div class="drun">
-                <div>
-                    <p class="spe">${user.username}</p>
-                </div>
-                ${user.verified ? '<div><img class="verify" src="pics/verifi1.png"></div>' : ''}
+    const profileContainer = document.getElementById("profile");
+    const profileIreti = document.getElementById("ireti");
+    
+    profileIreti.innerHTML = `
+         <img class="frin" src="pics/proinfo.jpg">
+            <div>
+              <img class="kor" src="pics/koreangirls.jpg">
             </div>
-            <div class="druu">
+            <div class="klr">
+              <div class="drun">
                 <div>
-                    <p class="rkl">@${user.handle}</p>
+                  <p class="spe">sparklinglee</p>
+                </div>
+                <div>
+                  <img class="verify" src="pics/verifi1.png">
+                </div>
+              </div>
+              <div class="druu">
+                <div>
+                  <p class="rkl">@Sparkme</p>
                 </div>
                 <div class="drum">
-                    <p class="swe">${user.badges}</p>
-                    <img class="kiy" src="pics/kiddo.png">
+                  <p class="swe">4</p>
+                  <img class="kiy" src="pics/kiddo.png">
                 </div>
+              </div>
+              <div class="nin">
+                <p class="rkl"><span class="bld">937</span>following &#183; <span class="bld">18K</span>followers</p>
+              </div>
+              <div class="cha">
+                <p>Chart data, updates and donation for homeless kids through my phenomenal sales - Saprkling Store. Ambassador and GQ MAN OF THE YEAR | Fan Account</p>
+              </div>
+              <div class="man">
+                <div class="vre">
+                  <button class="aasw">Wallet</button>
+                </div>
+                <div class="vre">
+                  <button class="aasw">Edit Profile</button>
+                </div>
+              </div>
             </div>
-            <div class="nin">
-                <p class="rkl"><span class="bld">${user.following}</span> following &#183; 
-                <span class="bld">${user.followers}</span> followers</p>
+            <div class="ewe">
+              <div class="yeb">
+                <img class="dee" src="pics/apps.png">
+              </div>
+              <div class="yeb">
+               <a href="Retail-Desktop-MyAccount-Storefront.html">
+                <img class="dee" src="pics/browser.png">
+               </a>
+
+              </div>
+              <div class="yeb">
+                <img class="dee" src="pics/bren.png">
+              </div>
+
             </div>
-            <div class="cha">
-                <p>${user.bio}</p>
-            </div>
-            <div class="man">
-                <div class="vre"><button class="aasw">Wallet</button></div>
-                <div class="vre"><button class="aasw">Edit Profile</button></div>
-            </div>
-        </div>
     `;
 
-    profileContainer.innerHTML = profileHTML;
-    switchPage("profile"); // Switch to the user profile page
+    switchPage("profile");
+
 }
 
-// Function to open a user profile from a post click
-function openUserProfile(userId) {
-    renderUserProfile(userId);
-}
 
-// Function to open post details from a post click
-function openPostDetail(postId) {
-    renderPostDetail(postId);
-}
 
-// Initial rendering of posts
-function renderAllPosts() {
-    const postContainer = document.querySelector(".food");
-    postContainer.innerHTML = posts.map(renderPost).join(""); // Renders all posts
-}
-
-renderAllPosts(); // Render posts when the page loads
+function goBack() {
+    switchPage("food");
+ 
+    setTimeout (() => {
+     const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+ 
+     if (savedScrollPosition) {
+         window.scrollTo(0, parseInt(savedScrollPosition));
+     }
+    }, 50);
+ }
+ 
+ function switchPage(pageId) {
+     if (pageId === "meal") {
+         sessionStorage.setItem("scrollPosition", window.scrollY);
+     }
+ 
+ 
+    const pages = document.querySelectorAll(".page");
+ 
+     pages.forEach(page => {
+         page.classList.remove("active");
+     });
+ 
+     const newPage = document.getElementById(pageId);
+     newPage.classList.add("active");
+  
+ 
+     if (pageId === "meal") {
+         window.scrollTo(0, 0);
+     }
+ 
+     history.pushState({ page:pageId }, "", `#${pageId}`);
+ }
+ 
+ window.onpopstate = function (event) {
+     if (event.state && event.state.page) {
+         switchPage(event.state.page);
+     } else {
+         switchPage("food");
+     }
+ 
+     if (event.state && event.state.page === "food") {
+         history.replaceState({ page:"food" }, "", "#food");
+         const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+         if (savedScrollPosition) {
+             setTimeout(() => {
+                 window.scrollTo(0, parseInt(savedScrollPosition));
+             }, 0);
+         }
+     }
+ };
+ 
+ document.addEventListener("DOMContentLoaded", function () {
+     history.replaceState({ page:"food" }, "", "#food");
+     switchPage("food");
+ });
+ 
+ 
+ 
+ 
+ 
+ renderHomepage();

@@ -141,6 +141,8 @@ function renderHomepage() {
     });
 }
 
+
+
 function showDetail(postId) {
     const postDetail = document.getElementById("meal");
     const postContent = document.getElementById("nuba");
@@ -152,7 +154,7 @@ function showDetail(postId) {
              <div class="cust-name"> 
             <div class="heading">
               <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="small-photo" src="${post.avatar}"></a>
+                <a class="lino" onclick="showUserProfile('${post.user}', '${post.avatar}')"><img class="small-photo" src="${post.avatar}"></a>
              
               </div>
               <div class="pos">
