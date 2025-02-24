@@ -371,7 +371,7 @@ function goBack() {
  }
  
  function switchPage(pageId) {
-     if (pageId === "meal" || pageId === "profile") {
+     if (pageId === "meal") {
          sessionStorage.setItem("scrollPosition", window.scrollY);
      }
 
@@ -389,13 +389,12 @@ function goBack() {
      const newPage = document.getElementById(pageId);
      newPage.classList.add("active");
 
-
      if (pageId === "food") {
-        history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always replaceState
-    } else {
-        history.pushState({ page: pageId }, "", `#${pageId}`);
+        if (history.state?.page !== "food") {
+            history.pushState({ page: "food" }, "", "#food");
+        }
     }
-  
+    
  
      if (pageId === "meal") {
          window.scrollTo(0, 0);
