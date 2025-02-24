@@ -13,18 +13,12 @@
 }
 .page {
   display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
 }
 .active {
   display: block;
-}
-.transition {
-  opacity: 0;
-  transform: translateY(20px);
-  transition:  opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-.show {
   opacity: 1;
-  transform: translateY(0);
 }
 .edre {
   display: flex;

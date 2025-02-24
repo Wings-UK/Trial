@@ -294,17 +294,11 @@ function switchPage(pageId) {
    const pages = document.querySelectorAll(".page");
 
     pages.forEach(page => {
-        page.classList.remove("active", "show", "transition");
-            page.style.display = "none";
+        page.classList.remove("active");
     });
 
     const newPage = document.getElementById(pageId);
-        newPage.style.display = "block";
-        newPage.classList.add("active", "transition");
-
-        setTimeout(() => {
-            newPage.classList.add("show");
-        }, 10);
+    newPage.classList.add("active");
 }
 
 
