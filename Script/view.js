@@ -371,46 +371,31 @@ function goBack() {
  }
  
  function switchPage(pageId) {
-     if (pageId === "meal") {
-         sessionStorage.setItem("scrollPosition", window.scrollY);
-     }
+    sessionStorage.setItem("scrollPosition", window.scrollY);
 
-     if (pageId === "profile") {
-        sessionStorage.setItem("scrollPosition", window.scrollY);
-    }
- 
- 
     const pages = document.querySelectorAll(".page");
- 
-     pages.forEach(page => {
-         page.classList.remove("active");
-     });
- 
-     const newPage = document.getElementById(pageId);
-     newPage.classList.add("active");
+    pages.forEach(page => page.classList.remove("active"));
 
-  
- 
-     if (pageId === "meal") {
-         window.scrollTo(0, 0);
-     }
+    const newPage = document.getElementById(pageId);
+    newPage.classList.add("active");
 
-     if (pageId === "profile") {
-        window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+
+    // Add history entry (only push if not the same as current state)
+    if (!history.state || history.state.page !== pageId) {
+        history.pushState({ page: pageId }, "", `#${pageId}`);
     }
- 
-    history.pushState({ page:pageId }, "", `#${pageId}`);
-
- }
+}
  
  window.onpopstate = function (event) {
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
         switchPage("food");
-        history.replaceState({ page: "food" }, "", "#food"); // Ensures homepage is in history
+        history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always in history
     }
 
+    // Restore scroll position
     const savedScrollPosition = sessionStorage.getItem("scrollPosition");
     if (savedScrollPosition) {
         setTimeout(() => {
