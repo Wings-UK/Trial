@@ -385,7 +385,14 @@ function goBack() {
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    window.scrollTo(0, 0);
+    if (pageId === "meal") {
+      window.scrollTo(0, 0);
+     }
+
+     if (pageId === "profile") {
+      window.scrollTo(0, 0);
+     }
+    
 
     // Add history entry (only push if not the same as current state)
     if (!history.state || history.state.page !== pageId) {
