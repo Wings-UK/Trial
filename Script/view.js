@@ -371,7 +371,13 @@ function goBack() {
  }
  
  function switchPage(pageId) {
+   if (pageId === "meal") {
     sessionStorage.setItem("scrollPosition", window.scrollY);
+   }
+
+   if (pageId === "food") {
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+   }
 
     const pages = document.querySelectorAll(".page");
     pages.forEach(page => page.classList.remove("active"));
