@@ -422,6 +422,11 @@ function goBack() {
              }, 0);
          }
      }
+     if (pageId === "meal") {
+
+        switchPage("food");
+
+    }
 
  };
  
