@@ -371,9 +371,7 @@ function goBack() {
  }
  
  function switchPage(pageId) {
-    if (pageId !== "food") {
-        sessionStorage.setItem("scrollPosition", window.scrollY);
-    }
+    sessionStorage.setItem("scrollPosition", window.scrollY);
 
     const pages = document.querySelectorAll(".page");
     pages.forEach(page => page.classList.remove("active"));
@@ -381,18 +379,11 @@ function goBack() {
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    history.pushState({ page: pageId }, "", `#${pageId}`);
+    window.scrollTo(0, 0);
 
-    if (pageId === "food") {
-        // Restore scroll position when going back to homepage
-        setTimeout(() => {
-            const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-            if (savedScrollPosition) {
-                window.scrollTo(0, parseInt(savedScrollPosition));
-            }
-        }, 50);
-    } else {
-        window.scrollTo(0, 0); // Scroll to top for other pages
+    // Add history entry (only push if not the same as current state)
+    if (!history.state || history.state.page !== pageId) {
+        history.pushState({ page: pageId }, "", `#${pageId}`);
     }
 }
  
