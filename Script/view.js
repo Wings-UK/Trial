@@ -399,11 +399,8 @@ function goBack() {
         window.scrollTo(0, 0);
     }
  
-     if (pageId === "food" && history.state?.page !== "food") {
-    history.pushState({ page: "food" }, "", "#food");
-} else {
     history.pushState({ page: pageId }, "", `#${pageId}`);
-}
+
  }
  
  window.onpopstate = function (event) {
@@ -422,11 +419,7 @@ function goBack() {
              }, 0);
          }
      }
-     if (pageId === "meal") {
-
-        switchPage("food");
-
-    }
+     
 
  };
  
