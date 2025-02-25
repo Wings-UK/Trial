@@ -404,23 +404,20 @@ function goBack() {
  }
  
  window.onpopstate = function (event) {
-     if (event.state && event.state.page) {
-         switchPage(event.state.page);
-     } else {
-         switchPage("food");
-     }
- 
-   
-         const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-         if (savedScrollPosition) {
-             setTimeout(() => {
-                 window.scrollTo(0, parseInt(savedScrollPosition));
-             }, 0);
-         }
-     
-     
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+    } else {
+        switchPage("food");
+        history.replaceState({ page: "food" }, "", "#food"); // Ensures homepage is in history
+    }
 
- };
+    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    if (savedScrollPosition) {
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+        }, 0);
+    }
+};
  
  document.addEventListener("DOMContentLoaded", function () {
   if (!history.state) {
