@@ -399,7 +399,7 @@ function goBack() {
         window.scrollTo(0, 0);
     }
  
-    history.pushState({ page: pageId }, "", `#${pageId}`);
+    history.pushState({ page:pageId }, "", `#${pageId}`);
 
  }
  
@@ -410,21 +410,22 @@ function goBack() {
          switchPage("food");
      }
  
-     if (event.state && event.state.page === "food") {
-         history.replaceState({ page:"food" }, "", "#food");
+   
          const savedScrollPosition = sessionStorage.getItem("scrollPosition");
          if (savedScrollPosition) {
              setTimeout(() => {
                  window.scrollTo(0, parseInt(savedScrollPosition));
              }, 0);
          }
-     }
+     
      
 
  };
  
  document.addEventListener("DOMContentLoaded", function () {
+  if (!history.state) {
      history.replaceState({ page:"food" }, "", "#food");
+  }
      switchPage("food");
  });
  
