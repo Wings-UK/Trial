@@ -371,7 +371,7 @@ function goBack() {
  }
  
  function switchPage(pageId) {
-   if (pageId !== "food") {
+   if (pageId !== "food" && pageId !== "profile") {
     sessionStorage.setItem("scrollPosition", window.scrollY);
    }
 
