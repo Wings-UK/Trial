@@ -475,7 +475,9 @@ function renderUserPosts(userId) {
     userPosts.forEach((post, index) => {
         const postHTML = `
             <div class="masonry" onclick="showDetail(${post.id})">
+                  ${post.image ? `
                   <img src="${post.image}">
+                  ` : ''}
                   <div class="contentma">
                     <p>${shortenText(post.content, 40)}</p>
                     <div class="bioi">
