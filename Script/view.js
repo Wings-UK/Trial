@@ -316,12 +316,13 @@ function showDetail(postId) {
         <div class="tir">
             <p class="tiri">${post.content}<br></p>
         </div>
+        ${post.image ? `
         <div class="swet">
             <div class="laptop1">
                 <img class="lapto" src="${post.image}">
             </div>
         </div>
-
+        ` : ''}
         <div class="lefto">
             <div class="dick">
              <div>
