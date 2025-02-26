@@ -551,7 +551,7 @@ function shortenText(text, limit) {
         shortened = shortened.slice(0, lastSpace); // Cut at last whole word
     }
 
-    return shortened + "..."; // Add ellipsis
+    return shortened + `... learn more`; // Add ellipsis
 }
  
  window.onpopstate = function (event) {
