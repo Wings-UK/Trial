@@ -97,7 +97,7 @@ function renderHomepage() {
                     <img class="laptop" src="${post.image}" loading="lazy">
                 </div>
                 <div class="tir">
-                    <p class="tired">${shortenText(post.content, 150)}<br>
+                    <p class="tired">${shortenText(post.content, 200)}<br>
                     <a class="home-click reer see-more" onclick="showDetail(${post.id})">see more</a></p>
                 </div>
                 
