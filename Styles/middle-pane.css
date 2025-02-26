@@ -529,6 +529,7 @@
   display: flex;
   width: 100%;
   margin-top: 20px;
+  margin-bottom: 10px;
   border-top-style: solid;
   border-top-width: 1px;
   border-top-color: rgb(234, 237, 240);
