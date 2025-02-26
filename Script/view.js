@@ -381,9 +381,9 @@ function renderUserPosts(userId) {
     userPosts.forEach((post, index) => {
         const postHTML = `
             <div class="masonry">
-                  <img src="pics/10.jpg">
+                  <img src="${post.image}">
                   <div class="contentma">
-                    <p>If I find out that my husband did a...</p>
+                    <p>${shortenText(post.content, 50)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
