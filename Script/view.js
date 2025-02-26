@@ -369,7 +369,31 @@ function showUserProfile(userId) {
     renderUserPosts(userId);
 
 }
+function renderUserPosts(userId) {
+    const userPosts = posts.filter(post => post.userId === userId);
+    const leftColumn = document.querySelector(".left-column");
+    const rightColumn = document.querySelector(".right-column");
 
+    if (!leftColumn || !rightColumn) return;
+
+    leftColumn.innerHTML = "";  // Clear previous posts
+    rightColumn.innerHTML = "";
+
+    userPosts.forEach((post, index) => {
+        const postHTML = `
+            <div class="post-item" onclick="showDetail(${post.id})">
+                <img src="${post.image}" class="post-image">
+                <p>${post.content}</p>
+            </div>
+        `;
+
+        if (index % 2 === 0) {
+            leftColumn.innerHTML += postHTML;
+        } else {
+            rightColumn.innerHTML += postHTML;
+        }
+    });
+}
 
 
 function goBack() {
