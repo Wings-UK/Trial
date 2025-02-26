@@ -185,9 +185,11 @@ function renderHomepage() {
                         </div> 
                     </div>      
                 </div>
+                ${post.image ? `
                 <div class="laptop1">
                     <img class="laptop" src="${post.image}" loading="lazy">
                 </div>
+                ` : ''}
                 <div class="tir" onclick="showDetail(${post.id})">
                     <p class="tired">${shortenText(post.content, 150)}<br>
                 </div>
