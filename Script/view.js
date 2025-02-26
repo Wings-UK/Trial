@@ -366,6 +366,7 @@ function showUserProfile(userId) {
     `;
     
     switchPage("profile");
+    renderUserPosts(userId);
 
 }
 
