@@ -97,7 +97,7 @@ function renderHomepage() {
                     <img class="laptop" src="${post.image}" loading="lazy">
                 </div>
                 <div class="tir">
-                    <p class="tired">${post.content}<br>
+                    <p class="tired">${shortenText(post.content, 100}<br>
                     <a class="home-click reer see-more" onclick="showDetail(${post.id})">see more</a></p>
                 </div>
                 
@@ -406,6 +406,19 @@ function goBack() {
      }
     }, 50);
  }
+ 
+ function shortenText(text, limit) {
+    if (text.length <= limit) return text; // No need to shorten
+
+    let shortened = text.slice(0, limit); // Cut at the limit
+    let lastSpace = shortened.lastIndexOf(" "); // Find last space
+
+    if (lastSpace > 0) {
+        shortened = shortened.slice(0, lastSpace); // Cut at last whole word
+    }
+
+    return shortened + "..."; // Add ellipsis
+}
  
  function switchPage(pageId) {
    if (pageId !== "food" && pageId !== "profile") {
