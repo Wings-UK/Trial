@@ -435,6 +435,19 @@ function goBack() {
       window.scrollTo(0, 0);
     }
 }
+
+function shortenText(text, limit) {
+    if (text.length <= limit) return text; // No need to shorten
+
+    let shortened = text.slice(0, limit); // Cut at the limit
+    let lastSpace = shortened.lastIndexOf(" "); // Find last space
+
+    if (lastSpace > 0) {
+        shortened = shortened.slice(0, lastSpace); // Cut at last whole word
+    }
+
+    return shortened + "..."; // Add ellipsis
+}
  
  window.onpopstate = function (event) {
     if (event.state && event.state.page) {
