@@ -143,6 +143,7 @@ function renderHomepage() {
         const user = users.find(u => u.id === post.userId); // Find user by ID
 
         if (!user) return; // Skip if no user found (shouldn't happen)
+        const textLimit = post.image ? 150 : 300;
 
         const postHTML = `
             <div class="poster">
@@ -191,7 +192,7 @@ function renderHomepage() {
                 </div>
                 ` : ''}
                 <div class="tir" onclick="showDetail(${post.id})">
-                    <p class="tired">${shortenText(post.content, 150)}<br>
+                    <p class="tired">${shortenText(post.content, textLimit)}<br>
                 </div>
                 
                 <div class="lefto">
