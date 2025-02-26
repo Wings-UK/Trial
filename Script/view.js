@@ -376,8 +376,7 @@ function renderUserPosts(userId) {
 
     if (!leftColumn || !rightColumn) return;
 
-    leftColumn.innerHTML = "";  // Clear previous posts
-    rightColumn.innerHTML = "";
+  
 
     userPosts.forEach((post, index) => {
         const postHTML = `
