@@ -364,7 +364,7 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
-    renderUserPosts(userId);
+    
     switchPage("profile");
 
 }
