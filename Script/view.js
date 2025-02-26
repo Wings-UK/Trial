@@ -478,8 +478,8 @@ function renderUserPosts(userId) {
                     <p>${shortenText(post.content, 40)}</p>
                     <div class="bioi">
                       <div class="fred">
-                        <img class="brekca" src="${user.avatar}">
-                        <p class="goo">${user.username}</p>
+                        <img class="brekca" src="pics/chat-pic.jpg">
+                        <p class="goo">@babygirl</p>
                       </div>
                       <div class="fred">
                         <img class="pen" src="pics/lovv.png">
