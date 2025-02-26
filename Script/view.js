@@ -328,10 +328,10 @@ function showUserProfile(userId) {
               </div>
               <div class="man">
                 <div class="vre">
-                  <button class="aasw">Wallet</button>
+                  <button class="aasw">Follow</button>
                 </div>
                 <div class="vre">
-                  <button class="aasw">Edit Profile</button>
+                  <button class="aasw">1 : 1</button>
                 </div>
               </div>
             </div>
