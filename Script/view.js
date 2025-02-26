@@ -20,6 +20,18 @@ const users = [
       followers: 896,
       following: 512,
       location: "New York, NY"
+    },
+    {
+
+      id: 3,
+      username: "@nomsa",
+      name: "Lena Marie",
+      cover: "pics/c.jpg",
+      avatar: "pics/b.jpg",
+      bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
+      followers: 63,
+      following: 556,
+      location: "Madras, OR"
     }
 ];
 
@@ -35,11 +47,92 @@ const posts = [
     {
       id: 2,
       userId: 2,  // Refers to user with id 2 (@lena)
+      timestamp: "6 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/a.jpg",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 3,
+      userId: 3,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "So as a prank, I started texting my best friend on one of those text numbers pretending to be this dube she was in love with but he did her dirty. And this girl is sooo excited that now I feel guilty😭 should I tell or just stop texting and pretend it never happened please help.",
+    },
+    {
+      id: 4,
+      userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/pico7.webp",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
-    }
+    },
+    {
+      id: 5,
+      userId: 2,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 6,
+      userId: 3,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 7,
+      userId: 1,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 8,
+      userId: 2,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 9,
+      userId: 3,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 10,
+      userId: 1,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 11,
+      userId: 2,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+    {
+      id: 12,
+      userId: 3,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
+      date: "Feb 28, 2025 3:56 PM",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+    },
+  
 ];
 
 
