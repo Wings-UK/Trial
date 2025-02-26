@@ -468,6 +468,7 @@ function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
     const leftColumn = document.querySelector(".left-column");
     const rightColumn = document.querySelector(".right-column");
+    const textLimit = post.image ? 40 : 150;
 
     if (!leftColumn || !rightColumn) return;
 
@@ -480,7 +481,7 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   <div class="contentma">
-                    <p>${shortenText(post.content, 40)}</p>
+                    <p>${shortenText(post.content, textLimit)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
