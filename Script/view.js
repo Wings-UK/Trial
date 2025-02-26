@@ -41,7 +41,6 @@ const posts = [
       userId: 1,  // Refers to user with id 1 (@reddcinema)
       timestamp: "11 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: 
       content: "Right y'all, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
     },
     {
