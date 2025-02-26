@@ -383,7 +383,7 @@ function renderUserPosts(userId) {
             <div class="masonry">
                   <img src="${post.image}">
                   <div class="contentma">
-                    <p>${shortenText(post.content, 50)}</p>
+                    <p>${shortenText(post.content, 40)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
