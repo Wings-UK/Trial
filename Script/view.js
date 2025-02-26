@@ -380,10 +380,22 @@ function renderUserPosts(userId) {
 
     userPosts.forEach((post, index) => {
         const postHTML = `
-            <div class="post-item" onclick="showDetail(${post.id})">
-                <img src="${post.image}" class="post-image">
-                <p>${post.content}</p>
-            </div>
+            <div class="masonry">
+                  <img src="pics/10.jpg">
+                  <div class="contentma">
+                    <p>If I find out that my husband did a...</p>
+                    <div class="bioi">
+                      <div class="fred">
+                        <img class="brekca" src="pics/chat-pic.jpg">
+                        <p class="goo">@babygirl</p>
+                      </div>
+                      <div class="fred">
+                        <img class="pen" src="pics/lovv.png">
+                        <p class="goo">2.9K</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
         `;
 
         if (index % 2 === 0) {
