@@ -26,7 +26,7 @@ const users = [
       id: 3,
       username: "@nomsa",
       name: "Lena Marie",
-      cover: "pics/c.jpg",
+      cover: "pics/d.jpg",
       avatar: "pics/b.jpg",
       bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
       followers: 63,
@@ -39,7 +39,7 @@ const posts = [
     {
       id: 1,
       userId: 1,  // Refers to user with id 1 (@reddcinema)
-      timestamp: "3 mins ago",
+      timestamp: "11 mins ago",
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/20.jpg",
       content: "Right y'all, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
@@ -55,58 +55,58 @@ const posts = [
     {
       id: 3,
       userId: 3,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "4 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
+      image: "pics/e.jpg",
       content: "So as a prank, I started texting my best friend on one of those text numbers pretending to be this dube she was in love with but he did her dirty. And this girl is sooo excited that now I feel guilty😭 should I tell or just stop texting and pretend it never happened please help.",
     },
     {
       id: 4,
       userId: 1,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "an hour ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/f.jpg",
+      content: "do you guys think that how a child turns out is 100% the parents fault or do you think that no matter how good someone may parent their child they may still turn out bad because that's just who they are?",
     },
     {
       id: 5,
       userId: 2,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "just now",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/g.jpg",
+      content: "I get back to my hotel and realize housekeeping cleaned room and stole my damn cocaine and I just called down to the front desk and asked for it... the lady was like your what? “my bag of cocaine sweetie”... they got me fucked up if they think I ain’t gonna ask for my shit.",
     },
     {
       id: 6,
       userId: 3,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "4 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/h.jpg",
+      content: "I had my daughter today at 10:29am it was very long and emotional labor but it was worth every second she’s perfect 💞 her registry is still available please contribute if you can me and her both have a long road ahead of us. Thank you everyone who did what they could💕💕",
     },
     {
       id: 7,
       userId: 1,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "2 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/i.jpg",
+      content: "So yall I been dating this girl. (A stud) and she went back to the previous girl she was dating & kinda like tryna have us both. She been with her these past few days. & im tryna see the exact words to say to get her over here so I can sneak my key back from her?😩",
     },
     {
       id: 8,
       userId: 2,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "9 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/j.jpg",
+      content: "why do mothers treat they daughters like they the scum? me & my momma can’t seem to get along at all why i get off a 10 FUCKING HOUR SHIFT OVERNIGHT TO BE EXACT & my “ ROOM” that i pay for monthly which i share w a fucking 12 years old and all my shit is scatter? bro im pissed",
     },
     {
       id: 9,
       userId: 3,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      timestamp: "3 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/k.jpg",
+      content: "I don't think many people talk about the beauty of ageing, especially with grey hair. I want to age beautifully old with grey hair. I feel like some ppl have such a big fear of ageing to the point where they will try their hardest to look young which is kinda sad",
     },
     {
       id: 10,
