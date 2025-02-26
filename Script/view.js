@@ -350,6 +350,19 @@ function showUserProfile(userId) {
               </div>
 
             </div>
+            
+            <div class="mansonro">
+            <div class="masonri">
+              <!-- Left Column -->
+              <div class="column left-column">
+            
+              </div>
+  
+              <div class="column right-column">
+                
+              </div>
+            </div>
+          </div>
     `;
 
     switchPage("profile");
