@@ -259,6 +259,11 @@ function showDetail(postId) {
 
     const user = users.find(u => u.id === post.userId);
     if (!user) return;
+    
+    const commentTextarea = document.querySelector('.comment-textarea');
+    if (commentTextarea) {
+        commentTextarea.placeholder = `Reply to @${user.username}...`;
+    }
 
     postContent.innerHTML = `
         <div class="cust-name"> 
