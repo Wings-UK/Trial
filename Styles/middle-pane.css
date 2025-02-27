@@ -3,7 +3,10 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+.partner {
+  font-size: 16px;
+  line-height: 22px;
+}
 .post-container {
   width: 100%;
   max-width: 600px;
