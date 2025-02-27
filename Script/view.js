@@ -482,7 +482,7 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   <div class="contentma">
-                    <p>${shortenText(post.content, textLimit)}</p>
+                    <p class="partner">${shortenText(post.content, textLimit)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
