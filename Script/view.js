@@ -137,7 +137,7 @@ const posts = [
 
 
 
-function renderHomepage() {
+/**function renderHomepage() {
     const postContainer = document.getElementById("flyer");
 
     posts.forEach(post => {
@@ -354,7 +354,7 @@ function renderHomepage() {
     initializeVideoPlayers();
 }
 
-
+**/
 
 function showDetail(postId) {
     const postDetail = document.getElementById("meal");
