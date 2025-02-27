@@ -201,18 +201,7 @@
   max-height: calc(100vh - 60px);
 }
 
-.commont {
-  display: flex;
-  padding: 5px 15px;
-  position: fixed;
-  align-items: center;
-  color: white;
-  bottom: 0px;
-  height: 60px;
-  width: 100%;
-  background-color: black;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.5);
-}/*
+/*
 @media screen and (min-height: 719px) {
   .fullscreen-video video {
     height: 80vh;
