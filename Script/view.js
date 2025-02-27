@@ -289,7 +289,7 @@ function renderHomepage() {
                             </div>
                         </div>
                         <div class="tirr bordu">
-                            <p class="tired">${shortenText(post.content, 50, true)}</p>
+                            <p class="tired">${shortenText(post.content, 40, true)}</p>
                         </div>
                         
                         <div class="progress-bar">
