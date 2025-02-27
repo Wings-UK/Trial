@@ -299,9 +299,9 @@ function renderHomepage() {
                     </div>
                     <div class="yese"></div>
                     
-                    <div class="commont">
-                        <input class="haja" placeholder="Say something...">
-                    </div>
+                  
+                
+            
                 </div>
                 ` : ''}
                 
