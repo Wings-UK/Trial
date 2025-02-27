@@ -476,13 +476,14 @@ function renderUserPosts(userId) {
   
 
     userPosts.forEach((post, index) => {
+      const textLimit = post.image ? 40 : 150;
         const postHTML = `
             <div class="masonry" onclick="showDetail(${post.id})">
                   ${post.image ? `
                   <img src="${post.image}">
                   ` : ''}
                   <div class="contentma">
-                    <p>${shortenText(post.content, 40)}</p>
+                    <p>${shortenText(post.content, textLimit)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
