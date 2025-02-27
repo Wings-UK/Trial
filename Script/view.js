@@ -566,7 +566,32 @@ function formatTime(seconds) {
   return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
 }
 
-
+// Function to add to the renderHomepage function
+function renderPostWithNewVideoPlayer(post, user) {
+  // Create video thumbnail section
+  let videoHTML = '';
+  
+  if (post.video) {
+    videoHTML = `
+      <div class="video-container laptop1" data-post-id="${post.id}">
+        <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
+          <source src="${post.video}" type="video/mp4">
+        </video>
+        <div class="video-overlay">
+          <div class="play-button">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="24" fill="rgba(0, 0, 0, 0.5)"/>
+              <path d="M32 24L20 32V16L32 24Z" fill="white"/>
+            </svg>
+          </div>
+          <div class="duration-badge">0:00</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  return videoHTML;
+}
 
 
 function showDetail(postId) {
