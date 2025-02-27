@@ -898,6 +898,9 @@ function shortenText(text, limit, showSeeMore = true) {
  
  
  
- 
+ // Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    renderHomepage();
+});
  
  renderHomepage();
