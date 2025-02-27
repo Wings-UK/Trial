@@ -245,9 +245,9 @@ function renderHomepage() {
                         <div class="cust-name intro"> 
                             <div class="heading">
                                 <div class="small-photo1">
-                                    <a class="lino" onclick="showUserProfile(${user.id})">
-                                        <img class="fuck" src="${user.avatar}">
-                                    </a>
+                                
+                                    <img class="fuck" src="${user.avatar}" onclick="showUserProfile(${user.id})">
+                                    
                                 </div>
                                 <div class="pos">
                                     <div>
@@ -289,7 +289,7 @@ function renderHomepage() {
                             </div>
                         </div>
                         <div class="tirr bordu">
-                            <p class="tired">${shortenText(post.content, 50, true)} <span class="brite">More</span></p>
+                            <p class="tired">${shortenText(post.content, 50, true)}</p>
                         </div>
                         
                         <div class="progress-bar">
