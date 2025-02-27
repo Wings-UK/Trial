@@ -237,7 +237,7 @@ function renderPostWithNewVideoPlayer(post, user) {
 // Modified renderHomepage function
 function renderHomepage() {
   const postContainer = document.getElementById("flyer");
-  postContainer.innerHTML = ''; // Clear existing content
+  
   
   // Create video modal if it doesn't exist
   if (!document.querySelector('.video-modal')) {
