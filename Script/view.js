@@ -40,7 +40,6 @@ const posts = [
       id: 1,
       userId: 1,  // Refers to user with id 1 (@reddcinema)
       timestamp: "11 mins ago",
-      video: "pics/uprise.mp4"
       date: "Feb 28, 2025 3:56 PM",
       content: "Right y'all, I’ve been dating a 36 year old for almost 6 months. I turn 20 in 5 days. How do I tell my parents about it? Have I mentioned he lives 5 states away? 💀💀",
     },
@@ -144,11 +143,7 @@ function renderHomepage() {
         const user = users.find(u => u.id === post.userId); // Find user by ID
 
         if (!user) return; // Skip if no user found (shouldn't happen)
-        const textLimit = (post.image || post.video) ? 150 : 300;
-
-        // Determine if the post has a video
-        const hasVideo = post.video ? true : false;
-        const hasImage = post.image ? true : false;
+        const textLimit = post.image ? 150 : 300;
 
         const postHTML = `
             <div class="poster">
@@ -191,167 +186,59 @@ function renderHomepage() {
                         </div> 
                     </div>      
                 </div>
-                
-                ${hasImage ? `
+                ${post.image ? `
                 <div class="laptop1">
                     <img class="laptop" src="${post.image}" loading="lazy">
                 </div>
                 ` : ''}
-                
-                ${hasVideo ? `
-                <div class="video-container">
-                    <div class="video-container laptop1">
-                        <video class="video-player laptop" preload="metadata" poster="${post.videoPoster || ''}">
-                            <source src="${post.video}" type="video/mp4">
-                        </video>
-                        <div class="play-icon"></div>
-                        <div class="duration">0:00</div>
-                    </div>
-                </div>
-
-                <div class="fullscreen-video">
-                    <img class="back-button" src="pics/backa.png">
-                    <video class="fullscreen-player">
-                        <source src="${post.video}" type="video/mp4">
-                    </video>
-                    
-                    <div class="custom-controls">
-                        <div class="tiktok">
-                            <div class="gretu">
-                                <img class="tuk" src="pics/lovv.png">
-                                <div>
-                                    <p class="icun">${post.likes || 358}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/chat.png">
-                                <div>
-                                    <p class="icun">${post.comments || 36}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/repost.png">
-                                <div>
-                                    <p class="icun">${post.reposts || 0}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/naira.png">
-                                <div>
-                                    <p class="icun">${post.donations || 8}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="cust-name intro"> 
-                            <div class="heading">
-                                <div class="small-photo1">
-                                    <a class="lino" onclick="showUserProfile(${user.id})">
-                                        <img class="fuck" src="${user.avatar}">
-                                    </a>
-                                </div>
-                                <div class="pos">
-                                    <div>
-                                        <div class="link-wrapper">
-                                            <a class="home-click" onclick="showUserProfile(${user.id})">
-                                                <div class="post1">
-                                                    <div class="jerr">
-                                                        <p class="jerry bigg">${user.username}</p>
-                                                    </div>
-                                                    <div>
-                                                        <img class="verify" src="pics/verifi1.png">
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div> 
-                                    </div>     
-                                    <div class="comp1">
-                                        <div class="cll">
-                                            <p class="brite">${post.timestamp}</p>
-                                            <div class="tool">
-                                                <p>7.23pm &#183; Sept 23, 2024 </p>
-                                            </div> 
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                            <div class="marhun">
-                                <p class="foni" onclick="
-                                    const foniElem = document.querySelector('.foni');
-                                    
-                                    if (foniElem.innerHTML === 'Follow') {
-                                        foniElem.innerHTML = 'Following';
-                                        foniElem.classList.add('follow')
-                                    } else {
-                                        foniElem.innerHTML = 'Follow';
-                                        foniElem.classList.remove('follow')
-                                    }
-                                ">Follow</p>
-                            </div>
-                        </div>
-                        <div class="tirr bordu">
-                            <p class="tired">${shortenText(post.content, 50, true)} <span class="brite">More</span></p>
-                        </div>
-                        
-                        <div class="progress-bar">
-                            <div class="progress"></div>
-                        </div>
-                        <div class="time-display">0:00 / 0:00</div>
-                    </div>
-                    <div class="yese"></div>
-                    
-                    <div class="commont">
-                        <input class="haja" placeholder="Say something...">
-                    </div>
-                </div>
-                ` : ''}
-                
                 <div class="tir" onclick="showDetail(${post.id})">
-                    <p class="tired">${shortenText(post.content, textLimit, true)}</p>
+                    <p class="tired">${shortenText(post.content, textLimit, true)}<br>
                 </div>
                 
                 <div class="lefto">
                     <div class="dick">
-                        <div>
-                            <img class="lefti" src="pics/lefti.png">
-                        </div>
-                        <div>
-                            <p class="viewe">View all ${post.diveCount || 142} dives</p>
-                        </div>
+                    <div>
+                        <img class="lefti" src="pics/lefti.png">
+                    </div>
+                    <div>
+                    <p class="viewe">View all 142 dives</p>
+                    </div>
                     </div>
                     <div class="twits">
-                        <div>
-                            <img class="lefti" src="pics/stats.png">
-                        </div>
-                        <div>
-                            <p class="viewe">${post.views || '96.8K'} views</p>
-                        </div>
+                    <div>
+                        <img class="lefti" src="pics/stats.png">
+                    </div>
+                    <div>
+                        <p class="viewe">96.8K views</p>
+                    </div>
                     </div>
                 </div>
                 <div class="reaction">
                     <div class="lovi">
-                        <div class="emoji-container">
-                            <div class="emoji-wrapper" data-count="0">
-                                <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
-                                <div class="emoji-count">${post.likeCount || 560}</div>
-                            </div>
-                            <div class="emoji-wrapper" data-count="0">
-                                <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
-                                <div class="emoji-count">${post.loveCount || 21}</div>
-                            </div>
-                            <div class="emoji-wrapper" data-count="0">
-                                <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
-                                <div class="emoji-count">${post.angryCount || 78}</div>
-                            </div>
-                        </div>
+                    <div class="emoji-container">
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
+                <div class="emoji-count">560</div>
+            </div>
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
+                <div class="emoji-count">21</div>
+            </div>
+            <div class="emoji-wrapper" data-count="0">
+                <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
+                <div class="emoji-count">78</div>
+            </div>
+        </div>
+                    
                         
-                        <div class="share1">
-                            <div>
-                                <img class="sharo" src="pics/plu.png">
-                            </div> 
-                        </div>
+                    <div class="share1">
+                        <div>
+                        <img class="sharo" src="pics/plu.png">
+                        </div> 
+                    </div>
                     </div>
                     <div class="wish1">
-                        <img class="twito" src="pics/twito.png">
+                    <img class="twito" src="pics/twito.png">
                     </div>            
                 </div>
             </div>
@@ -359,200 +246,6 @@ function renderHomepage() {
 
         postContainer.innerHTML += postHTML;
     });
-
-    // Initialize video functionality after rendering posts
-    initializeVideoPlayers();
-}
-
-// Function to initialize all video players on the page
-function initializeVideoPlayers() {
-    const videoContainers = document.querySelectorAll('.video-container');
-    const fullscreenContainers = document.querySelectorAll('.fullscreen-video');
-    const backButtons = document.querySelectorAll('.back-button');
-    const videos = document.querySelectorAll('.video-player');
-    const fullscreenVideos = document.querySelectorAll('.fullscreen-player');
-    const progressBars = document.querySelectorAll('.progress-bar');
-    const progresses = document.querySelectorAll('.progress');
-    const timeDisplays = document.querySelectorAll('.time-display');
-    const durationDisplays = document.querySelectorAll('.duration');
-    const customControlsList = document.querySelectorAll('.custom-controls');
-
-    // Loop through each video element and set up its functionality
-    videos.forEach((video, index) => {
-        const fullscreenContainer = fullscreenContainers[index];
-        const backButton = backButtons[index];
-        const fullscreenVideo = fullscreenVideos[index];
-        const progressBar = progressBars[index];
-        const progress = progresses[index];
-        const timeDisplay = timeDisplays[index];
-        const durationDisplay = durationDisplays[index];
-        const customControls = customControlsList[index];
-        const videoContainer = videoContainers[index];
-        
-        let isFullscreen = false;
-        let lastTap = 0;
-        let seekAmount = 10; // seconds to seek on double tap
-
-        // Format time in MM:SS
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            seconds = Math.floor(seconds % 60);
-            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        // Set video thumbnail to specific time
-        video.addEventListener('loadedmetadata', function() {
-            // Set thumbnail to beginning of video
-            video.currentTime = video.duration * 0;
-            // Update duration display
-            durationDisplay.textContent = formatTime(video.duration);
-        });
-
-        // Prevent thumbnail from playing
-        video.addEventListener('timeupdate', function() {
-            if (!video.paused) {
-                video.pause();
-            }
-        });
-
-        // Sync both videos
-        function syncVideos() {
-            fullscreenVideo.currentTime = video.currentTime;
-        }
-
-        // Video container click handler
-        videoContainer.addEventListener('click', function() {
-            syncVideos();
-            fullscreenContainer.style.display = 'block';
-            backButton.style.display = 'block';
-            customControls.style.display = 'block';
-            fullscreenVideo.play();
-            isFullscreen = true;
-            
-            // Add state to browser history
-            history.pushState({ page: 'fullscreen', videoIndex: index }, '', '');
-        });
-
-        // Double tap detection and seeking
-        fullscreenContainer.addEventListener('touchstart', function(e) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            const screenWidth = window.innerWidth;
-            const touchX = e.touches[0].clientX;
-
-            if (tapLength < 300 && tapLength > 0) {
-                // Double tap detected
-                if (touchX < screenWidth / 2) {
-                    // Left side - rewind
-                    fullscreenVideo.currentTime = Math.max(0, fullscreenVideo.currentTime - seekAmount);
-                } else {
-                    // Right side - forward
-                    fullscreenVideo.currentTime = Math.min(fullscreenVideo.duration, fullscreenVideo.currentTime + seekAmount);
-                }
-                e.preventDefault(); // Prevent zoom
-            }
-            lastTap = currentTime;
-        });
-
-        // Back button handler
-        backButton.addEventListener('click', function() {
-            exitFullscreenMode();
-        });
-
-        // Update progress bar and time display
-        fullscreenVideo.addEventListener('timeupdate', function() {
-            const percentage = (fullscreenVideo.currentTime / fullscreenVideo.duration) * 100;
-            progress.style.width = percentage + '%';
-            timeDisplay.textContent = `${formatTime(fullscreenVideo.currentTime)} / ${formatTime(fullscreenVideo.duration)}`;
-        });
-        
-        function exitFullscreenMode() {
-            fullscreenContainer.style.display = 'none';
-            backButton.style.display = 'none';
-            customControls.style.display = 'none';
-            fullscreenVideo.pause();
-            video.currentTime = fullscreenVideo.currentTime;
-            isFullscreen = false;
-            
-            if (document.exitFullscreen) {
-                document.exitFullscreen().catch(err => console.log(err));
-            }
-        }
-
-        // Handle back button in browser
-        window.addEventListener('popstate', function(event) {
-            if (isFullscreen) {
-                exitFullscreenMode();
-            }
-        });
-
-        // Progress bar click handler
-        progressBar.addEventListener('click', function(e) {
-            const rect = progressBar.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / progressBar.offsetWidth;
-            fullscreenVideo.currentTime = pos * fullscreenVideo.duration;
-        });
-
-        // Show/hide controls on tap
-        fullscreenContainer.addEventListener('click', function(e) {
-            if (e.target === fullscreenContainer || e.target === fullscreenVideo) {
-                customControls.style.display = 
-                    customControls.style.display === 'none' ? 'block' : 'none';
-                backButton.style.display = 
-                    backButton.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-
-        // Handle video sizing
-        fullscreenVideo.addEventListener('loadedmetadata', function() {
-            handleVideoSize(this);
-        });
-    });
-
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        fullscreenVideos.forEach(fullscreenVideo => {
-            if (fullscreenVideo.style.display !== 'none') {
-                handleVideoSize(fullscreenVideo);
-            }
-        });
-    });
-}
-
-// Function to handle video sizing
-function handleVideoSize(video) {
-    // Get video's natural aspect ratio
-    const videoAspect = video.videoWidth / video.videoHeight;
-    // Get screen/window aspect ratio
-    const screenAspect = window.innerWidth / (window.innerHeight - 60); // Subtracting your 75px bottom space
-
-    // Get video natural dimensions
-    const videoNaturalHeight = video.videoHeight;
-    const screenHeight = window.innerHeight - 60; // Available height
-
-    if (videoNaturalHeight < 400) {
-        // For shorter videos, maintain original height
-        const calculatedHeight = (window.innerWidth / videoAspect);
-        video.style.height = calculatedHeight + 'px';
-        // Center vertically
-        video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
-    } else if (videoAspect > 1) {
-        // Landscape video
-        video.style.width = '100%';
-        const calculatedHeight = (window.innerWidth / videoAspect);
-        video.style.height = `${calculatedHeight}px`;
-        // Center vertically if there's space
-        if (calculatedHeight < screenHeight) {
-            video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
-        } else {
-            video.style.top = '0';
-        }
-    } else {
-        // Portrait video
-        video.style.width = '100%';
-        video.style.height = `${screenHeight}px`;
-        video.style.top = '0';
-    }
 }
 
 
@@ -898,9 +591,6 @@ function shortenText(text, limit, showSeeMore = true) {
  
  
  
- // Call this function when the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    renderHomepage();
-});
+ 
  
  renderHomepage();
