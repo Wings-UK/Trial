@@ -199,113 +199,100 @@ function renderHomepage() {
                 ` : ''}
                 
                 ${hasVideo ? `
-                <div class="video-container">
-                    <div class="video-container laptop1">
-                        <video class="video-player laptop" preload="metadata" poster="${post.videoPoster || ''}">
-                            <source src="${post.video}" type="video/mp4">
-                        </video>
-                        <div class="play-icon"></div>
-                        <div class="duration">0:00</div>
-                    </div>
-                </div>
+                <div class="video-container laptop1">
+  <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
+    <source src="${post.video}" type="video/mp4">
+  </video>
+  <div class="video-overlay">
+    <div class="play-button">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="24" fill="rgba(0, 0, 0, 0.5)"/>
+        <path d="M32 24L20 32V16L32 24Z" fill="white"/>
+      </svg>
+    </div>
+    <div class="duration-badge">0:00</div>
+  </div>
+</div>
 
-                <div class="fullscreen-video">
-                    <img class="back-button" src="pics/backa.png">
-                    <video class="fullscreen-player">
-                        <source src="${post.video}" type="video/mp4">
-                    </video>
-                    
-                    <div class="custom-controls">
-                        <div class="tiktok">
-                            <div class="gretu">
-                                <img class="tuk" src="pics/lovv.png">
-                                <div>
-                                    <p class="icun">${post.likes || 358}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/chat.png">
-                                <div>
-                                    <p class="icun">${post.comments || 36}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/repost.png">
-                                <div>
-                                    <p class="icun">${post.reposts || 0}</p>
-                                </div>
-                            </div>
-                            <div class="gretu">
-                                <img class="tuk" src="pics/naira.png">
-                                <div>
-                                    <p class="icun">${post.donations || 8}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="cust-name intro"> 
-                            <div class="heading">
-                                <div class="small-photo1">
-                                
-                                    <img class="fuck" src="${user.avatar}" onclick="showUserProfile(${user.id})">
-                                    
-                                </div>
-                                <div class="pos">
-                                    <div>
-                                        <div class="link-wrapper">
-                                            <a class="home-click" onclick="showUserProfile(${user.id})">
-                                                <div class="post1">
-                                                    <div class="jerr">
-                                                        <p class="jerry bigg">${user.username}</p>
-                                                    </div>
-                                                    <div>
-                                                        <img class="verify" src="pics/verifi1.png">
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div> 
-                                    </div>     
-                                    <div class="comp1">
-                                        <div class="cll">
-                                            <p class="brite">${post.timestamp}</p>
-                                            <div class="tool">
-                                                <p>7.23pm &#183; Sept 23, 2024 </p>
-                                            </div> 
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                            <div class="marhun">
-                                <p class="foni" onclick="
-                                    const foniElem = document.querySelector('.foni');
-                                    
-                                    if (foniElem.innerHTML === 'Follow') {
-                                        foniElem.innerHTML = 'Following';
-                                        foniElem.classList.add('follow')
-                                    } else {
-                                        foniElem.innerHTML = 'Follow';
-                                        foniElem.classList.remove('follow')
-                                    }
-                                ">Follow</p>
-                            </div>
-                        </div>
-                        <div class="tirr bordu">
-                            <p class="tired">${shortenText(post.content, 40, true)}</p>
-                           <div class="progress-bar">
+<!-- Video Overlay (Full Screen) -->
+<div class="video-modal">
+  <div class="modal-header">
+    <div class="back-button">
+      <img src="pics/backa.png" alt="Back">
+    </div>
+    <div class="modal-user-info">
+      <div class="user-avatar">
+        <img src="${user.avatar}" alt="${user.username}">
+      </div>
+      <div class="user-details">
+        <div class="username">
+          <span>${user.username}</span>
+          <img class="verify-badge" src="pics/verifi1.png">
+        </div>
+        <div class="timestamp">${post.timestamp}</div>
+      </div>
+    </div>
+    <div class="follow-button">Follow</div>
+  </div>
+  
+  <div class="video-player-container">
+    <video class="fullscreen-player">
+      <source src="${post.video}" type="video/mp4">
+    </video>
+    
+    <div class="video-controls">
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-filled"></div>
+          <div class="progress-handle"></div>
+        </div>
+        <div class="time-display">0:00 / 0:00</div>
+      </div>
+      
+      <div class="control-buttons">
+        <div class="play-pause-btn">
+          <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" fill="white"/>
+          </svg>
+          <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
+          </svg>
+        </div>
+        <div class="volume-control">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-content">
+    <p class="modal-post-text">${post.content}</p>
+  </div>
+  
+  <div class="modal-actions">
+    <div class="action-buttons">
+      <div class="action-button">
+        <img src="pics/lovv.png" alt="Like">
+        <span>${post.likes || 358}</span>
+      </div>
+      <div class="action-button">
+        <img src="pics/chat.png" alt="Comment">
+        <span>${post.comments || 36}</span>
+      </div>
+      <div class="action-button">
+        <img src="pics/repost.png" alt="Repost">
+        <span>${post.reposts || 0}</span>
+      </div>
+      <div class="action-button">
+        <img src="pics/naira.png" alt="Donate">
+        <span>${post.donations || 8}</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-                            <div class="progress"></div>
-
-                        </div>
-                        </div>
-                         
-                        
-                        <div class="time-display">0:00 / 0:00</div>
-                    </div>
-                    <div class="yese"></div>
-                    
-                  
-                
-            
-                </div>
                 ` : ''}
                 
                 <div class="tir" onclick="showDetail(${post.id})">
