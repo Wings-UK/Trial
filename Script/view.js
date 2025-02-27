@@ -192,7 +192,7 @@ function renderHomepage() {
                 </div>
                 ` : ''}
                 <div class="tir" onclick="showDetail(${post.id})">
-                    <p class="tired">${shortenText(post.content, textLimit)}<br>
+                    <p class="tired">${shortenText(post.content, textLimit, true)}<br>
                 </div>
                 
                 <div class="lefto">
@@ -482,7 +482,7 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   <div class="contentma">
-                    <p class="partner">${shortenText(post.content, textLimit)}</p>
+                    <p class="partner">${shortenText(post.content, textLimit, false)}</p>
                     <div class="bioi">
                       <div class="fred">
                         <img class="brekca" src="pics/chat-pic.jpg">
