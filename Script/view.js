@@ -137,7 +137,7 @@ const posts = [
 
 
 
-/**function renderHomepage() {
+function renderHomepage() {
     const postContainer = document.getElementById("flyer");
 
     posts.forEach(post => {
@@ -354,7 +354,220 @@ const posts = [
     initializeVideoPlayers();
 }
 
-**/
+
+
+// Function to initialize video players
+function initializeVideoPlayers() {
+  const videoContainers = document.querySelectorAll('.video-container');
+  
+  videoContainers.forEach(container => {
+    const thumbnailVideo = container.querySelector('.video-thumbnail');
+    const durationBadge = container.querySelector('.duration-badge');
+    
+    // Set duration badge once metadata is loaded
+    thumbnailVideo.addEventListener('loadedmetadata', () => {
+      const duration = formatTime(thumbnailVideo.duration);
+      durationBadge.textContent = duration;
+    });
+    
+    // Open video modal on click
+    container.addEventListener('click', () => {
+      const postElement = container.closest('.poster');
+      const postId = postElement.getAttribute('data-post-id');
+      
+      // Find the corresponding post data
+      const post = posts.find(p => p.id === parseInt(postId));
+      if (!post) return;
+      
+      openVideoModal(post);
+    });
+  });
+  
+  // Set up modal close functionality
+  const backButtons = document.querySelectorAll('.back-button');
+  backButtons.forEach(button => {
+    button.addEventListener('click', closeVideoModal);
+  });
+  
+  // Setup follow buttons
+  const followButtons = document.querySelectorAll('.follow-button');
+  followButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      button.classList.toggle('following');
+      button.textContent = button.classList.contains('following') ? 'Following' : 'Follow';
+    });
+  });
+}
+
+// Function to open video modal
+function openVideoModal(post) {
+  const modal = document.querySelector('.video-modal');
+  const videoPlayer = modal.querySelector('.fullscreen-player');
+  const user = users.find(u => u.id === post.userId);
+  
+  // Set the source of the video
+  videoPlayer.querySelector('source').src = post.video;
+  videoPlayer.load();
+  
+  // Update user details in the modal
+  modal.querySelector('.user-avatar img').src = user.avatar;
+  modal.querySelector('.username span').textContent = user.username;
+  modal.querySelector('.timestamp').textContent = post.timestamp;
+  modal.querySelector('.modal-post-text').textContent = post.content;
+  
+  // Update action counts
+  modal.querySelector('.action-button:nth-child(1) span').textContent = post.likes || 358;
+  modal.querySelector('.action-button:nth-child(2) span').textContent = post.comments || 36;
+  modal.querySelector('.action-button:nth-child(3) span').textContent = post.reposts || 0;
+  modal.querySelector('.action-button:nth-child(4) span').textContent = post.donations || 8;
+  
+  // Show the modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  
+  // Set up video controls
+  setupVideoControls(videoPlayer);
+  
+  // Auto play the video
+  videoPlayer.play().catch(error => {
+    console.log('Auto-play prevented:', error);
+    // Show play button prominently if autoplay is blocked
+  });
+}
+
+// Function to close video modal
+function closeVideoModal() {
+  const modal = document.querySelector('.video-modal');
+  const videoPlayer = modal.querySelector('.fullscreen-player');
+  
+  // Pause the video
+  videoPlayer.pause();
+  
+  // Hide the modal
+  modal.classList.remove('active');
+  document.body.style.overflow = ''; // Restore scrolling
+}
+
+// Function to setup video controls
+function setupVideoControls(videoPlayer) {
+  const progressBar = document.querySelector('.progress-bar');
+  const progressFilled = document.querySelector('.progress-filled');
+  const progressHandle = document.querySelector('.progress-handle');
+  const timeDisplay = document.querySelector('.time-display');
+  const playPauseBtn = document.querySelector('.play-pause-btn');
+  const playIcon = playPauseBtn.querySelector('.play-icon');
+  const pauseIcon = playPauseBtn.querySelector('.pause-icon');
+  const videoControls = document.querySelector('.video-controls');
+  
+  // Update progress bar as video plays
+  videoPlayer.addEventListener('timeupdate', () => {
+    const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+    progressFilled.style.width = `${percent}%`;
+    progressHandle.style.left = `${percent}%`;
+    
+    // Update time display
+    timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+  });
+  
+  // Click on progress bar to seek
+  progressBar.addEventListener('click', (e) => {
+    const progressTime = (e.offsetX / progressBar.offsetWidth) * videoPlayer.duration;
+    videoPlayer.currentTime = progressTime;
+  });
+  
+  // Dragging progress handle
+  let isDragging = false;
+  
+  progressHandle.addEventListener('mousedown', () => {
+    isDragging = true;
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      const rect = progressBar.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      const clampedPos = Math.max(0, Math.min(1, pos));
+      
+      progressFilled.style.width = `${clampedPos * 100}%`;
+      progressHandle.style.left = `${clampedPos * 100}%`;
+      
+      // Don't update video currentTime until mouseup for smoother dragging
+    }
+  });
+      
+      // Don't update video currentTime until mouseup for smoother dr
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      const width = parseFloat(progressFilled.style.width) / 100;
+      videoPlayer.currentTime = width * videoPlayer.duration;
+      isDragging = false;
+    }
+  });
+  
+  // Play/Pause button functionality
+  playPauseBtn.addEventListener('click', togglePlayPause);
+  videoPlayer.addEventListener('click', togglePlayPause);
+  
+  function togglePlayPause() {
+    if (videoPlayer.paused) {
+      videoPlayer.play();
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
+    } else {
+      videoPlayer.pause();
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
+    }
+  }
+  
+  // Update icons when video is played/paused
+  videoPlayer.addEventListener('play', () => {
+    playIcon.style.display = 'none';
+    pauseIcon.style.display = 'block';
+  });
+  
+  videoPlayer.addEventListener('pause', () => {
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+  });
+  
+  // Hide controls when inactive
+  let controlsTimeout;
+  
+  function showControls() {
+    videoControls.style.opacity = '1';
+    clearTimeout(controlsTimeout);
+    
+    controlsTimeout = setTimeout(() => {
+      if (!videoPlayer.paused) {
+        videoControls.style.opacity = '0';
+      }
+    }, 3000);
+  }
+  
+  videoPlayer.addEventListener('mousemove', showControls);
+  videoControls.addEventListener('mousemove', showControls);
+  
+  // Show controls initially
+  showControls();
+  
+  // Video end handling
+  videoPlayer.addEventListener('ended', () => {
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+    videoControls.style.opacity = '1';
+  });
+}
+
+// Helper function to format time (converts seconds to MM:SS format)
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+}
+
+
+
 
 function showDetail(postId) {
     const postDetail = document.getElementById("meal");
