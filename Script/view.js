@@ -262,7 +262,7 @@ function showDetail(postId) {
     
     const commentTextarea = document.querySelector('.comment-textarea');
     if (commentTextarea) {
-        commentTextarea.placeholder = `Reply to @${user.username}...`;
+        commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
 
     postContent.innerHTML = `
