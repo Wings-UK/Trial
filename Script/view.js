@@ -466,6 +466,7 @@ function showUserProfile(userId) {
 }
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
+    const textLimit = post.image ? 40 : 150;
     const leftColumn = document.querySelector(".left-column");
     const rightColumn = document.querySelector(".right-column");
     
