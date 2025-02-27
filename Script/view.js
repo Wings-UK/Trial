@@ -547,7 +547,7 @@ function goBack() {
     }
 }
 
-function shortenText(text, limit) {
+function shortenText(text, limit, showSeeMore = true) {
     if (text.length <= limit) return text; // No need to shorten
 
     let shortened = text.slice(0, limit); // Cut at the limit
@@ -557,7 +557,7 @@ function shortenText(text, limit) {
         shortened = shortened.slice(0, lastSpace); // Cut at last whole word
     }
 
-    return shortened + `...<br><span class="reer">see more</span>`; // Add ellipsis
+    return showSeeMore ? shortened + `...<br><span class="reer">see more</span>` : shortened + "..."; 
 }
  
  window.onpopstate = function (event) {
