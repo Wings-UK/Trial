@@ -475,7 +475,7 @@ function renderUserPosts(userId) {
   
 
     userPosts.forEach((post, index) => {
-      const textLimit = post.image ? 40 : 150;
+      const textLimit = post.image ? 40 : 200;
         const postHTML = `
             <div class="masonry" onclick="showDetail(${post.id})">
                   ${post.image ? `
