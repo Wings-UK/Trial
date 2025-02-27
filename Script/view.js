@@ -143,7 +143,11 @@ function renderHomepage() {
         const user = users.find(u => u.id === post.userId); // Find user by ID
 
         if (!user) return; // Skip if no user found (shouldn't happen)
-        const textLimit = post.image ? 150 : 300;
+        const textLimit = (post.image || post.video) ? 150 : 300;
+
+        // Determine if the post has a video
+        const hasVideo = post.video ? true : false;
+        const hasImage = post.image ? true : false;
 
         const postHTML = `
             <div class="poster">
@@ -186,59 +190,167 @@ function renderHomepage() {
                         </div> 
                     </div>      
                 </div>
-                ${post.image ? `
+                
+                ${hasImage ? `
                 <div class="laptop1">
                     <img class="laptop" src="${post.image}" loading="lazy">
                 </div>
                 ` : ''}
+                
+                ${hasVideo ? `
+                <div class="video-container">
+                    <div class="video-container laptop1">
+                        <video class="video-player laptop" preload="metadata" poster="${post.videoPoster || ''}">
+                            <source src="${post.video}" type="video/mp4">
+                        </video>
+                        <div class="play-icon"></div>
+                        <div class="duration">0:00</div>
+                    </div>
+                </div>
+
+                <div class="fullscreen-video">
+                    <img class="back-button" src="pics/backa.png">
+                    <video class="fullscreen-player">
+                        <source src="${post.video}" type="video/mp4">
+                    </video>
+                    
+                    <div class="custom-controls">
+                        <div class="tiktok">
+                            <div class="gretu">
+                                <img class="tuk" src="pics/lovv.png">
+                                <div>
+                                    <p class="icun">${post.likes || 358}</p>
+                                </div>
+                            </div>
+                            <div class="gretu">
+                                <img class="tuk" src="pics/chat.png">
+                                <div>
+                                    <p class="icun">${post.comments || 36}</p>
+                                </div>
+                            </div>
+                            <div class="gretu">
+                                <img class="tuk" src="pics/repost.png">
+                                <div>
+                                    <p class="icun">${post.reposts || 0}</p>
+                                </div>
+                            </div>
+                            <div class="gretu">
+                                <img class="tuk" src="pics/naira.png">
+                                <div>
+                                    <p class="icun">${post.donations || 8}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cust-name intro"> 
+                            <div class="heading">
+                                <div class="small-photo1">
+                                    <a class="lino" onclick="showUserProfile(${user.id})">
+                                        <img class="fuck" src="${user.avatar}">
+                                    </a>
+                                </div>
+                                <div class="pos">
+                                    <div>
+                                        <div class="link-wrapper">
+                                            <a class="home-click" onclick="showUserProfile(${user.id})">
+                                                <div class="post1">
+                                                    <div class="jerr">
+                                                        <p class="jerry bigg">${user.username}</p>
+                                                    </div>
+                                                    <div>
+                                                        <img class="verify" src="pics/verifi1.png">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div> 
+                                    </div>     
+                                    <div class="comp1">
+                                        <div class="cll">
+                                            <p class="brite">${post.timestamp}</p>
+                                            <div class="tool">
+                                                <p>7.23pm &#183; Sept 23, 2024 </p>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </div> 
+                            </div>
+                            <div class="marhun">
+                                <p class="foni" onclick="
+                                    const foniElem = document.querySelector('.foni');
+                                    
+                                    if (foniElem.innerHTML === 'Follow') {
+                                        foniElem.innerHTML = 'Following';
+                                        foniElem.classList.add('follow')
+                                    } else {
+                                        foniElem.innerHTML = 'Follow';
+                                        foniElem.classList.remove('follow')
+                                    }
+                                ">Follow</p>
+                            </div>
+                        </div>
+                        <div class="tirr bordu">
+                            <p class="tired">${shortenText(post.content, 50, true)} <span class="brite">More</span></p>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="time-display">0:00 / 0:00</div>
+                    </div>
+                    <div class="yese"></div>
+                    
+                    <div class="commont">
+                        <input class="haja" placeholder="Say something...">
+                    </div>
+                </div>
+                ` : ''}
+                
                 <div class="tir" onclick="showDetail(${post.id})">
-                    <p class="tired">${shortenText(post.content, textLimit, true)}<br>
+                    <p class="tired">${shortenText(post.content, textLimit, true)}</p>
                 </div>
                 
                 <div class="lefto">
                     <div class="dick">
-                    <div>
-                        <img class="lefti" src="pics/lefti.png">
-                    </div>
-                    <div>
-                    <p class="viewe">View all 142 dives</p>
-                    </div>
+                        <div>
+                            <img class="lefti" src="pics/lefti.png">
+                        </div>
+                        <div>
+                            <p class="viewe">View all ${post.diveCount || 142} dives</p>
+                        </div>
                     </div>
                     <div class="twits">
-                    <div>
-                        <img class="lefti" src="pics/stats.png">
-                    </div>
-                    <div>
-                        <p class="viewe">96.8K views</p>
-                    </div>
+                        <div>
+                            <img class="lefti" src="pics/stats.png">
+                        </div>
+                        <div>
+                            <p class="viewe">${post.views || '96.8K'} views</p>
+                        </div>
                     </div>
                 </div>
                 <div class="reaction">
                     <div class="lovi">
-                    <div class="emoji-container">
-            <div class="emoji-wrapper" data-count="0">
-                <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
-                <div class="emoji-count">560</div>
-            </div>
-            <div class="emoji-wrapper" data-count="0">
-                <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
-                <div class="emoji-count">21</div>
-            </div>
-            <div class="emoji-wrapper" data-count="0">
-                <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
-                <div class="emoji-count">78</div>
-            </div>
-        </div>
-                    
+                        <div class="emoji-container">
+                            <div class="emoji-wrapper" data-count="0">
+                                <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
+                                <div class="emoji-count">${post.likeCount || 560}</div>
+                            </div>
+                            <div class="emoji-wrapper" data-count="0">
+                                <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
+                                <div class="emoji-count">${post.loveCount || 21}</div>
+                            </div>
+                            <div class="emoji-wrapper" data-count="0">
+                                <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
+                                <div class="emoji-count">${post.angryCount || 78}</div>
+                            </div>
+                        </div>
                         
-                    <div class="share1">
-                        <div>
-                        <img class="sharo" src="pics/plu.png">
-                        </div> 
-                    </div>
+                        <div class="share1">
+                            <div>
+                                <img class="sharo" src="pics/plu.png">
+                            </div> 
+                        </div>
                     </div>
                     <div class="wish1">
-                    <img class="twito" src="pics/twito.png">
+                        <img class="twito" src="pics/twito.png">
                     </div>            
                 </div>
             </div>
@@ -246,6 +358,9 @@ function renderHomepage() {
 
         postContainer.innerHTML += postHTML;
     });
+
+    // Initialize video functionality after rendering posts
+    initializeVideoPlayers();
 }
 
 
