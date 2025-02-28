@@ -602,6 +602,7 @@ function renderPostWithNewVideoPlayer(post, user) {
 }
 
 
+
 function showDetail(postId) {
     const postDetail = document.getElementById("meal");
     const postContent = document.getElementById("nuba");
@@ -843,17 +844,39 @@ function showDetail(postId) {
     });
 }
 
-function adjustVideoPlayer(videoElement) {
-    const aspectRatio = videoElement.videoWidth / videoElement.videoHeight;
-    if (aspectRatio > 1) {
+
+function adjustVideoPlayer(video) {
+    // Get video's natural aspect ratio
+    const videoAspect = video.videoWidth / video.videoHeight;
+    // Get screen/window aspect ratio
+    const screenAspect = window.innerWidth / (window.innerHeight - 60); // Subtracting your 75px bottom space
+
+    // Get video natural dimensions
+    const videoNaturalHeight = video.videoHeight;
+    const screenHeight = window.innerHeight - 60; // Available height
+
+    if (videoNaturalHeight < 400) {
+        // For shorter videos, maintain original height
+        const calculatedHeight = (window.innerWidth / videoAspect);
+        video.style.height = calculatedHeight + 'px';
+        // Center vertically
+        video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
+    } else if (videoAspect > 1) {
         // Landscape video
-        videoElement.style.width = '100%';
-        videoElement.style.height = 'auto';
+        video.style.width = '100%';
+        const calculatedHeight = (window.innerWidth / videoAspect);
+        video.style.height = `${calculatedHeight}px`;
+        // Center vertically if there's space
+        if (calculatedHeight < screenHeight) {
+            video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
+        } else {
+            video.style.top = '0';
+        }
     } else {
         // Portrait video
-        videoElement.style.width = '100vw';
-        videoElement.style.height = '100%';
-        videoElement.style.top = '0';
+        video.style.width = '100%';
+        video.style.height = `${screenHeight}px`;
+        video.style.top = '0';
     }
 }
 
