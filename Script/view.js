@@ -201,6 +201,27 @@ function renderHomepage() {
       <div class="modal-content">
         <p class="modal-post-text"></p>
       </div>
+      
+      <div class="modal-actions">
+        <div class="action-buttons">
+          <div class="action-button">
+            <img src="pics/lovv.png" alt="Like">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/chat.png" alt="Comment">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/repost.png" alt="Repost">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/naira.png" alt="Donate">
+            <span>0</span>
+          </div>
+        </div>
+      </div>
     `;
     document.body.appendChild(videoModal);
   }
