@@ -182,6 +182,7 @@
 }
 
 .modal-header {
+  font-family: ibm plex sans, roboto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -460,21 +461,6 @@
 }
 .marhun {
   margin-left: 20px;
-}
-
-.back-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: rgba(215, 215, 215, 0.8);
-  border: none;
-  border-radius: 50%;
-  padding: 10px;
-  width: 33px;
-  height: 33px;
-  display: none;
-  box-sizing: 0px 0px 5px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
 }
 
 
