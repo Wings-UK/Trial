@@ -391,7 +391,7 @@ function initializeVideoPlayers() {
 
 // Function to open video modal
 function openVideoModal(post) {
-  window.history.pushState({ modalOpen:true }, "");
+
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   const user = users.find(u => u.id === post.userId);
@@ -424,10 +424,6 @@ function openVideoModal(post) {
     console.log('Auto-play prevented:', error);
     // Show play button prominently if autoplay is blocked
   });
-  window.addEventListener("popstate", (event) => {
-  if (event.state?.modalOpen) {
-    closeVideoModal();
-  }
 }
 
 // Function to close video modal
