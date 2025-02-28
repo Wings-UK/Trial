@@ -124,7 +124,7 @@
 .video-container {
   position: relative;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 5px;
   overflow: hidden;
   margin: 10px 0;
   cursor: pointer;
@@ -132,7 +132,7 @@
 
 .video-thumbnail {
   width: 100%;
-  border-radius: 12px;
+  border-radius: 5px;
   object-fit: cover;
   max-height: 300px;
 }
@@ -306,8 +306,7 @@
 
 .progress-handle {
   position: absolute;
-  top: 0; 
-  left: 0;
+  top: 50%;
   transform: translate(-50%, -50%);
   width: 12px;
   height: 12px;
