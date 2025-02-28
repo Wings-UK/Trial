@@ -379,6 +379,13 @@ function initializeVideoPlayers() {
     button.addEventListener('click', closeVideoModal);
   });
   
+  const videoPlayer = document.querySelector('.fullscreen-player');
+
+videoPlayer.addEventListener('loadedmetadata', () => {
+
+    adjustVideoPlayer(videoPlayer);
+});
+  
   // Setup follow buttons
   const followButtons = document.querySelectorAll('.follow-button');
   followButtons.forEach(button => {
@@ -826,6 +833,20 @@ function showDetail(postId) {
     });
 }
 
+function adjustVideoPlayer(videoElement) {
+    const aspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+    if (aspectRatio > 1) {
+        // Landscape video
+        videoElement.style.width = '100%';
+        videoElement.style.height = 'auto';
+    } else {
+        // Portrait video
+        videoElement.style.width = 'auto';
+        videoElement.style.height = '100%';
+    }
+}
+
+// Call this function when the video metadata is loaded
 
 
 function showUserProfile(userId) {
