@@ -358,6 +358,7 @@
 }
 
 .modal-actions {
+  display: none;
   padding: 12px 16px;
 }
 
