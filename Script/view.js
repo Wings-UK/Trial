@@ -594,100 +594,98 @@ function showDetail(postId) {
 
     const user = users.find(u => u.id === post.userId);
     if (!user) return;
-    
+
     const commentTextarea = document.querySelector('.comment-textarea');
     if (commentTextarea) {
         commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
+
     const hasVideo = post.video ? true : false;
-
     const hasImage = post.image ? true : false;
-    
-      // Create video modal if it doesn't exist
 
-  if (!document.querySelector('.video-modal')) {
-
-    const videoModal = document.createElement('div');
-    videoModal.className = 'video-modal';
-    videoModal.innerHTML = `
-      <div class="modal-header">
-        <div class="back-button">
-          <img src="pics/backa.png" alt="Back">
-        </div>
-        <div class="modal-user-info">
-          <div class="user-avatar">
-            <img src="" alt="">
-          </div>
-          <div class="user-details">
-            <div class="username">
-              <span></span>
-              <img class="verify-badge" src="pics/verifi1.png">
+    // Create video modal if it doesn't exist
+    if (!document.querySelector('.video-modal')) {
+        const videoModal = document.createElement('div');
+        videoModal.className = 'video-modal';
+        videoModal.innerHTML = `
+          <div class="modal-header">
+            <div class="back-button">
+              <img src="pics/backa.png" alt="Back">
             </div>
-            <div class="timestamp"></div>
-          </div>
-        </div>
-        <div class="follow-button">Follow</div>
-      </div>
-      
-      <div class="video-player-container">
-        <video class="fullscreen-player">
-          <source src="" type="video/mp4">
-        </video>
-        
-        <div class="video-controls">
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div class="progress-filled"></div>
-              <div class="progress-handle"></div>
+            <div class="modal-user-info">
+              <div class="user-avatar">
+                <img src="" alt="">
+              </div>
+              <div class="user-details">
+                <div class="username">
+                  <span></span>
+                  <img class="verify-badge" src="pics/verifi1.png">
+                </div>
+                <div class="timestamp"></div>
+              </div>
             </div>
-            <div class="time-display">0:00 / 0:00</div>
+            <div class="follow-button">Follow</div>
           </div>
           
-          <div class="control-buttons">
-            <div class="play-pause-btn">
-              <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" fill="white"/>
-              </svg>
-              <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
-              </svg>
+          <div class="video-player-container">
+            <video class="fullscreen-player">
+              <source src="" type="video/mp4">
+            </video>
+            
+            <div class="video-controls">
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-filled"></div>
+                  <div class="progress-handle"></div>
+                </div>
+                <div class="time-display">0:00 / 0:00</div>
+              </div>
+              
+              <div class="control-buttons">
+                <div class="play-pause-btn">
+                  <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" fill="white"/>
+                  </svg>
+                  <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
+                  </svg>
+                </div>
+                <div class="volume-control">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div class="volume-control">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
-              </svg>
+          </div>
+          
+          <div class="modal-content">
+            <p class="modal-post-text"></p>
+          </div>
+          
+          <div class="modal-actions">
+            <div class="action-buttons">
+              <div class="action-button">
+                <img src="pics/lovv.png" alt="Like">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/chat.png" alt="Comment">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/repost.png" alt="Repost">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/naira.png" alt="Donate">
+                <span>0</span>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <div class="modal-content">
-        <p class="modal-post-text"></p>
-      </div>
-      
-      <div class="modal-actions">
-        <div class="action-buttons">
-          <div class="action-button">
-            <img src="pics/lovv.png" alt="Like">
-            <span>0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/chat.png" alt="Comment">
-            <span>0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/repost.png" alt="Repost">
-            <span>0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/naira.png" alt="Donate">
-            <span>0</span>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(videoModal);
-  }
+        `;
+        document.body.appendChild(videoModal);
+    }
 
     postContent.innerHTML = `
         <div class="cust-name" data-post-id="${post.id}"> 
@@ -714,39 +712,35 @@ function showDetail(postId) {
                     </div>     
                     <div class="comp1">
                         <div class="cll">
-                            <p class="time">${post.date}</p>
+                            <p class="time">${post.date || post.timestamp}</p>
                         </div>
                     </div>
                 </div> 
             </div>
-       
-
-         <div>
-              <p class="foni" onclick="
-                const foniElem = document.querySelector('.foni');
-                
-                if (foniElem.innerHTML === 'Follow') {
-                  foniElem.innerHTML = 'Following';
-                  foniElem.classList.add('follow')
-                } else {
-                  foniElem.innerHTML = 'Follow';
-                  foniElem.classList.remove('follow')
-                }
-              ">Follow</p>
+            <div>
+                <p class="foni" onclick="
+                  const foniElem = document.querySelector('.foni');
+                  
+                  if (foniElem.innerHTML === 'Follow') {
+                    foniElem.innerHTML = 'Following';
+                    foniElem.classList.add('follow')
+                  } else {
+                    foniElem.innerHTML = 'Follow';
+                    foniElem.classList.remove('follow')
+                  }
+                ">Follow</p>
             </div>
-
-
             <div class="dots">
-              <img class="dot" src="pics/duta.png">
-              <div class="tool">
-                <p>More</p>
-              </div> 
+                <img class="dot" src="pics/duta.png">
+                <div class="tool">
+                    <p>More</p>
+                </div> 
             </div>      
-          </div>
+        </div>
         <div class="tir">
             <p class="tiri">${post.content}<br></p>
         </div>
-        ${post.image ? `
+        ${hasImage ? `
         <div class="swet">
             <div class="laptop1">
                 <img class="lapto" src="${post.image}">
@@ -754,73 +748,82 @@ function showDetail(postId) {
         </div>
         ` : ''}
         
-
-            ${hasImage ? `
-
-            <div class="laptop1">
-                <img class="laptop" src="${post.image}" loading="lazy">
-            </div>
-            ` : ''}
-            
-            ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+        
         <div class="lefto">
             <div class="dick">
-             <div>
-              <p class="viewe"><span class="werey">615</span> reactions</p>
-             </div>
-             <div>
-              <p class="viewe"><span class="werey">9</span> echoes</p>
-             </div>
+                <div>
+                    <p class="viewe"><span class="werey">615</span> reactions</p>
+                </div>
+                <div>
+                    <p class="viewe"><span class="werey">9</span> echoes</p>
+                </div>
             </div>
             <div class="twits">
-              <div>
-                <img class="lefti" src="pics/stats.png">
-              </div>
-              <div>
-                <p class="viewe">96.8K views</p>
-               </div>
+                <div>
+                    <img class="lefti" src="pics/stats.png">
+                </div>
+                <div>
+                    <p class="viewe">96.8K views</p>
+                </div>
             </div>
-          </div>
-          <div class="reaction">
+        </div>
+        <div class="reaction">
             <div class="small-photo1">
-              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
-              <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-              </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
             </div>   
             
             <div class="small-photo1">
-              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
-              <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-              </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
             </div>   
 
             <div class="small-photo1">
-              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
-              <div class="vrea">
-                <img class="luve" src="pics/2.gif">
-              </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/2.gif">
+                </div>
             </div>   
 
             <div class="small-photo1">
-              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
-              <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-              </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
             </div>   
 
             <div class="small-photo1">
-              <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
-              <div class="vrea">
-                <img class="luve" src="pics/3.gif">
-              </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/3.gif">
+                </div>
             </div>   
-          </div>
+        </div>
     `;
 
     switchPage("meal");
+    
+    // Initialize video players AFTER the content is added to the DOM
     initializeVideoPlayers();
+    
+    // Add direct click handler to the video container in the detail view
+    const detailVideoContainer = postContent.querySelector('.video-container');
+    if (detailVideoContainer) {
+        detailVideoContainer.addEventListener('click', () => {
+            openVideoModal(post);
+        });
+    }
+    
+    // Also set up modal close functionality
+    const backButtons = document.querySelectorAll('.back-button');
+    backButtons.forEach(button => {
+        button.addEventListener('click', closeVideoModal);
+    });
 }
 
 
