@@ -182,6 +182,8 @@
 }
 
 .modal-header {
+  position: absolute;
+  top: 0;
   font-family: ibm plex sans, roboto;
   display: flex;
   align-items: center;
@@ -214,8 +216,8 @@
 }
 
 .user-avatar img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 3px;
   object-fit: cover;
 }
