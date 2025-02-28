@@ -853,6 +853,8 @@ function adjustVideoPlayer(videoElement) {
         // Portrait video
         videoElement.style.width = '100vw';
         videoElement.style.height = '100%';
+        videoElement.style.position = 'fixed';
+        videoElement.style.top = '0';
     }
 }
 
