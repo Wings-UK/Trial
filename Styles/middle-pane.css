@@ -193,8 +193,8 @@
 
 .back-button {
   cursor: pointer;
-  width: 35px;
-  height: 35px;
+  width: 33px;
+  height: 33px;
   border-radius: 50%;
   background-color: rgb(200, 200, 200);
   display: flex;
@@ -343,6 +343,7 @@
 }
 
 .modal-content {
+  display: none;
   padding: 16px;
   color: white;
   max-height: 100px;
