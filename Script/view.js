@@ -431,7 +431,16 @@ function openVideoModal(post) {
     console.log('Auto-play prevented:', error);
     // Show play button prominently if autoplay is blocked
   });
+  history.pushState({ modalOpen: true }, '', window.location.href);
 }
+
+
+window.addEventListener('popstate', () => {
+    const modal = document.querySelector('.video-modal');
+    if (modal.classList.contains('active')) {
+        closeVideoModal();
+    }
+});
 
 // Function to close video modal
 function closeVideoModal() {
