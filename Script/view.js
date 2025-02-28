@@ -690,7 +690,7 @@ function showDetail(postId) {
   }
 
     postContent.innerHTML = `
-        <div class="cust-name"> 
+        <div class="cust-name" data-post-id="${post.id}"> 
             <div class="heading">
                 <div class="small-photo1">
                     <a class="lino" onclick="showUserProfile(${user.id})">
