@@ -571,7 +571,7 @@ function renderPostWithNewVideoPlayer(post, user) {
         <div class="video-overlay">
           <div class="play-button">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="24" cy="24" r="24" fill="rgba(0, 0, 0, 0.5)"/>
+              <circle cx="24" cy="24" r="24" fill="rgba(244, 7, 82, 0.5)"/>
               <path d="M32 24L20 32V16L32 24Z" fill="white"/>
             </svg>
           </div>
