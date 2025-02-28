@@ -182,6 +182,8 @@
 }
 
 .modal-header {
+  position: fixed;
+  top: 0;
   font-family: ibm plex sans, roboto;
   display: flex;
   align-items: center;
