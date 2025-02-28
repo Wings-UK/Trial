@@ -599,6 +599,9 @@ function showDetail(postId) {
     if (commentTextarea) {
         commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
+    const hasVideo = post.video ? true : false;
+
+    const hasImage = post.image ? true : false;
 
     postContent.innerHTML = `
         <div class="cust-name"> 
@@ -664,6 +667,16 @@ function showDetail(postId) {
             </div>
         </div>
         ` : ''}
+        
+
+            ${hasImage ? `
+
+            <div class="laptop1">
+                <img class="laptop" src="${post.image}" loading="lazy">
+            </div>
+            ` : ''}
+            
+            ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
         <div class="lefto">
             <div class="dick">
              <div>
