@@ -308,7 +308,8 @@
 
 .progress-handle {
   position: absolute;
-  top: 30%; 
+  top: 0; 
+  left: 0;
   transform: translate(-50%, -50%);
   width: 12px;
   height: 12px;
