@@ -820,6 +820,7 @@ function showDetail(postId) {
     `;
 
     switchPage("meal");
+    initializeVideoPlayers();
 }
 
 
