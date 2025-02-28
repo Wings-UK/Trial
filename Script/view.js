@@ -384,7 +384,7 @@ function initializeVideoPlayers() {
 videoPlayer.addEventListener('loadedmetadata', () => {
 
     adjustVideoPlayer(videoPlayer);
-});
+}); 
   
   // Setup follow buttons
   const followButtons = document.querySelectorAll('.follow-button');
