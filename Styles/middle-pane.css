@@ -150,7 +150,7 @@
 }
 
 .play-button {
-  transition: transform 0.2s;
+  transition: transform 0.3s;
 }
 
 .video-container:hover .play-button {
