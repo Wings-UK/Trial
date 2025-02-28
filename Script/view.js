@@ -845,38 +845,38 @@ function showDetail(postId) {
 }
 
 
-function adjustVideoPlayer(video) {
+function adjustVideoPlayer(ella) {
     // Get video's natural aspect ratio
-    const videoAspect = video.videoWidth / video.videoHeight;
+    const videoAspect = ella.videoWidth / ella.videoHeight;
     // Get screen/window aspect ratio
     const screenAspect = window.innerWidth / (window.innerHeight - 60); // Subtracting your 75px bottom space
 
     // Get video natural dimensions
-    const videoNaturalHeight = video.videoHeight;
+    const videoNaturalHeight = ella.videoHeight;
     const screenHeight = window.innerHeight - 60; // Available height
 
     if (videoNaturalHeight < 400) {
         // For shorter videos, maintain original height
         const calculatedHeight = (window.innerWidth / videoAspect);
-        video.style.height = calculatedHeight + 'px';
+        ella.style.height = calculatedHeight + 'px';
         // Center vertically
-        video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
+        ella.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
     } else if (videoAspect > 1) {
         // Landscape video
-        video.style.width = '100%';
+        ella.style.width = '100%';
         const calculatedHeight = (window.innerWidth / videoAspect);
-        video.style.height = `${calculatedHeight}px`;
+        ella.style.height = `${calculatedHeight}px`;
         // Center vertically if there's space
         if (calculatedHeight < screenHeight) {
-            video.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
+            ella.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
         } else {
-            video.style.top = '0';
+            ella.style.top = '0';
         }
     } else {
         // Portrait video
-        video.style.width = '100%';
-        video.style.height = `${screenHeight}px`;
-        video.style.top = '0';
+        ella.style.width = '100%';
+        ella.style.height = `${screenHeight}px`;
+        ella.style.top = '0';
     }
 }
 
