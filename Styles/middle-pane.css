@@ -281,6 +281,7 @@
 
 .progress-container {
   margin-bottom: 10px;
+  width: calc(100% - 40px);
 }
 
 .progress-bar {
