@@ -321,6 +321,7 @@
 }
 
 .time-display {
+  font-family: ibm plex sans, roboto;
   color: white;
   font-size: 12px;
   text-align: right;
