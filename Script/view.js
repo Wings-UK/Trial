@@ -198,6 +198,9 @@ function renderHomepage() {
         </div>
       </div>
       
+      <div class="modal-content">
+        <p class="modal-post-text"></p>
+      </div>
       
       <div class="modal-actions">
         <div class="action-buttons">
