@@ -841,7 +841,7 @@ function adjustVideoPlayer(videoElement) {
         videoElement.style.height = 'auto';
     } else {
         // Portrait video
-        videoElement.style.width = 'auto';
+        videoElement.style.width = '100vw';
         videoElement.style.height = '100%';
     }
 }
