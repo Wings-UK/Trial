@@ -22,7 +22,6 @@ const users = [
       location: "New York, NY"
     },
     {
-
       id: 3,
       username: "@nomsa",
       name: "Lena Marie",
@@ -33,6 +32,7 @@ const users = [
       following: 556,
       location: "Madras, OR"
     }
+    
 ];
 
 const posts = [
@@ -118,11 +118,11 @@ const posts = [
     },
     {
       id: 11,
-      userId: 2,  // Refers to user with id 2 (@lena)
+      userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/memo.webp",
+      content: "I think i like this dance. Can someone tell me the name and the country where i can go to learn this? It looks difficult though",
     },
     {
       id: 12,
@@ -137,7 +137,7 @@ const posts = [
 
 
 const loggedInUser = {
-    id: 1,
+    id: 4,
     username: "@jeremyx",
     name: "Redd Cinema",
     cover: "pics/memo6.jpg",
@@ -505,8 +505,6 @@ function closeVideoModal() {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }, 0);
     }
-    
-
   
   // Hide the modal
   modal.classList.remove('active');
