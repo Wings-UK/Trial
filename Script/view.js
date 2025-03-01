@@ -1378,6 +1378,7 @@ function showMyProfile() {
         </div>
       </div>
   `;
+  renderUserPosts(user.id);
   
   switchPage("profile");
   
