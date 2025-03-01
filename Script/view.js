@@ -97,7 +97,7 @@ const posts = [
       userId: 2,  // Refers to user with id 2 (@lena)
       timestamp: "9 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/j.jpg",
+      video: "pics/olope.mp4",
       content: "why do mothers treat they daughters like they the scum? me & my momma can’t seem to get along at all why i get off a 10 FUCKING HOUR SHIFT OVERNIGHT TO BE EXACT & my “ ROOM” that i pay for monthly which i share w a fucking 12 years old and all my shit is scatter? bro im pissed",
     },
     {
