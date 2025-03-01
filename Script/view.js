@@ -1102,8 +1102,13 @@ function renderUserPosts(userId) {
     
 
     if (!leftColumn || !rightColumn) return;
+    if (userPosts.length === 0) {
+    // Handle empty state
+    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
+    return;
+     }
 
-  
+    userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     userPosts.forEach((post, index) => {
       const textLimit = post.image ? 40 : 200;
