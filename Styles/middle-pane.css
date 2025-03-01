@@ -78,7 +78,7 @@
   background-color: rgba(0,0,0,0.7);
 }
 
-.modal-content {
+.modal-content1 {
   background-color: #fff;
   margin: 10% auto;
   padding: 20px;
@@ -87,7 +87,7 @@
   max-width: 500px;
 }
 
-.modal-header {
+.modal-header1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
