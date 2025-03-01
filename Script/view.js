@@ -1232,8 +1232,9 @@ function shortenText(text, limit, showSeeMore = true) {
  });
  
 document.getElementById("usero").addEventListener("click", function() {
-    switchPage("profile");
     renderUserProfile();
+    switchPage("profile");
+    
 });
 
 
