@@ -337,6 +337,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  z-index: 10000;
 }
 
 .play-pause-btn, .volume-control {
