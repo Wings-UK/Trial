@@ -849,11 +849,11 @@ function adjustVideoPlayer(ella) {
     // Get video's natural aspect ratio
     const videoAspect = ella.videoWidth / ella.videoHeight;
     // Get screen/window aspect ratio
-    const screenAspect = window.innerWidth / (window.innerHeight - 60); // Subtracting your 75px bottom space
+    const screenAspect = window.innerWidth / (window.innerHeight - 0); // Subtracting your 75px bottom space
 
     // Get video natural dimensions
     const videoNaturalHeight = ella.videoHeight;
-    const screenHeight = window.innerHeight - 60; // Available height
+    const screenHeight = window.innerHeight - 0; // Available height
 
     if (videoNaturalHeight < 400) {
         // For shorter videos, maintain original height
@@ -863,7 +863,7 @@ function adjustVideoPlayer(ella) {
         ella.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
     } else if (videoAspect > 1) {
         // Landscape video
-        ella.style.width = '100%';
+        ella.style.width = '100vw';
         const calculatedHeight = (window.innerWidth / videoAspect);
         ella.style.height = `${calculatedHeight}px`;
         // Center vertically if there's space
@@ -874,7 +874,7 @@ function adjustVideoPlayer(ella) {
         }
     } else {
         // Portrait video
-        ella.style.width = '100%';
+        ella.style.width = '100vw';
         ella.style.height = `${screenHeight}px`;
         ella.style.top = '0';
     }
