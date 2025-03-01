@@ -1022,13 +1022,87 @@ function adjustVideoPlayer(videoElement) {
 }
 
 // Call this function when the video metadata is loaded
-function renderUserProfile() {
-    const userData = JSON.parse(localStorage.getItem("loggedInUser"));
+function showOwnProfile() {
+  const userData = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!userData) {
         alert("User not logged in!");
         return;
     }
-    showUserProfile(userData);
+
+    const profileContainer = document.getElementById("user-profile");
+    const profileIreti = document.getElementById("ireti");
+    
+    profileIreti.innerHTML = `
+         <img class="frin" src="${userData.cover}">
+            <div>
+              <img class="kor" src="${userData.avatar}">
+            </div>
+            <div class="klr">
+              <div class="drun">
+                <div>
+                  <p class="spe">${userData.username}</p>
+                </div>
+                <div>
+                  <img class="verify" src="pics/verifi1.png">
+                </div>
+              </div>
+              <div class="druu">
+                <div>
+                  <p class="rkl">${userData.location}</p>
+                </div>
+                <div class="drum">
+                  <p class="swe">4</p>
+                  <img class="kiy" src="pics/kiddo.png">
+                </div>
+              </div>
+              <div class="nin">
+                <p class="rkl"><span class="bld">${userData.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
+              </div>
+              <div class="cha">
+                <p>${userData.bio}</p>
+              </div>
+              <div class="man">
+                <div class="vre">
+                  <button class="aasw">Follow</button>
+                </div>
+                <div class="vre">
+                  <button class="aasw">1 : 1</button>
+                </div>
+              </div>
+            </div>
+            <div class="ewe">
+              <div class="yeb">
+                <img class="dee" src="pics/apps.png">
+              </div>
+              <div class="yeb">
+               <a href="Retail-Desktop-MyAccount-Storefront.html">
+                <img class="dee" src="pics/browser.png">
+               </a>
+
+              </div>
+              <div class="yeb">
+                <img class="dee" src="pics/bren.png">
+              </div>
+
+            </div>
+            
+            <div class="mansonro">
+            <div class="masonri">
+              <!-- Left Column -->
+              <div class="column left-column">
+            
+              </div>
+  
+              <div class="column right-column">
+                
+              </div>
+            </div>
+          </div>
+    `;
+    
+    switchPage("user-profile");
+    renderUserPosts(userId);
+
 }
 
 function showUserProfile(userId) {
@@ -1232,8 +1306,7 @@ function shortenText(text, limit, showSeeMore = true) {
  });
  
 document.getElementById("usero").addEventListener("click", function() {
-    renderUserProfile();
-    switchPage("profile");
+    switchPage("user-profile");
     
 });
 
