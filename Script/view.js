@@ -876,7 +876,7 @@ function adjustVideoPlayer(ella) {
         // Portrait video
         ella.style.width = '100vw';
         ella.style.height = `${screenHeight}px`;
-        ella.style.top = '60px';
+        ella.style.bottom = '0';
     }
 }
 
