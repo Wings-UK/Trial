@@ -1214,6 +1214,12 @@ function shortenText(text, limit, showSeeMore = true) {
     
     closeVideoModal();
 };
+
+window.onpopstate = function (event) {
+  const modal = document.querySelector('.video-modal');
+  if (modal.classList.contains("active")) {
+    closeVideoModal();
+}
  
  document.addEventListener("DOMContentLoaded", function () {
   if (!history.state) {
