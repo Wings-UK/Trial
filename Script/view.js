@@ -31,7 +31,18 @@ const users = [
       followers: 63,
       following: 556,
       location: "Madras, OR"
-    }
+    },
+    {
+      id: 4,
+      username: "@jeremyx",
+      name: "Redd Cinema",
+      cover: "pics/memo6.jpg",
+      avatar: "pics/mypics.jpg",
+      bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+      followers: 1204,
+      following: 340,
+      location: "Minna, NR"
+    },
     
 ];
 
