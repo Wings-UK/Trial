@@ -522,27 +522,7 @@ function closeVideoModal() {
   }
 }
 
-window.onpopstate = function (event) {
-  const modal = document.querySelector('.video-modal');
-  if (modal && modal.classList.contains('active')) {
-    closeVideoModal();
-  } else {
-    if (event.state && event.state.page) {
-      switchPage(event.state.page);
-    } else {
-      switchPage("food");
-      history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always in history
-    }
 
-    // Restore scroll position
-    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-    if (savedScrollPosition) {
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition));
-      }, 0);
-    }
-  }
-};
 
 // Function to setup video controls
 function setupVideoControls(videoPlayer) {
