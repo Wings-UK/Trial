@@ -161,7 +161,7 @@ function renderHomepage() {
     const videoModal = document.createElement('div');
     videoModal.className = 'video-modal';
     videoModal.innerHTML = `
-      <div class="modal-header1">
+      <div class="modal-header">
         <div class="back-button">
           <img src="pics/backa.png" alt="Back">
         </div>
@@ -748,7 +748,7 @@ function showDetail(postId) {
         const videoModal = document.createElement('div');
         videoModal.className = 'video-modal';
         videoModal.innerHTML = `
-          <div class="modal-header1">
+          <div class="modal-header">
             <div class="back-button">
               <img src="pics/backa.png" alt="Back">
             </div>
