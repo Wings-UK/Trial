@@ -495,8 +495,6 @@ function openVideoModal(post) {
    if (pageId !== "food" || pageId !== "profile") {
     sessionStorage.setItem("scrollPositio", window.scrollY);
    } 
-  
-  history.pushState({ modalOpen: true }, '', window.location.href);
 }
 
 
