@@ -458,23 +458,37 @@ function closeVideoModal() {
 
 // Function to setup video controls
 function setupVideoControls(videoPlayer) {
-  const progressBar = document.querySelector('.progress-bar');
-  const progressFilled = document.querySelector('.progress-filled');
-  const progressHandle = document.querySelector('.progress-handle');
-  const timeDisplay = document.querySelector('.time-display');
-  const playPauseBtn = document.querySelector('.play-pause-btn');
+  const modal = videoPlayer.closest('.video-modal');
+  const progressBar = modal.querySelector('.progress-bar');
+  const progressFilled = modal.querySelector('.progress-filled');
+  const progressHandle = modal.querySelector('.progress-handle');
+  const timeDisplay = modal.querySelector('.time-display');
+  const playPauseBtn = modal.querySelector('.play-pause-btn');
   const playIcon = playPauseBtn.querySelector('.play-icon');
   const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-  const videoControls = document.querySelector('.video-controls');
+  const videoControls = modal.querySelector('.video-controls');
+  
+  // Clear any existing event listeners (to prevent duplicates)
+  const videoPlayerClone = videoPlayer.cloneNode(true);
+  videoPlayer.parentNode.replaceChild(videoPlayerClone, videoPlayer);
+  videoPlayer = videoPlayerClone;
+  
+  // Re-add source to the cloned video player
+  const sourceElement = videoPlayer.querySelector('source');
+  const videoSource = sourceElement.src;
+  sourceElement.src = videoSource;
+  videoPlayer.load();
   
   // Update progress bar as video plays
   videoPlayer.addEventListener('timeupdate', () => {
-    const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-    progressFilled.style.width = `${percent}%`;
-    progressHandle.style.left = `${percent}%`;
-    
-    // Update time display
-    timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+    if (videoPlayer.duration) {
+      const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+      progressFilled.style.width = `${percent}%`;
+      progressHandle.style.left = `${percent}%`;
+      
+      // Update time display
+      timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+    }
   });
   
   // Click on progress bar to seek
@@ -486,8 +500,9 @@ function setupVideoControls(videoPlayer) {
   // Dragging progress handle
   let isDragging = false;
   
-  progressHandle.addEventListener('mousedown', () => {
+  progressHandle.addEventListener('mousedown', (e) => {
     isDragging = true;
+    e.stopPropagation(); // Prevent other click handlers
   });
   
   document.addEventListener('mousemove', (e) => {
@@ -498,12 +513,9 @@ function setupVideoControls(videoPlayer) {
       
       progressFilled.style.width = `${clampedPos * 100}%`;
       progressHandle.style.left = `${clampedPos * 100}%`;
-      
-      // Don't update video currentTime until mouseup for smoother dragging
     }
   });
-      
-      // Don't update video currentTime until mouseup for smoother dr
+  
   document.addEventListener('mouseup', () => {
     if (isDragging) {
       const width = parseFloat(progressFilled.style.width) / 100;
@@ -512,21 +524,58 @@ function setupVideoControls(videoPlayer) {
     }
   });
   
-  // Play/Pause button functionality
-  playPauseBtn.addEventListener('click', togglePlayPause);
-  videoPlayer.addEventListener('click', togglePlayPause);
-  
-  function togglePlayPause() {
+  // Play/Pause button functionality - improved event handling
+  function togglePlayPause(e) {
+    e.stopPropagation(); // Prevent event bubbling
+    
     if (videoPlayer.paused) {
-      videoPlayer.play();
-      playIcon.style.display = 'none';
-      pauseIcon.style.display = 'block';
+      const playPromise = videoPlayer.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        }).catch(error => {
+          console.error('Play failed:', error);
+          // Keep showing play icon if play fails
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+        });
+      }
     } else {
       videoPlayer.pause();
       playIcon.style.display = 'block';
       pauseIcon.style.display = 'none';
     }
   }
+  
+  // Remove old event listeners if they exist (to prevent duplicates)
+  playPauseBtn.removeEventListener('click', togglePlayPause);
+  
+  // Add event listeners with improved handling
+  playPauseBtn.addEventListener('click', togglePlayPause);
+  
+  // Separate video click handler with stopPropagation
+  videoPlayer.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent event propagation
+    
+    if (videoPlayer.paused) {
+      const playPromise = videoPlayer.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        }).catch(error => {
+          console.error('Play failed:', error);
+        });
+      }
+    } else {
+      videoPlayer.pause();
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
+    }
+  });
   
   // Update icons when video is played/paused
   videoPlayer.addEventListener('play', () => {
@@ -537,6 +586,13 @@ function setupVideoControls(videoPlayer) {
   videoPlayer.addEventListener('pause', () => {
     playIcon.style.display = 'block';
     pauseIcon.style.display = 'none';
+  });
+  
+  // Touch events for mobile
+  playPauseBtn.addEventListener('touchend', (e) => {
+    e.preventDefault(); // Prevent default touch behavior
+    e.stopPropagation();
+    togglePlayPause(e);
   });
   
   // Hide controls when inactive
@@ -565,6 +621,8 @@ function setupVideoControls(videoPlayer) {
     pauseIcon.style.display = 'none';
     videoControls.style.opacity = '1';
   });
+  
+  return videoPlayer; // Return the cloned player
 }
 
 // Helper function to format time (converts seconds to MM:SS format)
