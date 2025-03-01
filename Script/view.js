@@ -506,7 +506,7 @@ function closeVideoModal() {
         }, 0);
     }
     
-    history.back();
+
   
   // Hide the modal
   modal.classList.remove('active');
