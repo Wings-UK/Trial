@@ -482,8 +482,8 @@ function openVideoModal(post) {
       pauseIcon.style.display = 'none';
     });
   }
-   if (pageId === "food" || pageId === "profile") {
-    sessionStorage.setItem("scrollPosition", window.scrollY);
+   if (pageId !== "food" || pageId !== "profile") {
+    sessionStorage.setItem("scrollPositio", window.scrollY);
    } 
   
   history.pushState({ modalOpen: true }, '', window.location.href);
@@ -499,12 +499,14 @@ function closeVideoModal() {
   // Pause the video
   videoPlayer.pause();
   
-  const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+  const savedScrollPosition = sessionStorage.getItem("scrollPositio");
     if (savedScrollPosition) {
         setTimeout(() => {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }, 0);
     }
+    
+    history.back();
   
   // Hide the modal
   modal.classList.remove('active');
