@@ -521,7 +521,6 @@ function closeVideoModal() {
   document.body.style.overflow = ''; // Restore scrolling
   
 
-    history.back();
   }
 }
 
