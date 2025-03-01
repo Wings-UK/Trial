@@ -1633,6 +1633,78 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+function renderUserPosts(userId) {
+
+
+
+  // Get all posts from this user
+
+  const userPosts = posts.filter(post => post.userId === userId);
+  
+  // Get the columns where we'll display the posts
+  const leftColumn = document.querySelector('.left-column');
+  const rightColumn = document.querySelector('.right-column');
+  
+  // Clear existing content
+  leftColumn.innerHTML = '';
+  rightColumn.innerHTML = '';
+  
+  if (userPosts.length === 0) {
+    // Handle empty state
+    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
+    return;
+  }
+  
+  // Sort posts by timestamp (newest first)
+  userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Distribute posts between columns (alternating)
+  userPosts.forEach((post, index) => {
+    const postHTML = createPostHTML(post);
+    
+    if (index % 2 === 0) {
+      leftColumn.innerHTML += postHTML;
+    } else {
+      rightColumn.innerHTML += postHTML;
+    }
+  });
+}
+
+
+function createPostHTML(post) {
+
+  const hasVideo = post.video ? true : false;
+
+  const hasImage = post.image ? true : false;
+  
+  return `
+    <div class="profile-post" data-post-id="${post.id}">
+      ${hasImage ? `<img class="post-image" src="${post.image}" loading="lazy">` : ''}
+      ${hasVideo ? `
+        <div class="video-thumbnail">
+          <img src="${post.thumbnail || 'pics/video-thumbnail.jpg'}" loading="lazy">
+          <div class="play-overlay">
+            <svg width="50" height="50" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      ` : ''}
+     div class="contentma">
+      <p class="partner">${shortenText(post.content, textLimit, false)}</p>
+      <div class="bioi">
+        <div class="fred">
+          <img class="brekca" src="pics/chat-pic.jpg">
+          <p class="goo">@babygirl</p>
+        </div>
+        <div class="fred">
+          <img class="pen" src="pics/lovv.png">
+          <p class="goo">2.9K</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 
 
