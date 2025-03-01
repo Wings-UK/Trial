@@ -1022,88 +1022,7 @@ function adjustVideoPlayer(videoElement) {
 }
 
 // Call this function when the video metadata is loaded
-function showOwnProfile() {
-  const userData = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (!userData) {
-        alert("User not logged in!");
-        return;
-    }
 
-    const profileContainer = document.getElementById("user-profile");
-    const profileIreti = document.getElementById("ireti");
-    
-    profileIreti.innerHTML = `
-         <img class="frin" src="${userData.cover}">
-            <div>
-              <img class="kor" src="${userData.avatar}">
-            </div>
-            <div class="klr">
-              <div class="drun">
-                <div>
-                  <p class="spe">${userData.username}</p>
-                </div>
-                <div>
-                  <img class="verify" src="pics/verifi1.png">
-                </div>
-              </div>
-              <div class="druu">
-                <div>
-                  <p class="rkl">${userData.location}</p>
-                </div>
-                <div class="drum">
-                  <p class="swe">4</p>
-                  <img class="kiy" src="pics/kiddo.png">
-                </div>
-              </div>
-              <div class="nin">
-                <p class="rkl"><span class="bld">${userData.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
-              </div>
-              <div class="cha">
-                <p>${userData.bio}</p>
-              </div>
-              <div class="man">
-                <div class="vre">
-                  <button class="aasw">Follow</button>
-                </div>
-                <div class="vre">
-                  <button class="aasw">1 : 1</button>
-                </div>
-              </div>
-            </div>
-            <div class="ewe">
-              <div class="yeb">
-                <img class="dee" src="pics/apps.png">
-              </div>
-              <div class="yeb">
-               <a href="Retail-Desktop-MyAccount-Storefront.html">
-                <img class="dee" src="pics/browser.png">
-               </a>
-
-              </div>
-              <div class="yeb">
-                <img class="dee" src="pics/bren.png">
-              </div>
-
-            </div>
-            
-            <div class="mansonro">
-            <div class="masonri">
-              <!-- Left Column -->
-              <div class="column left-column">
-            
-              </div>
-  
-              <div class="column right-column">
-                
-              </div>
-            </div>
-          </div>
-    `;
-    
-    switchPage("user-profile");
-    renderUserPosts(userId);
-
-}
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
@@ -1309,6 +1228,172 @@ document.getElementById("usero").addEventListener("click", function() {
     switchPage("user-profile");
     
 });
+
+
+
+
+
+
+
+
+
+// 1. First, let's create a function to store and retrieve the logged-in user
+
+// This function would typically be called after user logs in
+function setLoggedInUser(userData) {
+  localStorage.setItem('loggedInUser', JSON.stringify(userData));
+}
+
+// Function to get the logged-in user data
+function getLoggedInUser() {
+  const userData = localStorage.getItem('loggedInUser');
+  if (userData) {
+    return JSON.parse(userData);
+  }
+  
+  // If no user data exists, return a default user (for testing purposes)
+  return {
+    id: 999,
+    username: "CurrentUser",
+    avatar: "pics/default-avatar.png",
+    cover: "pics/default-cover.jpg",
+    location: "Lagos, Nigeria",
+    bio: "This is my personal account",
+    following: 245,
+    followers: 1023,
+    posts: []
+  };
+}
+
+// 2. Function to show the logged-in user's profile
+function showLoggedInUserProfile() {
+  const user = getLoggedInUser();
+  
+  // Use the existing showUserProfile function, but pass the logged-in user's ID
+  showUserProfile(user.id);
+  
+  // If the showUserProfile function requires the user to exist in the users array,
+  // we might need to temporarily add the logged-in user to that array if not already there
+  if (!users.some(u => u.id === user.id)) {
+    // Store the original users array
+    const originalUsers = [...users];
+    
+    // Add logged-in user temporarily
+    users.push(user);
+    
+    // Call the function to show profile
+    showUserProfile(user.id);
+    
+    // Restore original users array
+    users = originalUsers;
+  }
+}
+
+// 3. Function to initialize the account icon click event
+function initializeAccountIcon() {
+  // Find the account icon - adjust the selector based on your actual HTML
+  const accountIcon = document.querySelector('.account-icon');
+  
+  if (accountIcon) {
+    accountIcon.addEventListener('click', function(event) {
+      event.preventDefault();
+      showLoggedInUserProfile();
+    });
+  }
+}
+
+// 4. Alternative approach - direct method to show logged-in user profile
+function showMyProfile() {
+  const user = getLoggedInUser();
+  
+  const profileContainer = document.getElementById("profile");
+  const profileIreti = document.getElementById("ireti");
+  
+  profileIreti.innerHTML = `
+     <img class="frin" src="${user.cover}">
+        <div>
+          <img class="kor" src="${user.avatar}">
+        </div>
+        <div class="klr">
+          <div class="drun">
+            <div>
+              <p class="spe">${user.username}</p>
+            </div>
+            <div>
+              <img class="verify" src="pics/verifi1.png">
+            </div>
+          </div>
+          <div class="druu">
+            <div>
+              <p class="rkl">${user.location}</p>
+            </div>
+            <div class="drum">
+              <p class="swe">4</p>
+              <img class="kiy" src="pics/kiddo.png">
+            </div>
+          </div>
+          <div class="nin">
+            <p class="rkl"><span class="bld">${user.following}</span> following &#183; <span class="bld">${user.followers}</span> followers</p>
+          </div>
+          <div class="cha">
+            <p>${user.bio}</p>
+          </div>
+          <div class="man">
+            <div class="vre">
+              <button class="aasw edit-profile-btn">Edit Profile</button>
+            </div>
+            <div class="vre">
+              <button class="aasw">Settings</button>
+            </div>
+          </div>
+        </div>
+        <div class="ewe">
+          <div class="yeb">
+            <img class="dee" src="pics/apps.png">
+          </div>
+          <div class="yeb">
+           <a href="Retail-Desktop-MyAccount-Storefront.html">
+            <img class="dee" src="pics/browser.png">
+           </a>
+          </div>
+          <div class="yeb">
+            <img class="dee" src="pics/bren.png">
+          </div>
+        </div>
+        
+        <div class="mansonro">
+        <div class="masonri">
+          <!-- Left Column -->
+          <div class="column left-column">
+        
+          </div>
+
+          <div class="column right-column">
+            
+          </div>
+        </div>
+      </div>
+  `;
+  
+  switchPage("profile");
+  
+  // Render the user's posts if they have any
+  if (user.posts && user.posts.length > 0) {
+    renderUserPosts(user.id);
+  } else {
+    // Handle empty state for user with no posts
+    const columns = document.querySelectorAll('.column');
+    columns.forEach(column => {
+      column.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
+    });
+  }
+  
+  // Add event listener for edit profile button
+  const editProfileBtn = document.querySelector('.edit-profile-btn');
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', openEditProfileModal);
+  }
+}
 
 
 
