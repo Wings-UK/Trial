@@ -496,7 +496,7 @@ function openVideoModal(post) {
     sessionStorage.setItem("scrollPositio", window.scrollY);
    } 
   
-  history.pushState({ modalOpen: true }, '', '#video-modal');
+  history.pushState({ modalOpen: true }, '', window.location.href);
 }
 
 
@@ -520,7 +520,7 @@ function closeVideoModal() {
   modal.classList.remove('active');
   document.body.style.overflow = ''; // Restore scrolling
   
-  if (history.state && history.state.modalOpen) {
+
     history.back();
   }
 }
