@@ -963,6 +963,7 @@ function adjustVideoPlayer(videoElement) {
       videoElement.style.width = 'auto';
       // Center horizontally
       videoElement.style.left = '50%';
+      videoElement.style.object-fit = 'cover';
       videoElement.style.transform = 'translateX(-50%)';
     } else {
       // Can't fit height, use full width
@@ -970,6 +971,7 @@ function adjustVideoPlayer(videoElement) {
       videoElement.style.height = 'auto';
       // Center vertically - THIS IS THE FIX
       videoElement.style.top = '50%';
+      videoElement.style.object-fit = 'cover';
       videoElement.style.transform = 'translateY(-50%)';
     }
   } else {
