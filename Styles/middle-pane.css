@@ -162,7 +162,7 @@
   background-color: #f8f8f8;
   border-radius: 8px;
   margin: 10px 0;
-}
+} 
 
 /* Ensure the account icon/profile icon is clickable with proper cursor */
 .account-icon, .profile-icon, .me-icon {
