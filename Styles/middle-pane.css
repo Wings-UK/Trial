@@ -277,7 +277,6 @@
   width: auto;
   height: 100vh;
   position: absolute;
-  object-fit: cover;
 }
 
 .video-controls {
@@ -286,7 +285,7 @@
   left: 0;
   width: 100%;
   padding: 20px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   transition: opacity 0.3s;
   z-index: 10000;
 }
