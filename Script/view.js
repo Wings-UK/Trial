@@ -1221,8 +1221,6 @@ function shortenText(text, limit, showSeeMore = true) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }, 0);
     }
-    
-    closeVideoModal();
 };
  
  document.addEventListener("DOMContentLoaded", function () {
