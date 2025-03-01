@@ -1224,10 +1224,6 @@ function shortenText(text, limit, showSeeMore = true) {
      switchPage("food");
  });
  
-document.getElementById("usero").addEventListener("click", function() {
-    switchPage("user-profile");
-    
-});
 
 
 
