@@ -185,6 +185,7 @@
   position: absolute;
   top: 0;
   width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
   font-family: ibm plex sans, roboto;
   display: flex;
   align-items: center;
