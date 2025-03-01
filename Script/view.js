@@ -1185,18 +1185,12 @@ function shortenText(text, limit, showSeeMore = true) {
 }
  
  window.onpopstate = function (event) {
+   const modal = document.querySelector('.video-modal');
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
         switchPage("food");
         history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always in history
-    }
-    
-    const modal = document.querySelector('.video-modal');
-
-    if (modal.classList.contains('active')) {
-
-        closeVideoModal();
     }
 
     // Restore scroll position
@@ -1205,6 +1199,10 @@ function shortenText(text, limit, showSeeMore = true) {
         setTimeout(() => {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }, 0);
+    }
+    
+    if (modal.classList.contains('active')) {
+        closeVideoModal();
     }
 };
  
