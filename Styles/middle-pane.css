@@ -273,9 +273,10 @@
   background: black;
 }
 
-.fullscreen-player {
+.fullscreen-player{
   width: auto;
   height: 100vh;
+  position: absolute;
 }
 
 .video-controls {
