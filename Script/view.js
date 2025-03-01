@@ -1660,9 +1660,7 @@ function renderUserPosts(userId) {
 
 
 function createPostHTML(post) {
-
   const hasVideo = post.video ? true : false;
-
   const hasImage = post.image ? true : false;
   
   return `
@@ -1678,21 +1676,26 @@ function createPostHTML(post) {
           </div>
         </div>
       ` : ''}
-     div class="contentma">
-      <p class="partner">${shortenText(post.content, textLimit, false)}</p>
-      <div class="bioi">
-        <div class="fred">
-          <img class="brekca" src="pics/chat-pic.jpg">
-          <p class="goo">@babygirl</p>
+      <div class="post-content">
+        <p>${shortenText(post.content, 100, true)}</p>
+      </div>
+      <div class="post-stats">
+        <div class="stat-item">
+          <img src="pics/lovv.png" alt="Likes">
+          <span>${post.likeCount || 0}</span>
         </div>
-        <div class="fred">
-          <img class="pen" src="pics/lovv.png">
-          <p class="goo">2.9K</p>
+        <div class="stat-item">
+          <img src="pics/chat.png" alt="Comments">
+          <span>${post.commentCount || 0}</span>
+        </div>
+        <div class="stat-item">
+          <img src="pics/stats.png" alt="Views">
+          <span>${post.views || 0}</span>
         </div>
       </div>
     </div>
-  </div>`
-}
+  `;
+} 
 
 
 
