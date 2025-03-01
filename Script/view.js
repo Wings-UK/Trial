@@ -161,7 +161,7 @@ function renderHomepage() {
     const videoModal = document.createElement('div');
     videoModal.className = 'video-modal';
     videoModal.innerHTML = `
-      <div class="modal-header">
+      <div class="modal-header1">
         <div class="back-button">
           <img src="pics/backa.png" alt="Back">
         </div>
@@ -748,7 +748,7 @@ function showDetail(postId) {
         const videoModal = document.createElement('div');
         videoModal.className = 'video-modal';
         videoModal.innerHTML = `
-          <div class="modal-header">
+          <div class="modal-header1">
             <div class="back-button">
               <img src="pics/backa.png" alt="Back">
             </div>
@@ -1401,8 +1401,8 @@ function openEditProfileModal() {
     const modal = document.createElement('div');
     modal.className = 'edit-profile-modal';
     modal.innerHTML = `
-      <div class="modal-content">
-        <div class="modal-header">
+      <div class="modal-content1">
+        <div class="modal-header1">
           <h2>Edit Profile</h2>
           <span class="close-modal">&times;</span>
         </div>
@@ -1505,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         background-color: rgba(0,0,0,0.7);
       }
       
-      .modal-content {
+      .modal-content1 {
         background-color: #fff;
         margin: 10% auto;
         padding: 20px;
@@ -1514,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', function() {
         max-width: 500px;
       }
       
-      .modal-header {
+      .modal-header1 {
         display: flex;
         justify-content: space-between;
         align-items: center;
