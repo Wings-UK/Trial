@@ -32,6 +32,17 @@ const users = [
       following: 556,
       location: "Madras, OR"
     },
+    {
+      id: 4,
+      username: "@jeremyx",
+      name: "Redd Cinemam",
+      cover: "pics/memo6.jpg",
+      avatar: "pics/mypics.jpg",
+      bio: "I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+      followers: 124,
+      following: 30,
+      location: "Minna, NR"
+    }
 ];
 
 const posts = [
@@ -136,14 +147,14 @@ const posts = [
 
 
 const loggedInUser = {
-    id: 3,
+    id: 4,
     username: "@jeremyx",
-    name: "Redd Cinema",
+    name: "Redd Cinemam",
     cover: "pics/memo6.jpg",
     avatar: "pics/mypics.jpg",
-    bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
-    followers: 1204,
-    following: 340,
+    bio: "I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+    followers: 124,
+    following: 30,
     location: "Minna, NR"
 };
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
