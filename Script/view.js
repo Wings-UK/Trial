@@ -495,16 +495,6 @@ window.addEventListener('popstate', () => {
     if (modal.classList.contains('active')) {
         closeVideoModal();
     }
-    
-    setTimeout (() => {
-
-     const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-
- 
-     if (savedScrollPosition) {
-         window.scrollTo(0, parseInt(savedScrollPosition));
-     }
-    }, 50);
 });
 
 // Function to close video modal
