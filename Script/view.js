@@ -1392,6 +1392,312 @@ function showMyProfile() {
 }
 
 
+// 5. Create a modal for editing the profile
+function openEditProfileModal() {
+  const user = getLoggedInUser();
+  
+  // Create modal if it doesn't exist
+  if (!document.querySelector('.edit-profile-modal')) {
+    const modal = document.createElement('div');
+    modal.className = 'edit-profile-modal';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Profile</h2>
+          <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="edit-username" value="${user.username}">
+          </div>
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="edit-location" value="${user.location}">
+          </div>
+          <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="edit-bio">${user.bio}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Profile Picture</label>
+            <div class="upload-btn-wrapper">
+              <button class="btn">Upload Image</button>
+              <input type="file" id="profile-pic-upload" accept="image/*" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cover Photo</label>
+            <div class="upload-btn-wrapper">
+              <button class="btn">Upload Image</button>
+              <input type="file" id="cover-pic-upload" accept="image/*" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="save-profile" class="save-btn">Save Changes</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listeners for the modal
+    const closeBtn = document.querySelector('.close-modal');
+    closeBtn.addEventListener('click', closeEditProfileModal);
+    
+    const saveBtn = document.getElementById('save-profile');
+    saveBtn.addEventListener('click', saveProfileChanges);
+  }
+  
+  // Display the modal
+  document.querySelector('.edit-profile-modal').style.display = 'block';
+}
+
+function closeEditProfileModal() {
+  document.querySelector('.edit-profile-modal').style.display = 'none';
+}
+
+function saveProfileChanges() {
+  // Get the updated values
+  const username = document.getElementById('edit-username').value;
+  const location = document.getElementById('edit-location').value;
+  const bio = document.getElementById('edit-bio').value;
+  
+  // Get the current user data
+  const user = getLoggedInUser();
+  
+  // Update the values
+  user.username = username;
+  user.location = location;
+  user.bio = bio;
+  
+  // Handle file uploads (in a real app you'd upload to a server)
+  // For this example, we'll just update the localStorage
+  
+  // Save the updated user data
+  setLoggedInUser(user);
+  
+  // Close the modal
+  closeEditProfileModal();
+  
+  // Refresh the profile display
+  showMyProfile();
+}
+
+
+
+// 6. Initialize everything when the document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if we have styles for the edit profile modal, if not, add them
+  if (!document.getElementById('edit-profile-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'edit-profile-styles';
+    styles.textContent = `
+      .edit-profile-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+      }
+      
+      .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 500px;
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      
+      .close-modal {
+        font-size: 24px;
+        cursor: pointer;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      
+      .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      
+      .form-group textarea {
+        height: 100px;
+      }
+      
+      .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+      }
+      
+      .btn {
+        border: 1px solid #ccc;
+        color: #555;
+        background-color: white;
+        padding: 8px 20px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      
+      .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      
+      .save-btn {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .empty-posts-message {
+        text-align: center;
+        padding: 20px;
+        background-color: #f8f8f8;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+  
+  // Find the account icon
+  const accountIcons = document.querySelectorAll('.account-icon, .profile-icon, .me-icon');
+  
+  accountIcons.forEach(icon => {
+    if (icon) {
+      icon.addEventListener('click', function(event) {
+        event.preventDefault();
+        showMyProfile();
+      });
+    }
+  });
+
+
+
+  // For testing - create a default user if none exists
+  if (!localStorage.getItem('loggedInUser')) {
+    setLoggedInUser({
+      id: 999,
+      username: "CurrentUser",
+      avatar: "pics/default-avatar.png", 
+      cover: "pics/default-cover.jpg",
+      location: "Lagos, Nigeria",
+      bio: "This is my profile! I love sharing content about technology and design.",
+      following: 245,
+      followers: 1023,
+      posts: []
+    });
+  }
+});
+
+// 7. Function to render the user's posts in the profile page
+function renderUserPosts(userId) {
+  // Get all posts from this user
+  const userPosts = posts.filter(post => post.userId === userId);
+  
+  // Get the columns where we'll display the posts
+  const leftColumn = document.querySelector('.left-column');
+  const rightColumn = document.querySelector('.right-column');
+  
+  // Clear existing content
+  leftColumn.innerHTML = '';
+  rightColumn.innerHTML = '';
+  
+  if (userPosts.length === 0) {
+    // Handle empty state
+    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
+    return;
+  }
+  
+  // Sort posts by timestamp (newest first)
+  userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Distribute posts between columns (alternating)
+  userPosts.forEach((post, index) => {
+    const postHTML = createPostHTML(post);
+    
+    if (index % 2 === 0) {
+      leftColumn.innerHTML += postHTML;
+    } else {
+      rightColumn.innerHTML += postHTML;
+    }
+  });
+}
+
+// Helper function to create HTML for a post in the profile page
+function createPostHTML(post) {
+  const hasVideo = post.video ? true : false;
+  const hasImage = post.image ? true : false;
+  
+  return `
+    <div class="profile-post" data-post-id="${post.id}">
+      ${hasImage ? `<img class="post-image" src="${post.image}" loading="lazy">` : ''}
+      ${hasVideo ? `
+        <div class="video-thumbnail">
+          <img src="${post.thumbnail || 'pics/video-thumbnail.jpg'}" loading="lazy">
+          <div class="play-overlay">
+            <svg width="50" height="50" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      ` : ''}
+      <div class="post-content">
+        <p>${shortenText(post.content, 100, true)}</p>
+      </div>
+      <div class="post-stats">
+        <div class="stat-item">
+          <img src="pics/lovv.png" alt="Likes">
+          <span>${post.likeCount || 0}</span>
+        </div>
+        <div class="stat-item">
+          <img src="pics/chat.png" alt="Comments">
+          <span>${post.commentCount || 0}</span>
+        </div>
+        <div class="stat-item">
+          <img src="pics/stats.png" alt="Views">
+          <span>${post.views || 0}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
 
  
  renderHomepage();
