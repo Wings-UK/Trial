@@ -286,6 +286,7 @@
   padding: 20px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
   transition: opacity 0.3s;
+  z-index: 10000;
 }
 
 .progress-container {
