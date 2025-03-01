@@ -49,7 +49,7 @@ const users = [
 const posts = [
     {
       id: 1,
-      userId: 1,  // Refers to user with id 1 (@reddcinema)
+      userId: 4,  // Refers to user with id 1 (@reddcinema)
       timestamp: "11 mins ago",
       video: "pics/single.mp4",
       date: "Feb 28, 2025 3:56 PM",
