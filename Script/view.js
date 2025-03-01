@@ -849,11 +849,11 @@ function adjustVideoPlayer(ella) {
     // Get video's natural aspect ratio
     const videoAspect = ella.videoWidth / ella.videoHeight;
     // Get screen/window aspect ratio
-    const screenAspect = window.innerWidth / (window.innerHeight - 60); // Subtracting your 75px bottom space
+    const screenAspect = window.innerWidth / (window.innerHeight - 70); // Subtracting your 75px bottom space
 
     // Get video natural dimensions
     const videoNaturalHeight = ella.videoHeight;
-    const screenHeight = window.innerHeight - 60; // Available height
+    const screenHeight = window.innerHeight - 70; // Available height
 
     if (videoNaturalHeight < 400) {
         // For shorter videos, maintain original height
