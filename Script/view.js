@@ -422,6 +422,11 @@ function initializeVideoPlayers() {
 
 // Function to open video modal
 function openVideoModal(post) {
+  if (pageId !== "food" && pageId !== "profile") {
+
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+
+   } 
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   const user = users.find(u => u.id === post.userId);
@@ -477,6 +482,16 @@ window.addEventListener('popstate', () => {
     if (modal.classList.contains('active')) {
         closeVideoModal();
     }
+    
+    setTimeout (() => {
+
+     const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+
+ 
+     if (savedScrollPosition) {
+         window.scrollTo(0, parseInt(savedScrollPosition));
+     }
+    }, 50);
 });
 
 // Function to close video modal
