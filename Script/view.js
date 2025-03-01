@@ -845,39 +845,58 @@ function showDetail(postId) {
 }
 
 
-function adjustVideoPlayer(ella) {
-    // Get video's natural aspect ratio
-    const videoAspect = ella.videoWidth / ella.videoHeight;
-    // Get screen/window aspect ratio
-    const screenAspect = window.innerWidth / (window.innerHeight - 70); // Subtracting your 75px bottom space
-
-    // Get video natural dimensions
-    const videoNaturalHeight = ella.videoHeight;
-    const screenHeight = window.innerHeight - 70; // Available height
-
-    if (videoNaturalHeight < 400) {
-        // For shorter videos, maintain original height
-        const calculatedHeight = (window.innerWidth / videoAspect);
-        ella.style.height = calculatedHeight + 'px';
-        // Center vertically
-        ella.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
-    } else if (videoAspect > 1) {
-        // Landscape video
-        ella.style.width = '100%';
-        const calculatedHeight = (window.innerWidth / videoAspect);
-        ella.style.height = `${calculatedHeight}px`;
-        // Center vertically if there's space
-        if (calculatedHeight < screenHeight) {
-            ella.style.top = `${(screenHeight - calculatedHeight) / 2}px`;
-        } else {
-            ella.style.top = '0';
-        }
+function adjustVideoPlayer(videoElement) {
+  // Get video's natural aspect ratio
+  const videoAspect = videoElement.videoWidth / videoElement.videoHeight;
+  // Get container dimensions
+  const container = videoElement.closest('.video-player-container');
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
+  
+  // Reset any previous styles
+  videoElement.style.width = '';
+  videoElement.style.height = '';
+  videoElement.style.top = '';
+  videoElement.style.left = '';
+  videoElement.style.transform = '';
+  
+  if (videoAspect < 1) {
+    // Portrait video - prioritize full height
+    const newWidth = containerHeight * videoAspect;
+    if (newWidth <= containerWidth) {
+      // Can fit full height without overflow
+      videoElement.style.height = '100%';
+      videoElement.style.width = 'auto';
+      // Center horizontally
+      videoElement.style.left = '50%';
+      videoElement.style.transform = 'translateX(-50%)';
     } else {
-        // Portrait video
-        ella.style.width = '100vw';
-        ella.style.height = `${screenHeight}px`;
-        ella.style.bottom = '0'; 
+      // Can't fit height, use full width
+      videoElement.style.width = '100%';
+      videoElement.style.height = 'auto';
+      // Center vertically 
+      videoElement.style.top = '50%';
+      videoElement.style.transform = 'translateY(-50%)';
     }
+  } else {
+    // Landscape video - prioritize full width
+    const newHeight = containerWidth / videoAspect;
+    if (newHeight <= containerHeight) {
+      // Can fit full width without overflow
+      videoElement.style.width = '100%';
+      videoElement.style.height = 'auto';
+      // Center vertically
+      videoElement.style.top = '50%';
+      videoElement.style.transform = 'translateY(-50%)';
+    } else {
+      // Can't fit width, use full height
+      videoElement.style.height = '100%';
+      videoElement.style.width = 'auto';
+      // Center horizontally
+      videoElement.style.left = '50%'; 
+      videoElement.style.transform = 'translateX(-50%)';
+    }
+  }
 }
 
 // Call this function when the video metadata is loaded
