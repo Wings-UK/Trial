@@ -185,7 +185,7 @@
   position: absolute;
   top: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
   font-family: ibm plex sans, roboto;
   display: flex;
   align-items: center;
@@ -219,8 +219,8 @@
 }
 
 .user-avatar img {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   border-radius: 3px;
   object-fit: cover;
 }
