@@ -1022,7 +1022,14 @@ function adjustVideoPlayer(videoElement) {
 }
 
 // Call this function when the video metadata is loaded
-
+function renderUserProfile() {
+    const userData = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!userData) {
+        alert("User not logged in!");
+        return;
+    }
+    showUserProfile(userData);
+}
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
@@ -1103,6 +1110,7 @@ function showUserProfile(userId) {
     renderUserPosts(userId);
 
 }
+
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
     const leftColumn = document.querySelector(".left-column");
@@ -1225,6 +1233,7 @@ function shortenText(text, limit, showSeeMore = true) {
  
 document.getElementById("usero").addEventListener("click", function() {
     switchPage("profile");
+    renderUserProfile();
 });
 
 
