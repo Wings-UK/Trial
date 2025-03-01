@@ -22,7 +22,7 @@ const users = [
       location: "New York, NY"
     },
     {
-      id: 3,
+      id: 3, 
       username: "@nomsa",
       name: "Lena Marie",
       cover: "pics/d.jpg",
@@ -136,7 +136,7 @@ const posts = [
 
 
 const loggedInUser = {
-    id: 4,
+    id: 3,
     username: "@jeremyx",
     name: "Redd Cinema",
     cover: "pics/memo6.jpg",
