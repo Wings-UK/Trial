@@ -968,7 +968,7 @@ function adjustVideoPlayer(videoElement) {
       // Can't fit height, use full width
       videoElement.style.width = '100%';
       videoElement.style.height = 'auto';
-      // Center vertically 
+      // Center vertically - THIS IS THE FIX
       videoElement.style.top = '50%';
       videoElement.style.transform = 'translateY(-50%)';
     }
