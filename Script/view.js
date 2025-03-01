@@ -482,7 +482,7 @@ function openVideoModal(post) {
       pauseIcon.style.display = 'none';
     });
   }
-   if (pageId !== "food" && pageId !== "profile") {
+   if (pageId === "food" || pageId === "profile") {
     sessionStorage.setItem("scrollPosition", window.scrollY);
    } 
   
@@ -498,6 +498,13 @@ function closeVideoModal() {
   
   // Pause the video
   videoPlayer.pause();
+  
+  const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    if (savedScrollPosition) {
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+        }, 0);
+    }
   
   // Hide the modal
   modal.classList.remove('active');
@@ -1185,7 +1192,6 @@ function shortenText(text, limit, showSeeMore = true) {
 }
  
  window.onpopstate = function (event) {
-   const modal = document.querySelector('.video-modal');
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
@@ -1201,9 +1207,7 @@ function shortenText(text, limit, showSeeMore = true) {
         }, 0);
     }
     
-    if (modal.classList.contains('active')) {
-        closeVideoModal();
-    }
+    closeVideoModal();
 };
  
  document.addEventListener("DOMContentLoaded", function () {
