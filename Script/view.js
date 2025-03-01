@@ -136,6 +136,20 @@ const posts = [
 ];
 
 
+const loggedInUser = {
+    id: 1,
+    username: "@jeremyx",
+    name: "Redd Cinema",
+    cover: "pics/memo6.jpg",
+    avatar: "pics/mypics.jpg",
+    bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+    followers: 1204,
+    following: 340,
+    location: "Minna, NR"
+};
+localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
+
+
 
 // Modified renderHomepage function
 function renderHomepage() {
@@ -1209,6 +1223,11 @@ function shortenText(text, limit, showSeeMore = true) {
      switchPage("food");
  });
  
+document.getElementById("usero").addEventListener("click", function() {
+    switchPage("profile");
+});
+
+
 
  
  renderHomepage();
