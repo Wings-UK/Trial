@@ -446,80 +446,53 @@ function initializeVideoPlayers() {
 
 // Function to open video modal
 function openVideoModal(post) {
- 
-  const modal = document.querySelector('.video-modal');
-  const videoPlayer = modal.querySelector('.fullscreen-player');
-  const user = users.find(u => u.id === post.userId);
+    const modal = document.querySelector('.video-modal');
+    const videoPlayer = modal.querySelector('.fullscreen-player');
+    const user = users.find(u => u.id === post.userId);
   
-  // Set the source of the video
-  videoPlayer.querySelector('source').src = post.video;
-  videoPlayer.load();
+    // Set the source of the video
+    videoPlayer.querySelector('source').src = post.video;
+    videoPlayer.load();
   
-  // Update user details in the modal
-  modal.querySelector('.user-avatar img').src = user.avatar;
-  modal.querySelector('.username span').textContent = user.username;
-  modal.querySelector('.timestamp').textContent = post.timestamp;
-  modal.querySelector('.modal-post-text').textContent = post.content;
+    // Update user details in the modal
+    modal.querySelector('.user-avatar img').src = user.avatar;
+    modal.querySelector('.username span').textContent = user.username;
+    modal.querySelector('.timestamp').textContent = post.timestamp;
+    modal.querySelector('.modal-post-text').textContent = post.content;
   
-  // Update action counts
-  modal.querySelector('.action-button:nth-child(1) span').textContent = post.likes || 358;
-  modal.querySelector('.action-button:nth-child(2) span').textContent = post.comments || 36;
-  modal.querySelector('.action-button:nth-child(3) span').textContent = post.reposts || 0;
-  modal.querySelector('.action-button:nth-child(4) span').textContent = post.donations || 8;
+    // Show the modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
   
-  // Show the modal
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden'; // Prevent background scrolling
-  
-  // Set up video controls (with improved function)
-  const updatedPlayer = setupVideoControls(videoPlayer);
-  
-  // Adjust the video player size based on orientation
-  updatedPlayer.addEventListener('loadedmetadata', () => {
-    adjustVideoPlayer(updatedPlayer);
-  });
-  
-  // Auto play the video with proper error handling
-  const playPromise = updatedPlayer.play();
-  
-  if (playPromise !== undefined) {
-    playPromise.catch(error => {
-      console.log('Auto-play prevented:', error);
-      // Show play button if autoplay is blocked
-      const playIcon = modal.querySelector('.play-icon');
-      const pauseIcon = modal.querySelector('.pause-icon');
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
-    });
-  }
-   if (pageId !== "food" || pageId !== "profile") {
-    sessionStorage.setItem("scrollPositio", window.scrollY);
-   } 
-  
-  history.pushState({ modalOpen: true }, '', window.location.href);
+    // Push a new state to history when opening the modal
+    history.pushState({ modalOpen: true }, '', '#video-modal');
 }
 
 
 
 // Function to close video modal
 function closeVideoModal() {
-  const modal = document.querySelector('.video-modal');
-  const videoPlayer = modal.querySelector('.fullscreen-player');
-  
-  // Pause the video
-  videoPlayer.pause();
-  
-  const savedScrollPosition = sessionStorage.getItem("scrollPositio");
-    if (savedScrollPosition) {
-        setTimeout(() => {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        }, 0);
+    const modal = document.querySelector('.video-modal');
+    const videoPlayer = modal.querySelector('.fullscreen-player');
+
+    // Pause the video
+    videoPlayer.pause();
+
+    // Hide the modal
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scrolling
+
+    // If modal is closed, go back in history without leaving the page
+    if (history.state && history.state.modalOpen) {
+        history.back();
     }
-  
-  // Hide the modal
-  modal.classList.remove('active');
-  document.body.style.overflow = ''; // Restore scrolling
 }
+
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.modalOpen) {
+        closeVideoModal();
+    }
+});
 
 // Function to setup video controls
 function setupVideoControls(videoPlayer) {
