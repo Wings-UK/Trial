@@ -969,8 +969,7 @@ function adjustVideoPlayer(videoElement) {
       videoElement.style.width = '100%';
       videoElement.style.height = 'auto';
       // Center vertically 
-      videoElement.style.top = '0';
-      videoElement.style.transform = 'translateY(-50%)';
+      videoElement.style.top = '0px';
     }
   } else {
     // Landscape video - prioritize full width
