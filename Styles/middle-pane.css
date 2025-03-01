@@ -214,7 +214,7 @@
 
 .modal-user-info {
   display: flex;
-  align-items: center;
+  align-items: top;
   gap: 10px;
 }
 
