@@ -490,12 +490,6 @@ function openVideoModal(post) {
 }
 
 
-window.addEventListener('popstate', () => {
-    const modal = document.querySelector('.video-modal');
-    if (modal.classList.contains('active')) {
-        closeVideoModal();
-    }
-});
 
 // Function to close video modal
 function closeVideoModal() {
@@ -1196,6 +1190,13 @@ function shortenText(text, limit, showSeeMore = true) {
     } else {
         switchPage("food");
         history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always in history
+    }
+    
+    const modal = document.querySelector('.video-modal');
+
+    if (modal.classList.contains('active')) {
+
+        closeVideoModal();
     }
 
     // Restore scroll position
