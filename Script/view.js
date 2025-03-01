@@ -356,16 +356,35 @@ function initializeVideoPlayers() {
     const thumbnailVideo = container.querySelector('.video-thumbnail');
     const durationBadge = container.querySelector('.duration-badge');
     
+    if (!thumbnailVideo || !durationBadge) return;
+    
+    // Remove existing event listeners (if any)
+    const thumbnailClone = thumbnailVideo.cloneNode(true);
+    thumbnailVideo.parentNode.replaceChild(thumbnailClone, thumbnailVideo);
+    
+    // Re-set the source and load
+    const sourceElement = thumbnailClone.querySelector('source');
+    if (sourceElement) {
+      const videoSource = sourceElement.src;
+      sourceElement.src = videoSource;
+      thumbnailClone.load();
+    }
+    
     // Set duration badge once metadata is loaded
-    thumbnailVideo.addEventListener('loadedmetadata', () => {
-      const duration = formatTime(thumbnailVideo.duration);
+    thumbnailClone.addEventListener('loadedmetadata', () => {
+      const duration = formatTime(thumbnailClone.duration);
       durationBadge.textContent = duration;
     });
     
-    // Open video modal on click
-    container.addEventListener('click', () => {
+    // Open video modal on click with improved event handling
+    container.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
+      
       const postElement = container.closest('.poster');
+      if (!postElement) return;
+      
       const postId = postElement.getAttribute('data-post-id');
+      if (!postId) return;
       
       // Find the corresponding post data
       const post = posts.find(p => p.id === parseInt(postId));
@@ -378,22 +397,25 @@ function initializeVideoPlayers() {
   // Set up modal close functionality
   const backButtons = document.querySelectorAll('.back-button');
   backButtons.forEach(button => {
-    button.addEventListener('click', closeVideoModal);
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    
+    newButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeVideoModal();
+    });
   });
-  
-  const videoPlayer = document.querySelector('.fullscreen-player');
-
-videoPlayer.addEventListener('loadedmetadata', () => {
-
-    adjustVideoPlayer(videoPlayer);
-}); 
   
   // Setup follow buttons
   const followButtons = document.querySelectorAll('.follow-button');
   followButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      button.classList.toggle('following');
-      button.textContent = button.classList.contains('following') ? 'Following' : 'Follow';
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    
+    newButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      newButton.classList.toggle('following');
+      newButton.textContent = newButton.classList.contains('following') ? 'Following' : 'Follow';
     });
   });
 }
