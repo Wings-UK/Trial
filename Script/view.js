@@ -400,7 +400,6 @@ videoPlayer.addEventListener('loadedmetadata', () => {
 
 // Function to open video modal
 function openVideoModal(post) {
-
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   const user = users.find(u => u.id === post.userId);
@@ -425,16 +424,31 @@ function openVideoModal(post) {
   modal.classList.add('active');
   document.body.style.overflow = 'hidden'; // Prevent background scrolling
   
-  // Set up video controls
-  setupVideoControls(videoPlayer);
+  // Set up video controls (with improved function)
+  const updatedPlayer = setupVideoControls(videoPlayer);
   
-  // Auto play the video
-  videoPlayer.play().catch(error => {
-    console.log('Auto-play prevented:', error);
-    // Show play button prominently if autoplay is blocked
+  // Adjust the video player size based on orientation
+  updatedPlayer.addEventListener('loadedmetadata', () => {
+    adjustVideoPlayer(updatedPlayer);
   });
+  
+  // Auto play the video with proper error handling
+  const playPromise = updatedPlayer.play();
+  
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.log('Auto-play prevented:', error);
+      // Show play button if autoplay is blocked
+      const playIcon = modal.querySelector('.play-icon');
+      const pauseIcon = modal.querySelector('.pause-icon');
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
+    });
+  }
+  
   history.pushState({ modalOpen: true }, '', window.location.href);
 }
+
 
 window.addEventListener('popstate', () => {
     const modal = document.querySelector('.video-modal');
