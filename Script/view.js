@@ -1128,15 +1128,20 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   ${post.video ? `
-                  <video class="video-thumbnail power" preload="metadata" poster="${post.videoPoster || ''}">
-                    <source src="${post.video}" type="video/mp4">
-                    <div class="playerx" style="position: absolute; top: 10px; right: 10px;"> 
-                    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
-                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                    </svg>
+                 <div class="video-container laptop1" data-post-id="${post.id}">
+                    <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
+                      <source src="${post.video}" type="video/mp4">
+                    </video>
+                    <div class="video-overlay">
+                      <div class="play-button">
+                       <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
+                          <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                      </svg>
+                      </div>
+                      <div class="duration-badge">0:00</div>
                     </div>
-                  </video>
+                  </div>
                   ` : ''}
                   <div class="contentma">
                     <p class="partner">${shortenText(post.content, textLimit, false)}</p>
