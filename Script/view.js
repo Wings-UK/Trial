@@ -1128,8 +1128,8 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   ${post.video ? `
-                 <div>
-                    <video class="video-thumbnail power" preload="metadata" poster="${post.videoPoster || ''}">
+                 <div class="power">
+                    <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
                       <source src="${post.video}" type="video/mp4">
                        <div class="video-overlay">
 
