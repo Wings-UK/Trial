@@ -1127,6 +1127,11 @@ function renderUserPosts(userId) {
                   ${post.image ? `
                   <img src="${post.image}">
                   ` : ''}
+                  ${post.video ? `
+                  <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
+                    <source src="${post.video}" type="video/mp4">
+                  </video>
+                  ` : ''}
                   <div class="contentma">
                     <p class="partner">${shortenText(post.content, textLimit, false)}</p>
                     <div class="bioi">
