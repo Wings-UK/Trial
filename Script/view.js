@@ -1028,6 +1028,7 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
+    updateHeaderHTML(userId);
 
     const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
@@ -1100,7 +1101,7 @@ function showUserProfile(userId) {
           </div>
     `;
     switchPage("profile");
-    updateHeaderHTML(userId);
+    
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
@@ -1132,27 +1133,32 @@ let lastScrollPos = 0;
 // Function to add necessary elements to the header
 function updateHeaderHTML(userId) {
   const user = users.find(u => u.id === userId);
-    if (!user) return;
+  if (!user) return;
+
   const header = document.querySelector('.file');
-  
-  // Check if we already added our elements to avoid duplicates
-  if (!document.querySelector('.header-profile-pic')) {
-    // Create profile picture container for header
-    const profilePicContainer = document.createElement('div');
-    profilePicContainer.className = 'header-profile-pic';
-    profilePicContainer.style.display = 'none'; // Hidden by default
-    profilePicContainer.innerHTML = `<img class="header-avatar" src= "${user.avatar}" alt="Profile">`;
-    
-    // Create follow button for header
-    const followBtnContainer = document.createElement('div');
-    followBtnContainer.className = 'header-follow-btn';
-    followBtnContainer.style.display = 'none'; // Hidden by default
-    followBtnContainer.innerHTML = '<button class="header-follow">Follow</button>';
-    
-    // Add them to the header
-    header.appendChild(profilePicContainer);
-    header.appendChild(followBtnContainer);
+  let headerProfilePic = document.querySelector('.header-profile-pic');
+  let headerFollowBtn = document.querySelector('.header-follow-btn');
+
+  // If elements do not exist, create them
+  if (!headerProfilePic) {
+    headerProfilePic = document.createElement('div');
+    headerProfilePic.className = 'header-profile-pic';
+    header.appendChild(headerProfilePic);
   }
+
+  if (!headerFollowBtn) {
+    headerFollowBtn = document.createElement('div');
+    headerFollowBtn.className = 'header-follow-btn';
+    header.appendChild(headerFollowBtn);
+  }
+
+  // **Update the elements with the new profile data**
+  headerProfilePic.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
+  headerFollowBtn.innerHTML = `<button class="header-follow">Follow</button>`;
+
+  // Ensure elements are hidden by default (but ready to be shown when scrolling)
+  headerProfilePic.style.display = 'none';
+  headerFollowBtn.style.display = 'none';
 }
 
 // Function to handle scroll events
