@@ -1121,7 +1121,7 @@ function renderUserPosts(userId) {
     userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     userPosts.forEach((post, index) => {
-      const textLimit = post.video ? 30 : (post.image ? 40 : 200);
+      const textLimit = post.video ? 80 : (post.image ? 40 : 200);
         const postHTML = `
             <div class="masonry" onclick="showDetail(${post.id})">
                   ${post.image ? `
