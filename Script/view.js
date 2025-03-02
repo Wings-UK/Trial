@@ -273,7 +273,7 @@ function renderHomepage() {
                     <div class="pos">
                         <div>
                             <div class="link-wrapper">
-                                <a class="home-click" onclick="showUserProfile(${user.id})">
+                                <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
                                     <div class="post1">
                                         <div class="jerr">
                                             <p class="jerry">${user.username}</p>
