@@ -1099,11 +1099,30 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
+    updateHeaderHTML();
+    lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Attach scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    
     
     switchPage("profile");
     renderUserPosts(userId);
 
 }
+
+// Make sure to call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize header if needed
+  updateHeaderHTML();
+  
+  // Initialize lastScrollPos
+  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Attach scroll event listener
+  window.addEventListener('scroll', handleScroll);
+});
+
 
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
