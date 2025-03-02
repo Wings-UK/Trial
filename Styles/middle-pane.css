@@ -304,7 +304,13 @@
   object-fit: cover;
   max-height: 300px;
 }
-
+.playerx {
+  position: absolute;
+  top: 10x;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+}
 .video-overlay {
   position: absolute;
   top: 0;
