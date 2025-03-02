@@ -1467,7 +1467,7 @@
 .header-profile-pic {
   position: absolute;
   right: 15px;
-  display: none;
+  display: block;
   transition: all 0.3s ease;
   opacity: 0;
 }
