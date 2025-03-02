@@ -312,11 +312,7 @@
   height: 70px;
 }
 .power {
-  position: relative;
-  width: 100%;
-  border-radius: 5px;
-  overflow: hidden;
-  margin: 10px 0; 
+  pointer-events: none;
 }
 .video-overlay {
   position: absolute;
