@@ -1468,9 +1468,9 @@
 .header-profile-pic {
   position: absolute;
   right: 15px;
-  display: none; /* Hidden by default, shown on scroll */
+  display: block; /* Hidden by default, shown on scroll */
   transition: all 0.3s ease;
-  opacity: 0;
+  opacity: 1;
 }
 
 .header-profile-pic.visible {
