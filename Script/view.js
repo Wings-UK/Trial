@@ -1134,7 +1134,7 @@ let lastScrollPos = 0;
 
 // Function to add necessary elements to the header
 function updateHeaderHTML() {
-  const header = document.querySelector('.heado');
+  const header = document.querySelector('.file');
   
   // Check if we already added our elements to avoid duplicates
   if (!document.querySelector('.header-profile-pic')) {
