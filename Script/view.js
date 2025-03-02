@@ -1372,7 +1372,6 @@ function showMyProfile() {
         
           </div>
 
-          <!-- Right Column -->
           <div class="column right-column">
             
           </div>
@@ -1382,39 +1381,15 @@ function showMyProfile() {
   
   switchPage("profile");
   
-  console.log("User data in showMyProfile:", user); // Debug log
-  console.log("User posts:", user.posts); // Debug log
-  
-  // Check if the user has posts
+  // Render the user's posts if they have any
   if (user.posts && user.posts.length > 0) {
-    console.log("Found posts, rendering...");
     renderUserPosts(user.id);
   } else {
-    console.log("No posts found, showing empty state");
     // Handle empty state for user with no posts
     const columns = document.querySelectorAll('.column');
     columns.forEach(column => {
       column.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
     });
-    
-    // Add a "Create Post" button in the empty state
-    const leftColumn = document.querySelector('.left-column');
-    leftColumn.innerHTML += `
-      <div class="create-post-cta">
-        <button class="add-post-btn">Create Your First Post</button>
-      </div>
-    `;
-    
-    // Add event listener for the Create Post button
-    const addPostBtn = document.querySelector('.add-post-btn');
-    if (addPostBtn) {
-      addPostBtn.addEventListener('click', function() {
-        // For testing: Create a sample post
-        addTestPost();
-        // Refresh the profile to show the new post
-        showMyProfile();
-      });
-    }
   }
   
   // Add event listener for edit profile button
@@ -1423,29 +1398,6 @@ function showMyProfile() {
     editProfileBtn.addEventListener('click', openEditProfileModal);
   }
 }
-
-// Make sure the switchPage function exists
-function switchPage(pageId) {
-  // Check if the function is already defined
-  if (typeof window.switchPage === 'function') {
-    window.switchPage(pageId);
-    return;
-  }
-  
-  // If not, provide a simple implementation
-  const pages = document.querySelectorAll('.page');
-  pages.forEach(page => {
-    page.style.display = 'none';
-  });
-  
-  const targetPage = document.getElementById(pageId);
-  if (targetPage) {
-    targetPage.style.display = 'block';
-  } else {
-    console.error(`Page with ID ${pageId} not found`);
-  }
-}
-
 
 
 // 5. Create a modal for editing the profile
@@ -1680,24 +1632,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Modified function to render user's posts in the profile page
 function renderUserPosts(userId) {
-  // Get the current user
-  const user = getLoggedInUser();
-  
+
+
+
   // Get all posts from this user
-  // First check if there's a global posts array we can filter
-  let userPosts = [];
-  
-  if (typeof posts !== 'undefined' && Array.isArray(posts)) {
-    // If there's a global posts array, filter by userId
-    userPosts = posts.filter(post => post.userId === userId);
-  } else if (user.posts && Array.isArray(user.posts)) {
-    // Otherwise, use the posts stored directly in the user object
-    userPosts = user.posts;
-  }
-  
-  console.log("User posts to render:", userPosts); // Debug log
+
+  const userPosts = posts.filter(post => post.userId === userId);
   
   // Get the columns where we'll display the posts
   const leftColumn = document.querySelector('.left-column');
@@ -1707,16 +1648,14 @@ function renderUserPosts(userId) {
   leftColumn.innerHTML = '';
   rightColumn.innerHTML = '';
   
-  if (!userPosts || userPosts.length === 0) {
+  if (userPosts.length === 0) {
     // Handle empty state
     leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
     return;
   }
   
   // Sort posts by timestamp (newest first)
-  if (userPosts[0].timestamp) {
-    userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }
+  userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   
   // Distribute posts between columns (alternating)
   userPosts.forEach((post, index) => {
@@ -1731,21 +1670,12 @@ function renderUserPosts(userId) {
 }
 
 
-// Helper function to create HTML for a post in the profile page
 function createPostHTML(post) {
-  // Make sure to check if the properties exist before accessing them
   const hasVideo = post.video ? true : false;
   const hasImage = post.image ? true : false;
   
-  // Ensure we have the shortenText function or create one
-  const shortenText = (text, maxLength, addEllipsis) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + (addEllipsis ? '...' : '');
-  };
-  
   return `
-    <div class="profile-post" data-post-id="${post.id || ''}">
+    <div class="profile-post" data-post-id="${post.id}">
       ${hasImage ? `<img class="post-image" src="${post.image}" loading="lazy">` : ''}
       ${hasVideo ? `
         <div class="video-thumbnail">
@@ -1776,40 +1706,7 @@ function createPostHTML(post) {
       </div>
     </div>
   `;
-}
-
-// Add this function to create a test post for the current user
-function addTestPost() {
-  const user = getLoggedInUser();
-  
-  // Check if the user has a posts array, if not create one
-  if (!user.posts) {
-    user.posts = [];
-  }
-  
-  // Create a test post
-  const testPost = {
-    id: Date.now(), // Use timestamp as a simple ID
-    content: "This is a test post created on " + new Date().toLocaleString(),
-    timestamp: new Date().toISOString(),
-    likeCount: 5,
-    commentCount: 2,
-    views: 42,
-    image: "pics/default-post-image.jpg" // Replace with an actual image path if available
-  };
-  
-  // Add the post to the user's posts array
-  user.posts.push(testPost);
-  
-  // Save the updated user data
-  setLoggedInUser(user);
-  
-  console.log("Test post added:", testPost);
-  console.log("Updated user data:", user);
-  
-  // Return the updated user
-  return user;
-}
+} 
 
 
 
