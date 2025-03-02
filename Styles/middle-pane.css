@@ -1089,6 +1089,13 @@
 }
 .heado {
   width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .header-order1 {
   display: flex;
@@ -1456,6 +1463,19 @@
   padding-left: 25px;
   gap: 50px;
   margin-top: 10px;
+}
+.header-profile-pic {
+  position: absolute;
+  right: 15px;
+  display: none;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  border: 2px solid #f0f0f0;
 }
 .proo {
   display: flex;
@@ -2258,6 +2278,9 @@
 .exp-order {
   padding-top: 1.8px;
   padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 .tr {
   border-width: 1px;
