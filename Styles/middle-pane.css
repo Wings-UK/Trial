@@ -308,8 +308,11 @@
   position: absolute;
   top: 10x;
   right: 10px;
-  width: 20px;
-  height: 20px;
+  width: 70px;
+  height: 70px;
+}
+.power {
+  position: relative;
 }
 .video-overlay {
   position: absolute;
