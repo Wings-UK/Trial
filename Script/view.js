@@ -1142,7 +1142,7 @@ function updateHeaderHTML() {
     const profilePicContainer = document.createElement('div');
     profilePicContainer.className = 'header-profile-pic';
     profilePicContainer.style.display = 'none'; // Hidden by default
-    profilePicContainer.innerHTML = '<img class="header-avatar" src="" alt="Profile">';
+    profilePicContainer.innerHTML = `<img class="header-avatar" src='' alt="Profile">`;
     
     // Create follow button for header
     const followBtnContainer = document.createElement('div');
@@ -1171,7 +1171,7 @@ function handleScroll() {
   const followBtnRect = followBtn.getBoundingClientRect();
   
   // Set the avatar image source (only needs to be done once)
-  if (headerProfilePic.querySelector('img').src === "") {
+  if (headerProfilePic.querySelector('img').src === '') {
     headerProfilePic.querySelector('img').src = profilePic.src;
   }
   
