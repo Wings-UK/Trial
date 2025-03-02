@@ -1489,7 +1489,7 @@
 .header-follow-btn {
   position: absolute;
   left: 60px;
-  top: 10px;;/* Position next to back button */
+  top: 9px;;/* Position next to back button */
   display: none; /* Hidden by default, shown on scroll */
   transition: all 0.3s ease;
   opacity: 0;
