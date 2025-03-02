@@ -1101,6 +1101,7 @@ function showUserProfile(userId) {
     `;
     
     switchPage("profile");
+    renderUserPosts(userId);
     updateHeaderHTML();
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   
@@ -1109,7 +1110,7 @@ function showUserProfile(userId) {
     
     
     
-    renderUserPosts(userId);
+    
 
 }
 
