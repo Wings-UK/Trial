@@ -1128,12 +1128,12 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   ${post.video ? `
-                <div class="video-container" data-post-id="${post.id}">
+                <div class="video-container power" data-post-id="${post.id}">
                     <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
                       <source src="${post.video}" type="video/mp4">
                     </video>
                     <div class="video-overlay power">
-                      <div class="play-button">
+                      <div class="play-button power">
                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
                           <path d="M34 24L18 34V14L34 24Z" fill="white"/>
