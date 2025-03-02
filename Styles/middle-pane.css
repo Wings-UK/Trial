@@ -1480,9 +1480,9 @@
 .header-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 3px;
   object-fit: cover;
-  border: 2px solid #f0f0f0;
+  border: 1px solid #f0f0f0;
 }
 
 /* Header follow button container */
@@ -1499,19 +1499,19 @@
 }
 
 .header-follow {
-  background-color: #1DA1F2; /* Twitter blue color, change as needed */
+  background-color: rgb(244, 7, 82); /* Twitter blue color, change as needed */
   color: white;
   border: none;
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .header-follow:hover {
-  background-color: #0d8ed9;
+  background-color: rgba(244, 7, 82, 0.5);
 }
 .proo {
   display: flex;
