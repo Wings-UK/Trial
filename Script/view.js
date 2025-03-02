@@ -1099,14 +1099,11 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
+    switchPage("profile");
     updateHeaderHTML(userId);
-
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-
-  
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
-    switchPage("profile");
     renderUserPosts(userId);
     
     
