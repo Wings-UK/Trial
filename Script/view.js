@@ -1141,8 +1141,8 @@ function updateHeaderHTML() {
     // Create profile picture container for header
     const profilePicContainer = document.createElement('div');
     profilePicContainer.className = 'header-profile-pic';
-    profilePicContainer.style.display = 'block'; // Hidden by default
-    profilePicContainer.innerHTML = '<img class="header-avatar" src="pics/koreangirls.jpg" alt="Profile">';
+    profilePicContainer.style.display = 'none'; // Hidden by default
+    profilePicContainer.innerHTML = '<img class="header-avatar" src="" alt="Profile">';
     
     // Create follow button for header
     const followBtnContainer = document.createElement('div');
