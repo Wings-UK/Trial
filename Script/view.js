@@ -1624,43 +1624,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-function renderUserPosts(userId) {
-
-
-
-  // Get all posts from this user
-
-  const userPosts = posts.filter(post => post.userId === userId);
-  
-  // Get the columns where we'll display the posts
-  const leftColumn = document.querySelector('.left-column');
-  const rightColumn = document.querySelector('.right-column');
-  
-  // Clear existing content
-  leftColumn.innerHTML = '';
-  rightColumn.innerHTML = '';
-  
-  if (userPosts.length === 0) {
-    // Handle empty state
-    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
-    return;
-  }
-  
-  // Sort posts by timestamp (newest first)
-  userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
-  // Distribute posts between columns (alternating)
-  userPosts.forEach((post, index) => {
-    const postHTML = createPostHTML(post);
-    
-    if (index % 2 === 0) {
-      leftColumn.innerHTML += postHTML;
-    } else {
-      rightColumn.innerHTML += postHTML;
-    }
-  });
-}
-
 
 function createPostHTML(post) {
   const hasVideo = post.video ? true : false;
