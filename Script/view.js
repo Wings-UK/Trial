@@ -1380,17 +1380,9 @@ function showMyProfile() {
   `;
   
   switchPage("profile");
-  
-  // Render the user's posts if they have any
-  if (user.posts && user.posts.length > 0) {
-    renderUserPosts(user.id);
-  } else {
-    // Handle empty state for user with no posts
-    const columns = document.querySelectorAll('.column');
-    columns.forEach(column => {
-      column.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
-    });
-  }
+  // Render posts by checking the global posts array for matching userId
+  renderUserPosts(user.id);
+
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
