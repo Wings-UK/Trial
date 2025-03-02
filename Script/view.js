@@ -1142,7 +1142,7 @@ function updateHeaderHTML() {
     const profilePicContainer = document.createElement('div');
     profilePicContainer.className = 'header-profile-pic';
     profilePicContainer.style.display = 'none'; // Hidden by default
-    profilePicContainer.innerHTML = '<img class="header-avatar" src='' alt="Profile">';
+    profilePicContainer.innerHTML = '<img class="header-avatar" src="" alt="Profile">';
     
     // Create follow button for header
     const followBtnContainer = document.createElement('div');
