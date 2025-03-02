@@ -1132,7 +1132,7 @@ function renderUserPosts(userId) {
                     <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
                       <source src="${post.video}" type="video/mp4">
                     </video>
-                    <div class="video-overlay">
+                    <div class="video-overlay power">
                       <div class="play-button">
                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
