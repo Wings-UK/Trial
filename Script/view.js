@@ -1128,7 +1128,7 @@ function renderUserPosts(userId) {
                   <img src="${post.image}">
                   ` : ''}
                   ${post.video ? `
-                 <div class="video-container laptop1" data-post-id="${post.id}">
+                 <div>
                     <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
                       <source src="${post.video}" type="video/mp4">
                     </video>
