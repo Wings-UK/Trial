@@ -1171,7 +1171,7 @@ function handleScroll() {
   const followBtnRect = followBtn.getBoundingClientRect();
   
   // Set the avatar image source (only needs to be done once)
-  if (headerProfilePic.querySelector('img').src === '') {
+  if (headerProfilePic.querySelector('img').src === "") {
     headerProfilePic.querySelector('img').src = profilePic.src;
   }
   
