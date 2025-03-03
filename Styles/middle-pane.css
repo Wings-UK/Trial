@@ -881,7 +881,7 @@
 }
 .ewe.fixed {
   position: fixed;
-  top: var(--header-height, 50px);
+  top: var(--header-height, 30px);
   left: 0;
   right: 0;
 }
