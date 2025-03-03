@@ -1115,33 +1115,6 @@ function showUserProfile(userId) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
     const leftColumn = document.querySelector(".left-column");
@@ -1361,7 +1334,7 @@ function initializeAccountIcon() {
 // 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
   const user = getLoggedInUser();
-  
+  updateHeaderHTML(userId);
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
   
