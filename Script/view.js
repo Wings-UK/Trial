@@ -1416,7 +1416,6 @@ function showMyProfile() {
   }
 }
 
-
 // 5. Create a modal for editing the profile
 function openEditProfileModal() {
   const user = getLoggedInUser();
