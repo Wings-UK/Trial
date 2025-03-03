@@ -1043,6 +1043,9 @@
   text-decoration: none;
   color: inherit;
 }
+.mansonro {
+  padding-top: 10px;
+}
 .small-photo, .hui {
   width: 45px;
   object-fit: cover;
