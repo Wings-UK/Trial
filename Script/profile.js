@@ -139,7 +139,7 @@ function handlesScroll() {
     if (!menuBar.classList.contains('fixed')) {
       menuBar.classList.add('fixed');
       // Add padding to the content below to prevent jumps
-      const menuHeight = menuBar.offsetHeight;
+      const menuHeight = menuBar.offsetHeight + 10;
       document.querySelector('.mansonro').style.paddingTop = `${menuHeight}px`;
     }
   } else {
