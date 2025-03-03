@@ -867,6 +867,7 @@
 .ewe {
   display: flex;
   width: 100%;
+  margin-top: 20px;
   margin-bottom: 10px;
   border-top-style: solid;
   border-top-width: 1px;
@@ -874,12 +875,13 @@
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: rgb(234, 237, 240);
-  background-color: white;
+  background-color: rgba(255,255,255, 0.8);
   z-index: 100;
   transition: all 0.3s ease;
 }
 .ewe.fixed {
   position: fixed;
+  margin-top: 20px;
   top: var(--header-height, 50px);
   left: 0;
   right: 0;
