@@ -1407,9 +1407,7 @@ function showMyProfile() {
       </div>
   `;
 
-    setTimeout(() => {
         renderUserPosts(user.id);
-    }, 100);
 }
   
   // Add event listener for edit profile button
