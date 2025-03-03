@@ -875,13 +875,13 @@
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: rgb(234, 237, 240);
-  background-color: rgba(255,255,255, 0.8);
+  background-color: rgba(255,255,255, 0.9);
   z-index: 100;
   transition: all 0.3s ease;
 }
 .ewe.fixed {
   position: fixed;
-  margin-top: 20px;
+  margin-top: 0px;
   top: var(--header-height, 50px);
   left: 0;
   right: 0;
