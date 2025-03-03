@@ -874,7 +874,16 @@
   border-top-color: rgb(234, 237, 240);
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  border-bottom-color: rgb(234, 237, 240); 
+  border-bottom-color: rgb(234, 237, 240);
+  background-color: white;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+.ewe.fixed {
+  position: fixed;
+  top: var(--header-height, 50px);
+  left: 0;
+  right: 0;
 }
 .dee {
   width: 30px;
@@ -885,6 +894,10 @@
   align-items: center;
   flex: 1;
   height: 60px;
+  transition: all 0.2s;
+}
+#profile {
+  overflow-x: hidden;
 }
 .aasw {
   padding: 10px 15px;
