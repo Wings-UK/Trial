@@ -135,7 +135,7 @@ const posts = [
       content: "I think i like this dance. Can someone tell me the name and the country where i can go to learn this? It looks difficult though",
     },
     {
-      id: 12,
+      id: 12, 
       userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "4 mins ago",
       date: "Feb 28, 2025 3:56 PM",
