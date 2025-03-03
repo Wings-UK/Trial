@@ -1106,7 +1106,7 @@ function showUserProfile(userId) {
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
     
-    document.querySelector(".wing").style.display = "none";
+    
     renderUserPosts(userId);
     setupScrollHandling();
 
@@ -1406,15 +1406,9 @@ function showMyProfile() {
         </div>
       </div>
   `;
-  const wingDiv = document.querySelector(".wing");
-    if (wingDiv) {
-        wingDiv.style.display = "block";
-    }
-
-    setTimeout(() => {
-        renderUserPosts(user.id);
-    }, 100);
-}
+  
+  // Render posts by checking the global posts array for matching userId
+  renderUserPosts(user.id);
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
