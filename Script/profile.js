@@ -17,7 +17,7 @@ let lastScrollPos = 0;
 
 // Function to add necessary elements to the header
 function updateHeaderHTML(userId) {
-  const user = users.find(u => u.id === userId);
+  const user = users.find(u => u.id === userId) || getLoggedInUser();;
   if (!user) return;
 
   const header = document.querySelector('.file');
