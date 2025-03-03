@@ -1334,7 +1334,13 @@ function initializeAccountIcon() {
 // 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
   const user = getLoggedInUser();
-  updateHeaderHTML(userId);
+  switchPage("profile"); // Switch to the profile page first
+
+    // Delay updating the header to avoid interference with page rendering
+    setTimeout(() => {
+        updateHeaderHTML(user.id);
+    }, 50); // Small delay ensures smooth UI updates
+
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
   
@@ -1403,8 +1409,6 @@ function showMyProfile() {
         </div>
       </div>
   `;
-  
-  switchPage("profile");
   
   // Render posts by checking the global posts array for matching userId
   renderUserPosts(user.id);
