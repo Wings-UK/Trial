@@ -103,4 +103,4 @@ function handleScroll() {
       }
     }, 300); // Match transition duration
   }
-}
+} 
