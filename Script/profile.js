@@ -104,3 +104,109 @@ function handleScroll() {
     }, 300); // Match transition duration
   }
 } 
+
+
+// Updated JavaScript for sticky menu bar with fixed header
+
+// Set the header height variable for CSS to use
+function setHeaderHeight() {
+  const header = document.querySelector('.file');
+  if (header) {
+    const headerHeight = header.offsetHeight;
+    document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+  }
+}
+
+function handlesScroll() {
+  const header = document.querySelector('.file');
+  const menuBar = document.querySelector('.ewe');
+  const userInfo = document.querySelector('.klr');
+  
+  if (!menuBar || !header) return;
+  
+  // Get the initial position of the menu bar if not already stored
+  if (!menuBar.dataset.initialTop) {
+    menuBar.dataset.initialTop = menuBar.getBoundingClientRect().top;
+    menuBar.dataset.initialOffset = menuBar.offsetTop;
+  }
+  
+  const headerHeight = header.offsetHeight;
+  const scrollPosition = window.scrollY;
+  const menuInitialOffset = parseInt(menuBar.dataset.initialOffset, 10);
+  
+  // Check if we've scrolled past the point where the menu should stick
+  if (scrollPosition > menuInitialOffset - headerHeight) {
+    if (!menuBar.classList.contains('fixed')) {
+      menuBar.classList.add('fixed');
+      // Add padding to the content below to prevent jumps
+      const menuHeight = menuBar.offsetHeight;
+      document.querySelector('.mansonro').style.paddingTop = `${menuHeight}px`;
+    }
+  } else {
+    if (menuBar.classList.contains('fixed')) {
+      menuBar.classList.remove('fixed');
+      document.querySelector('.mansonro').style.paddingTop = '';
+    }
+  }
+}
+
+// Function to initialize the sticky behavior after the page loads
+function initStickyMenu() {
+  // Set header height CSS variable
+  setHeaderHeight();
+  
+  // Store initial positions 
+  const menuBar = document.querySelector('.ewe');
+  if (menuBar) {
+    // Get position relative to the document
+    const rect = menuBar.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    menuBar.dataset.initialTop = rect.top;
+    menuBar.dataset.initialOffset = rect.top + scrollTop;
+  }
+  
+  // Handle window resize to update positions and header height
+  window.addEventListener('resize', function() {
+    setHeaderHeight();
+    
+    // Reset and recalculate positions
+    const menuBar = document.querySelector('.ewe');
+    if (menuBar) {
+      menuBar.classList.remove('fixed');
+      document.querySelector('.mansonro').style.paddingTop = '';
+      
+      // Get position again after reset
+      const rect = menuBar.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      menuBar.dataset.initialTop = rect.top;
+      menuBar.dataset.initialOffset = rect.top + scrollTop;
+      
+      // Check if it should be fixed based on current scroll
+      handlesScroll();
+    }
+  });
+}
+
+// Set up optimized scroll handling
+function setupScrollHandling() {
+  // Remove any existing scroll listener to prevent duplicates
+  window.removeEventListener('scroll', handleScroll);
+  
+  // Initialize sticky menu properties
+  initStickyMenu();
+  
+  // Add the scroll event listener with throttling for better performance
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        handleScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+  
+  // Initial check
+  handlesScroll();
+}
