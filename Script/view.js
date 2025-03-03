@@ -1105,7 +1105,7 @@ function showUserProfile(userId) {
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
-  
+    
     
     renderUserPosts(userId);
     setupScrollHandling();
@@ -1406,11 +1406,6 @@ function showMyProfile() {
         </div>
       </div>
   `;
-  
-const wingDiv = document.querySelector(".wing");
-    if (wingDiv) {
-        wingDiv.style.display = "block";
-    }
 
     setTimeout(() => {
         renderUserPosts(user.id);
