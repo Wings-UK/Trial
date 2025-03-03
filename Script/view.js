@@ -120,7 +120,7 @@ const posts = [
     },
     {
       id: 10,
-      userId: 4,  // Refers to user with id 2 (@lena)
+      userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/pico7.webp",
@@ -135,12 +135,12 @@ const posts = [
       content: "I think i like this dance. Can someone tell me the name and the country where i can go to learn this? It looks difficult though",
     },
     {
-      id: 12, 
-      userId: 4,  // Refers to user with id 2 (@lena)
-      timestamp: "4 mins ago",
+      id: 12,
+      userId: 3,  // Refers to user with id 2 (@lena)
+      timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/bad.jpg",
-      content: "So You Want to Japa to the UK? Pick Your Location Wisely o! Japa season is still trending , and if you’re planning to relocate to the UK, you need to choose your location with sense! Because not everywhere in the UK is London, and not everywhere in London is soft life.",
+      image: "pics/pico7.webp",
+      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
   
 ];
@@ -1105,10 +1105,13 @@ function showUserProfile(userId) {
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
-    
-    
     renderUserPosts(userId);
     setupScrollHandling();
+    
+    
+    
+    
+    
 
 }
 
@@ -1330,14 +1333,9 @@ function initializeAccountIcon() {
 
 // 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
+  updateHeaderHTML(userId);
   const user = getLoggedInUser();
-  switchPage("profile"); // Switch to the profile page first
-
-    // Delay updating the header to avoid interference with page rendering
-    setTimeout(() => {
-        updateHeaderHTML(user.id);
-    }, 50); // Small delay ensures smooth UI updates
-
+  
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
   
@@ -1406,9 +1404,14 @@ function showMyProfile() {
         </div>
       </div>
   `;
+  
+  switchPage("profile");
+  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
 
-        renderUserPosts(user.id);
-}
+  // Attach scroll event listener
+    window.addEventListener('scroll', handleScroll);
+  // Render posts by checking the global posts array for matching userId
+  renderUserPosts(user.id);
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
