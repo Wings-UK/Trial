@@ -1405,10 +1405,10 @@ function showMyProfile() {
   `;
   
   switchPage("profile");
-  updateHeaderHTML(userId);
+  
   // Render posts by checking the global posts array for matching userId
   renderUserPosts(user.id);
-
+updateHeaderHTML(userId);
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
