@@ -884,7 +884,7 @@
   top: var(--header-height, 50px);
   left: 0;
   right: 0;
-  margin-bottom: 10px;
+  margin-bottom: 20px; 
 }
 .dee {
   width: 30px;
