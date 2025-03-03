@@ -1494,7 +1494,7 @@
 .header-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 5px;
+  border-radius: 8px;
   object-fit: cover;
   border: 1px solid #f0f0f0;
 }
