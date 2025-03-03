@@ -1407,8 +1407,15 @@ function showMyProfile() {
       </div>
   `;
   
-  // Render posts by checking the global posts array for matching userId
-  renderUserPosts(user.id);
+const wingDiv = document.querySelector(".wing");
+    if (wingDiv) {
+        wingDiv.style.display = "block";
+    }
+
+    setTimeout(() => {
+        renderUserPosts(user.id);
+    }, 100);
+}
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
