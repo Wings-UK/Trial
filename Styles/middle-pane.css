@@ -867,7 +867,7 @@
 .ewe {
   display: flex;
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   border-top-style: solid;
   border-top-width: 1px;
   border-top-color: rgb(234, 237, 240);
@@ -1044,7 +1044,7 @@
   color: inherit;
 }
 .mansonro {
-  padding-top: 10px;
+  padding-top: 0px;
 }
 .small-photo, .hui {
   width: 45px;
