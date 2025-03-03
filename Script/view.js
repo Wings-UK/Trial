@@ -120,7 +120,7 @@ const posts = [
     },
     {
       id: 10,
-      userId: 1,  // Refers to user with id 2 (@lena)
+      userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
       image: "pics/pico7.webp",
@@ -136,11 +136,11 @@ const posts = [
     },
     {
       id: 12,
-      userId: 3,  // Refers to user with id 2 (@lena)
-      timestamp: "14 hours ago",
+      userId: 4,  // Refers to user with id 2 (@lena)
+      timestamp: "4 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
-      content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
+      image: "pics/bad.jpg",
+      content: "So You Want to Japa to the UK? Pick Your Location Wisely o! Japa season is still trending , and if you’re planning to relocate to the UK, you need to choose your location with sense! Because not everywhere in the UK is London, and not everywhere in London is soft life.",
     },
   
 ];
