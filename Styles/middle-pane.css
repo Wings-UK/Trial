@@ -885,6 +885,9 @@
   left: 0;
   right: 0;
 }
+.mansonro {
+  transition: padding-top 0.3s ease;
+}
 .dee {
   width: 30px;
 }
