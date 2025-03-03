@@ -1406,7 +1406,7 @@ function showMyProfile() {
         </div>
       </div>
   `;
-  
+  document.querySelector(".wing").style.display = "block";
   // Render posts by checking the global posts array for matching userId
   renderUserPosts(user.id);
   
