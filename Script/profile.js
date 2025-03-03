@@ -200,7 +200,7 @@ function setupScrollHandling() {
   window.addEventListener('scroll', function() {
     if (!ticking) {
       window.requestAnimationFrame(function() {
-        handleScroll();
+        handlesScroll();
         ticking = false;
       });
       ticking = true;
