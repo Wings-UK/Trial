@@ -1105,7 +1105,7 @@ function showUserProfile(userId) {
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
-    document.querySelector(".wing").style.display = "none";
+  
     
     renderUserPosts(userId);
     setupScrollHandling();
