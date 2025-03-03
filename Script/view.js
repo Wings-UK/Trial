@@ -1106,6 +1106,7 @@ function showUserProfile(userId) {
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
     renderUserPosts(userId);
+    setupScrollHandling();
     
     
     
