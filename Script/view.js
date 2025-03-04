@@ -1414,7 +1414,10 @@ function showMyProfile() {
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
   // Render posts by checking the global posts array for matching userId
-  renderUserPosts(user.id);
+  setTimeout(() => {
+        renderUserPosts(user.id);
+    }, 100); // Small delay ensures content loads correctly
+}
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
