@@ -1105,6 +1105,13 @@ function showUserProfile(userId) {
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
+    
+    
+    // **Force hide the wing div when visiting other profiles**
+    const wingDiv = document.querySelector(".wing");
+    if (wingDiv) {
+        wingDiv.style.display = "none";
+    }
     renderUserPosts(userId);
     setupScrollHandling();
     
