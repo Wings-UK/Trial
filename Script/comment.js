@@ -288,6 +288,11 @@ function addCommentStyles() {
       animation: fadeIn 0.3s ease-in-out;
     }
     
+    .comment-item:hover {
+      background-color: rgb(245, 245, 245); 
+    }
+    
+    
     .reply-item {
       margin-left: 40px;
       max-width: calc(100% - 40px);
