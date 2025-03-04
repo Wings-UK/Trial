@@ -282,7 +282,7 @@ function addCommentStyles() {
       display: flex;
       margin-bottom: 5px;
       align-items: top;
-      padding: 5px;
+      padding: 5px 10px;
       border-radius: 12px;
       transition: background-color 0.3s ease;
       animation: fadeIn 0.3s ease-in-out;
