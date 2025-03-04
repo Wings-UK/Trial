@@ -832,14 +832,14 @@ function showDetail(postId) {
         <div class="cust-name" data-post-id="${post.id}"> 
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="showUserProfile(${user.id})">
+                    <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
                         <img class="small-photo" src="${user.avatar}">
                     </a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="showUserProfile(${user.id})">
+                            <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
