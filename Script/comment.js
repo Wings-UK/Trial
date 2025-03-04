@@ -270,9 +270,11 @@ function addCommentStyles() {
   const styleElement = document.createElement('style');
   styleElement.textContent = `
     .comments-section {
+     display: flex;
+     align-items: top;
      font-family: ibm plex sans, roboto;
-      margin-top: 15px;
-      padding-bottom: 10px;
+      margin-top: 10px;
+      padding-bottom: 5px;
       max-height: 500px;
       overflow-y: auto;
     }
@@ -342,7 +344,7 @@ function addCommentStyles() {
     .comment-text {
      font-size: 16px;
       margin-bottom: 8px;
-      line-height: 1.4;
+      line-height: 21px;
       word-break: break-word;
     }
     
