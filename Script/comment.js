@@ -278,7 +278,7 @@ function addCommentStyles() {
     }
     
     .comment-item, .reply-item {
-    border: 1px solid rgb(250, 250, 250);
+    border: 1px solid rgb(245, 245, 245);
       display: flex;
       margin-bottom: 5px;
       align-items: top;
