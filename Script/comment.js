@@ -303,8 +303,8 @@ function addCommentStyles() {
     }
     
     .comment-avatar {
-      width: 37px;
-      height: 37px;
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
       overflow: hidden;
       margin-right: 10px;
