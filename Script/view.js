@@ -1105,12 +1105,13 @@ function showUserProfile(userId) {
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
-    
-    setTimeout(() => {
-        renderUserPosts(user.id);
-    }, 100);
-    
+    renderUserPosts(userId);
     setupScrollHandling();
+    
+    
+    
+    
+    
 
 }
 
@@ -1332,13 +1333,8 @@ function initializeAccountIcon() {
 
 // 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
+  updateHeaderHTML(userId);
   const user = getLoggedInUser();
-  switchPage("profile"); // Switch to the profile page first
-
-    // Delay updating the header to avoid interference with page rendering
-    setTimeout(() => {
-        updateHeaderHTML(user.id);
-    }, 50); // Small delay ensures smooth UI updates
   
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
@@ -1409,15 +1405,13 @@ function showMyProfile() {
       </div>
   `;
   
+  switchPage("profile");
   lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
 
   // Attach scroll event listener
     window.addEventListener('scroll', handleScroll);
   // Render posts by checking the global posts array for matching userId
-  setTimeout(() => {
-        renderUserPosts(user.id);
-    }, 100); // Small delay ensures content loads correctly
-}
+  renderUserPosts(user.id);
   
   // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
