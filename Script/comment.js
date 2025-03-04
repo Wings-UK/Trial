@@ -322,8 +322,8 @@ function addCommentStyles() {
     }
     
     .comment-username {
-     font-size: 16px;
-      font-weight: 500;
+     font-size: 15px;
+      font-weight: 600;
       display: flex;
       align-items: center;
     }
