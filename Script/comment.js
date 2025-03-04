@@ -270,6 +270,7 @@ function addCommentStyles() {
   const styleElement = document.createElement('style');
   styleElement.textContent = `
     .comments-section {
+     font-family: ibm plex sans, roboto;
       margin-top: 15px;
       padding-bottom: 10px;
       max-height: 500px;
@@ -295,9 +296,9 @@ function addCommentStyles() {
     }
     
     .comment-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      border-radius: 8px;
       overflow: hidden;
       margin-right: 10px;
       flex-shrink: 0;
