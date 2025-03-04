@@ -1011,7 +1011,7 @@
   display: inline-block;
   cursor: pointer;
   position: relative;
-  align-content: center;
+  align-items: center;
 }
 .cust-name {
   display: flex;
