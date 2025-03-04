@@ -50,3 +50,28 @@ function autoResize(textarea) {
 
     // Initialize height
     adjustHeight();
+    
+    function addComment() {
+    const commentTextarea = document.querySelector('.comment-textarea');
+    const commentText = commentTextarea.value.trim();
+
+    if (commentText === '') return; // Prevent empty comments
+
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    const commentContainer = document.createElement("div");
+    commentContainer.classList.add("comment");
+
+    commentContainer.innerHTML = `
+        <div class="comment-header">
+            <img src="${loggedInUser.avatar}" class="comment-avatar">
+            <p class="comment-username">${loggedInUser.username}</p>
+        </div>
+        <div class="comment-content">${commentText}</div>
+    `;
+
+    const postDetailContainer = document.getElementById("nuba"); // The container for the post
+    postDetailContainer.appendChild(commentContainer); // Append the new comment
+
+    commentTextarea.value = ""; // Clear the textarea after submission
+}
