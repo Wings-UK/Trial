@@ -279,7 +279,7 @@ function addCommentStyles() {
     
     .comment-item, .reply-item {
       display: flex;
-      margin-bottom: 15px;
+      align-items: top;
       padding: 10px;
       border-radius: 12px;
       transition: background-color 0.3s ease;
@@ -296,7 +296,6 @@ function addCommentStyles() {
     }
     
     .comment-avatar {
-    padding-top: 3px;
       width: 35px;
       height: 35px;
       border-radius: 8px;
@@ -316,10 +315,9 @@ function addCommentStyles() {
     }
     
     .comment-header {
-      display: flex;
-      align-items: center;
+      display: flex; 
+      align-items: center; 
       justify-content: space-between;
-      margin-bottom: 2px;
     }
     
     .comment-username {
