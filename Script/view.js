@@ -727,6 +727,18 @@ function renderPostWithNewVideoPlayer(post, user) {
 
 
 function showDetail(postId) {
+  const originalShowDetail = showDetail;
+
+showDetail = function(postId) {
+    // Call the original showDetail function to render the post details
+    originalShowDetail(postId);
+
+    // Delay comment system initialization slightly to ensure the DOM is updated
+    setTimeout(() => {
+        setupCommentSystem(); // Set up the comment system
+        renderExistingComments(postId); // Load existing comments for this post
+    }, 100);
+};
     const postDetail = document.getElementById("meal");
     const postContent = document.getElementById("nuba");
 
