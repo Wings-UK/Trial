@@ -1340,8 +1340,13 @@ function initializeAccountIcon() {
 
 // 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
-  updateHeaderHTML(userId);
   const user = getLoggedInUser();
+  
+  switchPage("profile"); // Switch to profile page
+
+    setTimeout(() => {
+        updateHeaderHTML(user.id);
+    }, 50);
   
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
@@ -1412,7 +1417,7 @@ function showMyProfile() {
       </div>
   `;
   
-  switchPage("profile");
+  
   lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
 
   // Attach scroll event listener
