@@ -738,7 +738,7 @@ showDetail = function(postId) {
         setupCommentSystem(); // Set up the comment system
         renderExistingComments(postId); // Load existing comments for this post
     }, 100);
-};
+}; 
     const postDetail = document.getElementById("meal");
     const postContent = document.getElementById("nuba");
 
