@@ -289,12 +289,12 @@ function addCommentStyles() {
     }
     
     .comment-item:hover {
-      background-color: rgb(245, 245, 245); 
+      background-color: rgb(250, 250, 250);  
     }
     
     
     .reply-item {
-      margin-left: 40px;
+      margin-left: 40px; 
       max-width: calc(100% - 40px);
     }
     
