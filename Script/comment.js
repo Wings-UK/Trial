@@ -270,8 +270,6 @@ function addCommentStyles() {
   const styleElement = document.createElement('style');
   styleElement.textContent = `
     .comments-section {
-     display: flex;
-     align-items: top;
      font-family: ibm plex sans, roboto;
       margin-top: 10px;
       padding-bottom: 5px;
