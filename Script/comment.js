@@ -563,3 +563,7 @@ function generateSampleComments(postId, count) {
   
   return sampleComments;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    addCommentStyles(); // Add CSS for comments
+});
