@@ -341,7 +341,7 @@ function addCommentStyles() {
     }
     
     .comment-text {
-     font-size: 16px;
+     font-size: 15px;
       margin-bottom: 8px;
       line-height: 21px;
       word-break: break-word;
