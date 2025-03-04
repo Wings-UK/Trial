@@ -296,6 +296,7 @@ function addCommentStyles() {
     }
     
     .comment-avatar {
+    padding-top: 3px;
       width: 35px;
       height: 35px;
       border-radius: 8px;
@@ -318,7 +319,7 @@ function addCommentStyles() {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     
     .comment-username {
