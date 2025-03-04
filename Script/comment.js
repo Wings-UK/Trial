@@ -330,8 +330,8 @@ function addCommentStyles() {
     }
     
     .verify-small {
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       margin-left: 4px;
     }
     
