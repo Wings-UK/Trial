@@ -323,6 +323,7 @@ function addCommentStyles() {
     .comment-header {
       display: flex; 
       align-items: center; 
+      margin-bottom: 2px;
       justify-content: space-between;
     }
     
