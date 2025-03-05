@@ -30,12 +30,6 @@ function setupCommentSystem() {
     submitComment();
   });
   
-  // Also allow Enter key to submit (Shift+Enter for new line)
-  commentTextarea.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-    }
-  });
   
   // Create comments section if it doesn't exist
   if (!document.querySelector('.comments-section')) {
