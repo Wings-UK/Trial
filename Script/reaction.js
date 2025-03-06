@@ -1,340 +1,575 @@
-// First, let's create the new reaction system functions
+// Create the emotion spectrum reaction system
+function createEmotionSpectrumSystem() {
+  // Replace existing reaction system
+  const reactionContainers = document.querySelectorAll('.lovi, .emoji-container');
+  
+  reactionContainers.forEach(container => {
+    // Parent post element
+    const postElement = container.closest('.poster');
+    if (!postElement) return;
+    
+    const postId = postElement.getAttribute('data-post-id');
+    
+    // Create new reaction system
+    const newReactionHTML = `
+      <div class="emotion-spectrum-container" data-post-id="${postId}">
+        <div class="spectrum-preview">
+          <div class="color-dot"></div>
+          <span class="emotion-label">React</span>
+        </div>
+        
+        <div class="spectrum-popup">
+          <div class="spectrum-track">
+            <div class="spectrum-slider"></div>
+            <div class="spectrum-intensity"></div>
+          </div>
+          <div class="emotion-terms">
+            <span class="emotion-start">Calm</span>
+            <span class="emotion-mid">Mixed</span>
+            <span class="emotion-end">Intense</span>
+          </div>
+          <div class="emotion-display">
+            <span class="current-emotion">Select your reaction</span>
+            <span class="emotion-count">0</span>
+          </div>
+        </div>
+        
+        <div class="reaction-heatmap">
+          <canvas class="reaction-canvas"></canvas>
+          <div class="reaction-count">0 reactions</div>
+        </div>
+      </div>
+    `;
+    
+    // Replace original container with new system
+    container.innerHTML = newReactionHTML;
+    
+    // Initialize the spectrum system
+    initializeEmotionSpectrum(container.querySelector('.emotion-spectrum-container'));
+  });
+  
+  // Add necessary styles
+  addEmotionSpectrumStyles();
+}
 
-// Initialize reaction system for all posts
-function initializeReactionSystem() {
-  // Remove old reaction system elements
-  document.querySelectorAll('.reaction').forEach(oldReaction => {
-    const postElement = oldReaction.closest('.poster');
-    if (postElement) {
-      const postId = postElement.getAttribute('data-post-id');
-      if (postId) {
-        // Replace with new reaction system
-        oldReaction.innerHTML = createReactionHTML(postId);
-      }
+// Initialize the emotion spectrum functionality for a container
+function initializeEmotionSpectrum(container) {
+  if (!container) return;
+  
+  const preview = container.querySelector('.spectrum-preview');
+  const popup = container.querySelector('.spectrum-popup');
+  const track = container.querySelector('.spectrum-track');
+  const slider = container.querySelector('.spectrum-slider');
+  const intensityBar = container.querySelector('.spectrum-intensity');
+  const emotionLabel = container.querySelector('.emotion-label');
+  const currentEmotion = container.querySelector('.current-emotion');
+  const colorDot = container.querySelector('.color-dot');
+  const heatmap = container.querySelector('.reaction-heatmap');
+  const canvas = container.querySelector('.reaction-canvas');
+  const reactionCount = container.querySelector('.reaction-count');
+  
+  // Color spectrum for emotions (from serene blue to passionate red)
+  const colorSpectrum = [
+    '#1e88e5', // Serene blue
+    '#26c6da', // Calm cyan
+    '#66bb6a', // Balanced green
+    '#fdd835', // Happy yellow
+    '#fb8c00', // Warm orange
+    '#e53935'  // Passionate red
+  ];
+  
+  // Emotion labels for different points on the spectrum
+  const emotionLabels = [
+    'Serene',      // Blue
+    'Thoughtful',  // Cyan
+    'Inspired',    // Green
+    'Amused',      // Yellow
+    'Amazed',      // Orange
+    'Passionate'   // Red
+  ];
+  
+  // Intensity adjectives
+  const intensityAdjectives = [
+    'Slightly',    // Level 1
+    'Somewhat',    // Level 2
+    'Definitely',  // Level 3
+    'Very',        // Level 4
+    'Extremely'    // Level 5
+  ];
+  
+  // Set initial state
+  let isOpen = false;
+  let colorIndex = 0;
+  let intensityLevel = 2; // Medium intensity by default
+  let hasReacted = false;
+  
+  // Toggle reaction popup
+  preview.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isOpen = !isOpen;
+    
+    if (isOpen) {
+      popup.style.display = 'block';
+      
+      // Position the slider at current color
+      const percent = colorIndex / (colorSpectrum.length - 1) * 100;
+      slider.style.left = `${percent}%`;
+      
+      // Set intensity bar height
+      intensityBar.style.height = `${(intensityLevel / 5) * 100}%`;
+    } else {
+      popup.style.display = 'none';
     }
   });
   
-  // Attach event listeners to all new reaction buttons
-  attachReactionListeners();
+  // Handle click outside to close
+  document.addEventListener('click', (e) => {
+    if (isOpen && !container.contains(e.target)) {
+      isOpen = false;
+      popup.style.display = 'none';
+    }
+  });
+  
+  // Handle color spectrum track interaction
+  track.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    // Calculate position on track
+    const rect = track.getBoundingClientRect();
+    const position = (e.clientX - rect.left) / rect.width;
+    
+    // Determine color index based on position
+    colorIndex = Math.min(Math.floor(position * colorSpectrum.length), colorSpectrum.length - 1);
+    
+    // Update slider position and color
+    const percent = colorIndex / (colorSpectrum.length - 1) * 100;
+    slider.style.left = `${percent}%`;
+    
+    // Update emotion label and color
+    updateEmotionDisplay();
+  });
+  
+  // Handle vertical intensity drag
+  let isDragging = false;
+  
+  intensityBar.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    isDragging = true;
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    
+    const rect = track.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const trackBottom = rect.bottom;
+    const trackHeight = rect.height;
+    
+    // Calculate intensity based on vertical position
+    const fromBottom = trackBottom - mouseY;
+    const percentage = Math.max(0, Math.min(1, fromBottom / trackHeight));
+    
+    // Update intensity level (1-5)
+    intensityLevel = Math.ceil(percentage * 5);
+    if (intensityLevel < 1) intensityLevel = 1;
+    
+    // Update intensity bar height
+    intensityBar.style.height = `${percentage * 100}%`;
+    
+    // Update emotion display
+    updateEmotionDisplay();
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+  
+  // Function to update emotion display
+  function updateEmotionDisplay() {
+    const emotionName = emotionLabels[colorIndex];
+    const intensityName = intensityAdjectives[intensityLevel - 1];
+    const emotionColor = colorSpectrum[colorIndex];
+    
+    // Set the emotion text
+    currentEmotion.textContent = `${intensityName} ${emotionName}`;
+    
+    // Update the color of text and track
+    currentEmotion.style.color = emotionColor;
+    slider.style.backgroundColor = emotionColor;
+    
+    // Update preview dot
+    colorDot.style.backgroundColor = emotionColor;
+    
+    if (hasReacted) {
+      emotionLabel.textContent = `${intensityName} ${emotionName}`;
+      emotionLabel.style.color = emotionColor;
+    }
+  }
+  
+  // Function to submit reaction
+  popup.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    
+    // Submit the reaction
+    const emotionName = emotionLabels[colorIndex];
+    const intensityName = intensityAdjectives[intensityLevel - 1];
+    const emotionColor = colorSpectrum[colorIndex];
+    
+    emotionLabel.textContent = `${intensityName} ${emotionName}`;
+    emotionLabel.style.color = emotionColor;
+    
+    // Update the preview
+    colorDot.style.backgroundColor = emotionColor;
+    
+    // Mark as reacted
+    hasReacted = true;
+    
+    // Close the popup
+    isOpen = false;
+    popup.style.display = 'none';
+    
+    // Update reaction count
+    updateReactionHeatmap(colorIndex, intensityLevel);
+    
+    // Animate the reaction confirmation
+    animateReactionConfirmation(emotionColor);
+  });
+  
+  // Submit button in popup for mobile users
+  const submitButton = document.createElement('button');
+  submitButton.className = 'emotion-submit';
+  submitButton.textContent = 'React';
+  popup.appendChild(submitButton);
+  
+  submitButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    // Submit the reaction
+    const emotionName = emotionLabels[colorIndex];
+    const intensityName = intensityAdjectives[intensityLevel - 1];
+    const emotionColor = colorSpectrum[colorIndex];
+    
+    emotionLabel.textContent = `${intensityName} ${emotionName}`;
+    emotionLabel.style.color = emotionColor;
+    
+    // Update the preview
+    colorDot.style.backgroundColor = emotionColor;
+    
+    // Mark as reacted
+    hasReacted = true;
+    
+    // Close the popup
+    isOpen = false;
+    popup.style.display = 'none';
+    
+    // Update reaction count
+    updateReactionHeatmap(colorIndex, intensityLevel);
+    
+    // Animate the reaction confirmation
+    animateReactionConfirmation(emotionColor);
+  });
+  
+  // Function to animate reaction confirmation
+  function animateReactionConfirmation(color) {
+    const emoji = document.createElement('div');
+    emoji.className = 'reaction-emoji';
+    emoji.style.backgroundColor = color;
+    
+    container.appendChild(emoji);
+    
+    // Animate upward and fade
+    setTimeout(() => {
+      emoji.style.transform = 'translateY(-60px)';
+      emoji.style.opacity = '0';
+      
+      // Remove after animation completes
+      setTimeout(() => {
+        emoji.remove();
+      }, 1000);
+    }, 50);
+  }
+  
+  // Create simulated reaction data
+  let simulatedReactions = {
+    totalCount: Math.floor(Math.random() * 100) + 20,
+    distribution: []
+  };
+  
+  // Generate random distribution
+  for (let c = 0; c < colorSpectrum.length; c++) {
+    for (let i = 0; i < 5; i++) {
+      const count = Math.floor(Math.random() * 10);
+      if (count > 0) {
+        simulatedReactions.distribution.push({
+          colorIndex: c,
+          intensityLevel: i + 1,
+          count: count
+        });
+      }
+    }
+  }
+  
+  // Function to update reaction heatmap
+  function updateReactionHeatmap(colorIdx, intensityLvl) {
+    if (!canvas) return;
+    
+    // Check if this exact reaction exists
+    let foundExisting = false;
+    
+    for (let i = 0; i < simulatedReactions.distribution.length; i++) {
+      const reaction = simulatedReactions.distribution[i];
+      
+      if (reaction.colorIndex === colorIdx && reaction.intensityLevel === intensityLvl) {
+        // Increment existing reaction
+        reaction.count++;
+        foundExisting = true;
+        break;
+      }
+    }
+    
+    // Add new reaction if not found
+    if (!foundExisting) {
+      simulatedReactions.distribution.push({
+        colorIndex: colorIdx,
+        intensityLevel: intensityLvl,
+        count: 1
+      });
+    }
+    
+    // Increment total count
+    simulatedReactions.totalCount++;
+    
+    // Update reaction count text
+    reactionCount.textContent = `${simulatedReactions.totalCount} reactions`;
+    
+    // Draw the heatmap
+    drawHeatmap();
+  }
+  
+  // Function to draw the heatmap visualization
+  function drawHeatmap() {
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = 160;
+    const height = 30;
+    
+    // Set canvas dimensions
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Find maximum count for normalization
+    let maxCount = 0;
+    for (const reaction of simulatedReactions.distribution) {
+      if (reaction.count > maxCount) maxCount = reaction.count;
+    }
+    
+    // Create gradient based on color spectrum
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    for (let i = 0; i < colorSpectrum.length; i++) {
+      gradient.addColorStop(i / (colorSpectrum.length - 1), colorSpectrum[i]);
+    }
+    
+    // Draw background
+    ctx.fillStyle = '#f1f1f1';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw distribution
+    for (const reaction of simulatedReactions.distribution) {
+      const x = (reaction.colorIndex / (colorSpectrum.length - 1)) * width;
+      const y = height - ((reaction.intensityLevel / 5) * height);
+      const radius = Math.max(2, (reaction.count / maxCount) * 10);
+      
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = colorSpectrum[reaction.colorIndex];
+      ctx.fill();
+    }
+    
+    // Draw border
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, width, height);
+    
+    // Make heatmap visible
+    heatmap.style.display = 'block';
+  }
+  
+  // Initialize the heatmap
+  drawHeatmap();
 }
 
-// Create HTML for the new reaction system
-function createReactionHTML(postId) {
-  return `
-    <div class="reaction-container" data-post-id="${postId}">
-      <div class="reaction-button love-button" data-reaction="love" data-active="false">
-        <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 500) + 50}</span>
-      </div>
-      <div class="reaction-button comment-button" data-reaction="comment">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" 
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 100) + 10}</span>
-      </div>
-      <div class="reaction-button repost-button" data-reaction="repost">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 17l-5-5 5-5M17 7l5 5-5 5M14 3l-4 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 50) + 5}</span>
-      </div>
-      <div class="reaction-button donate-button" data-reaction="donate">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
-            stroke="currentColor" stroke-width="1" fill="none"/>
-          <path d="M12 7v6M12 15v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 20)}</span>
-      </div>
-    </div>
+// Add required CSS styles
+function addEmotionSpectrumStyles() {
+  if (document.getElementById('emotion-spectrum-styles')) return;
+  
+  const styleElement = document.createElement('style');
+  styleElement.id = 'emotion-spectrum-styles';
+  
+  styleElement.textContent = `
+    .emotion-spectrum-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    
+    .spectrum-preview {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 18px;
+      background: #f5f5f5;
+      transition: all 0.2s ease;
+    }
+    
+    .spectrum-preview:hover {
+      background: #eeeeee;
+    }
+    
+    .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #bdbdbd;
+      margin-right: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .emotion-label {
+      font-size: 14px;
+      color: #757575;
+      transition: all 0.3s ease;
+    }
+    
+    .spectrum-popup {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      display: none;
+      width: 220px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      padding: 15px;
+      z-index: 100;
+    }
+    
+    .spectrum-track {
+      position: relative;
+      height: 100px;
+      background: linear-gradient(to right, 
+        #1e88e5, #26c6da, #66bb6a, #fdd835, #fb8c00, #e53935);
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    
+    .spectrum-slider {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #1e88e5;
+      border-radius: 50%;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    
+    .spectrum-intensity {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40%;
+      background: rgba(255,255,255,0.25);
+      border-radius: 0 0 6px 6px;
+      cursor: ns-resize;
+    }
+    
+    .emotion-terms {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 12px;
+      color: #757575;
+    }
+    
+    .emotion-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    
+    .current-emotion {
+      font-weight: 500;
+      font-size: 14px;
+      color: #424242;
+    }
+    
+    .emotion-count {
+      font-size: 12px;
+      color: #9e9e9e;
+    }
+    
+    .reaction-heatmap {
+      margin-left: 15px;
+      display: block;
+    }
+    
+    .reaction-canvas {
+      border-radius: 4px;
+      display: block;
+    }
+    
+    .reaction-count {
+      font-size: 12px;
+      color: #757575;
+      margin-top: 4px;
+      text-align: center;
+    }
+    
+    .emotion-submit {
+      display: block;
+      margin: 10px auto 0;
+      padding: 6px 15px;
+      background: #f40752;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .emotion-submit:hover {
+      background: #d10643;
+    }
+    
+    .reaction-emoji {
+      position: absolute;
+      left: 15px;
+      bottom: 20px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      opacity: 1;
+      transition: all 0.8s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
   `;
-}
-
-// Attach event listeners to reaction buttons
-function attachReactionListeners() {
-  // Get all love reaction buttons
-  const loveButtons = document.querySelectorAll('.love-button');
   
-  loveButtons.forEach(button => {
-    // Remove existing event listeners
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
-    
-    // Add new event listener
-    newButton.addEventListener('click', handleLoveReaction);
-  });
-  
-  // Add listeners for other reaction buttons
-  document.querySelectorAll('.comment-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('comment'));
-  });
-  
-  document.querySelectorAll('.repost-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('repost'));
-  });
-  
-  document.querySelectorAll('.donate-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('donate'));
-  });
+  document.head.appendChild(styleElement);
 }
 
-// Handle love reaction with GSAP animation
-function handleLoveReaction(event) {
-  const button = event.currentTarget;
-  const isActive = button.getAttribute('data-active') === 'true';
-  const countElement = button.querySelector('.reaction-count');
-  const heartPath = button.querySelector('.heart-path');
-  const currentCount = parseInt(countElement.textContent);
-  
-  // Toggle active state
-  if (isActive) {
-    // Unlike - remove one from count
-    countElement.textContent = currentCount - 1;
-    button.setAttribute('data-active', 'false');
-    
-    // Reset heart to unfilled state with GSAP
-    gsap.to(heartPath, {
-      fill: 'none',
-      stroke: 'currentColor',
-      duration: 0.3,
-      ease: "power2.out"
-    });
-    
-  } else {
-    // Like - add one to count
-    countElement.textContent = currentCount + 1;
-    button.setAttribute('data-active', 'true');
-    
-    // Create heart filling animation with GSAP
-    // First ensure the stroke is set properly
-    gsap.set(heartPath, {
-      stroke: 'rgb(244, 7, 82)'
-    });
-    
-    // Create the filling animation
-    gsap.to(heartPath, {
-      fill: 'rgb(244, 7, 82)',
-      duration: 0.4,
-      ease: "elastic.out(1, 0.3)"
-    });
-    
-    // Create a scale animation for the heart
-    gsap.timeline()
-      .to(button.querySelector('.heart-icon'), {
-        scale: 1.5,
-        duration: 0.2,
-        ease: "back.out(1.7)"
-      })
-      .to(button.querySelector('.heart-icon'), {
-        scale: 1,
-        duration: 0.2,
-        ease: "power2.out"
-      });
-      
-    // Add particle burst effect for a more satisfying reaction
-    createHeartBurst(button);
-  }
-}
-
-// Create heart burst particles effect
-function createHeartBurst(button) {
-  // Get button position for particles origin
-  const rect = button.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top + rect.height / 2;
-  
-  // Create particle container if it doesn't exist
-  let particleContainer = document.querySelector('.reaction-particles');
-  if (!particleContainer) {
-    particleContainer = document.createElement('div');
-    particleContainer.className = 'reaction-particles';
-    document.body.appendChild(particleContainer);
-  }
-  
-  // Create particles
-  const particleCount = 8;
-  for (let i = 0; i < particleCount; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'love-particle';
-    particle.innerHTML = `
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="rgb(244, 7, 82)" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-      </svg>
-    `;
-    
-    particleContainer.appendChild(particle);
-    
-    // Set initial position
-    gsap.set(particle, {
-      x: x,
-      y: y,
-      scale: 0,
-      opacity: 1
-    });
-    
-    // Random angle for particle movement (in radians)
-    const angle = (Math.PI * 2) * (i / particleCount);
-    
-    // Create the animation
-    gsap.timeline()
-      .to(particle, {
-        x: x + Math.cos(angle) * (40 + Math.random() * 20),
-        y: y + Math.sin(angle) * (40 + Math.random() * 20),
-        scale: 0.6 + Math.random() * 0.6,
-        opacity: 1,
-        duration: 0.3 + Math.random() * 0.3,
-        ease: "power2.out"
-      })
-      .to(particle, {
-        opacity: 0,
-        scale: 0,
-        duration: 0.3 + Math.random() * 0.3,
-        delay: 0.1 + Math.random() * 0.2,
-        onComplete: () => {
-          particle.remove();
-        }
-      });
-  }
-}
-
-// Handle other reactions (comment, repost, donate)
-function handleOtherReaction(type) {
-  // Show appropriate dialog or action for each reaction type
-  switch(type) {
-    case 'comment':
-      // Scroll to comment section or open comment dialog
-      alert('Comment feature would open here');
-      break;
-    case 'repost':
-      // Open repost dialog
-      alert('Repost dialog would open here');
-      break;
-    case 'donate':
-      // Open donation dialog
-      alert('Donation options would open here');
-      break;
-  }
-}
-
-// Add styles for the new reaction system
-function addReactionStyles() {
-  if (!document.getElementById('reaction-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'reaction-styles';
-    styleElement.textContent = `
-      .reaction-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        width: 100%;
-      }
-      
-      .reaction-button {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-      }
-      
-      .reaction-button:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-      
-      .reaction-button svg {
-        margin-right: 5px;
-      }
-      
-      .reaction-count {
-        font-size: 14px;
-        color: #555;
-      }
-      
-      .love-button[data-active="true"] {
-        color: rgb(244, 7, 82);
-      }
-      
-      .love-button[data-active="true"] .reaction-count {
-        color: rgb(244, 7, 82);
-      }
-      
-      .heart-icon {
-        overflow: visible;
-      }
-      
-      /* Particle styles */
-      .reaction-particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 1000;
-      }
-      
-      .love-particle {
-        position: absolute;
-        pointer-events: none;
-      }
-    `;
-    document.head.appendChild(styleElement);
-  }
-}
-
-// Initialize everything when the page loads
-function initializeReactions() {
-  // Add the required GSAP library if not already loaded
-  if (typeof gsap === 'undefined') {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js';
-    script.onload = () => {
-      // GSAP loaded, now initialize our reactions
-      addReactionStyles();
-      initializeReactionSystem();
-    };
-    document.head.appendChild(script);
-  } else {
-    // GSAP already loaded
-    addReactionStyles();
-    initializeReactionSystem();
-  }
-}
-
-// Add a function to update the reaction system after rendering posts
-function updateReactionSystem() {
-  // Call this after rendering posts to ensure all reactions are properly initialized
-  setTimeout(() => {
-    initializeReactionSystem();
-  }, 100);
-}
-
-// Modify the renderHomepage function to include the reaction system initialization
-const originalRenderHomepage = renderHomepage;
-renderHomepage = function() {
-  originalRenderHomepage();
-  updateReactionSystem();
-};
-
-// Update showDetail to initialize reactions in the detail view
-const originalShowDetail = showDetail;
-showDetail = function(postId) {
-  originalShowDetail(postId);
-  setTimeout(() => {
-    // Apply reaction system to the detail view as well
-    const detailReaction = document.querySelector('#meal .reaction');
-    if (detailReaction) {
-      detailReaction.innerHTML = createReactionHTML(postId);
-      attachReactionListeners();
-    }
-  }, 100);
-};
-
-// Initialize reactions when the document is ready
-document.addEventListener('DOMContentLoaded', initializeReactions);
+// Call this function to initialize the system
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(createEmotionSpectrumSystem, 1000); // Delay to ensure the page is fully loaded
+});
