@@ -1,24 +1,3 @@
-*Thinking...*
-
-> I understand what the user is asking for now. They want a single, self-contained JavaScript code that they can copy and paste into their existing site to replace the current reaction system with the heart animation system. They want this code to:
-> 
-> 1. Include all necessary CSS 
-> 2. Replace the existing reaction HTML in the rendered posts
-> 3. Add the event listeners and functionality
-> 4. Be ready to call from the renderHomepage function
-> 
-> Let me create a single JavaScript function that:
-> 1. Injects the required CSS into the document head
-> 2. Modifies the renderHomepage function to replace the emoji reactions with heart reactions
-> 3. Initializes all the heart reactions and events
-> 
-> This way they can simply call one function to set everything up.
-
-# Instagram-like Heart Reaction System - Integrated Solution
-
-Here's a self-contained JavaScript solution that you can simply copy and paste into your code:
-
-```javascript
 // Function to setup the Instagram-like heart reaction system
 function setupHeartReactionSystem() {
   // 1. Add the CSS styles to the document head
@@ -467,31 +446,3 @@ document.addEventListener('DOMContentLoaded', setupHeartReactionSystem);
 
 // Expose function globally so it can be called manually if needed
 window.setupHeartReactionSystem = setupHeartReactionSystem;
-```
-
-## How to Use
-
-Just copy the entire JavaScript code above and paste it into a `<script>` tag in your HTML, or add it to your existing JavaScript file.
-
-The system will automatically:
-1. Add all required CSS
-2. Override your renderHomepage() and showDetail() functions
-3. Replace the current emoji reaction system with the heart reaction system
-4. Add the double-tap to like functionality
-5. Keep likes in sync across different views of the same post
-
-If you ever need to manually reinitialize the system (for example, after adding new content), you can call:
-```javascript
-setupHeartReactionSystem();
-```
-
-## Features
-
-1. ✅ Satisfying heart animation when tapped
-2. ✅ Like count that updates when heart is clicked
-3. ✅ Double-tap on images to like (Instagram style)
-4. ✅ Heart reactions stay in sync across different views of the same post
-5. ✅ Supports both light and dark mode
-6. ✅ Compatible with your existing code structure
-
-Let me know if you have any questions!
