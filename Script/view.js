@@ -1,4 +1,5 @@
-const users = [
+
+setupReactions();const users = [
     {
       id: 1,
       username: "@reddcinema",
@@ -365,6 +366,7 @@ function renderHomepage() {
 
     postContainer.innerHTML += postHTML;
   });
+  setupReactions();
 
   // Initialize video functionality after rendering posts
   initializeVideoPlayers();
