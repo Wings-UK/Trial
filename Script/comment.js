@@ -267,6 +267,7 @@ function addCommentStyles() {
       margin-top: 10px;
       padding-bottom: 5px;
       max-height: 500px;
+      padding-bottom: 120px;
       overflow-y: auto;
     }
     
