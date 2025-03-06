@@ -1,150 +1,425 @@
-// Initialize reaction system for all posts
-function initializeReactionSystem() {
-  // Remove old reaction system elements
-  document.querySelectorAll('.reaction').forEach(oldReaction => {
-    const postElement = oldReaction.closest('.poster');
-    if (postElement) {
-      const postId = postElement.getAttribute('data-post-id');
-      if (postId) {
-        // Replace with new reaction system
-        oldReaction.innerHTML = createReactionHTML(postId);
-      }
-    }
+// Initialize the reaction system
+function setupReactions() {
+  const posts = document.querySelectorAll('.poster');
+  
+  posts.forEach(post => {
+    const reactionContainer = post.querySelector('.reaction');
+    if (!reactionContainer) return;
+    
+    // Replace the current reaction system with the new one
+    const newReactionHTML = `
+      <div class="lovi">
+        <div class="emoji-reaction-container">
+          <!-- Initially empty, will be populated dynamically -->
+        </div>
+        
+        <div class="share1 emoji-plus-btn">
+          <div class="plus-button-wrapper">
+            <img class="sharo" src="pics/plu.png" alt="Add Reaction">
+          </div>
+        </div>
+      </div>
+      <div class="wish1">
+        <img class="twito" src="pics/twito.png" alt="Retweet">
+      </div>
+    `;
+    
+    reactionContainer.innerHTML = newReactionHTML;
+    
+    // Create and prepare the emoji popup
+    createEmojiPopup(post);
+    
+    // Set up event listeners
+    initReactionEvents(post);
   });
-
-  // Attach event listeners to all new reaction buttons
-  attachReactionListeners();
+  
+  // Add CSS for the new reaction system
+  addReactionStyles();
 }
 
-// Create HTML for the new reaction system
-function createReactionHTML(postId) {
-  return `
-    <div class="reaction-container" data-post-id="${postId}">
-      <div class="reaction-button love-button" data-reaction="love" data-active="false">
-        <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 500) + 50}</span>
-      </div>
-      <div class="reaction-button comment-button" data-reaction="comment">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" 
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 100) + 10}</span>
-      </div>
-      <div class="reaction-button repost-button" data-reaction="repost">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 17l-5-5 5-5M17 7l5 5-5 5M14 3l-4 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 50) + 5}</span>
-      </div>
-      <div class="reaction-button donate-button" data-reaction="donate">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
-            stroke="currentColor" stroke-width="1" fill="none"/>
-          <path d="M12 7v6M12 15v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span class="reaction-count">${Math.floor(Math.random() * 20)}</span>
+// Create the emoji popup for each post
+function createEmojiPopup(post) {
+  // Check if popup already exists
+  if (post.querySelector('.emoji-popup')) return;
+  
+  const popupHTML = `
+    <div class="emoji-popup">
+      <div class="emoji-popup-content">
+        <div class="emoji-item" data-emoji="love" data-icon="pics/21[1].png" data-animated="pics/2.gif">
+          <img src="pics/21[1].png" alt="Love">
+        </div>
+        <div class="emoji-item" data-emoji="like" data-icon="pics/lovv.png" data-animated="pics/lovv.png">
+          <img src="pics/lovv.png" alt="Like">
+        </div>
+        <div class="emoji-item" data-emoji="laugh" data-icon="pics/laugh.png" data-animated="pics/laugh.gif">
+          <img src="pics/laugh.png" alt="Laugh">
+        </div>
+        <div class="emoji-item" data-emoji="surprise" data-icon="pics/surprise.png" data-animated="pics/surprise.gif">
+          <img src="pics/surprise.png" alt="Surprise">
+        </div>
+        <div class="emoji-item" data-emoji="sad" data-icon="pics/sad.png" data-animated="pics/sad.gif">
+          <img src="pics/sad.png" alt="Sad">
+        </div>
+        <div class="emoji-item" data-emoji="angry" data-icon="pics/angry.gif" data-animated="pics/angr.gif">
+          <img src="pics/angry.gif" alt="Angry">
+        </div>
+        <div class="emoji-item" data-emoji="fire" data-icon="pics/fire.png" data-animated="pics/fire.gif">
+          <img src="pics/fire.png" alt="Fire">
+        </div>
+        <div class="emoji-item" data-emoji="clap" data-icon="pics/clap.png" data-animated="pics/clap.gif">
+          <img src="pics/clap.png" alt="Clap">
+        </div>
       </div>
     </div>
   `;
+  
+  post.querySelector('.reaction').insertAdjacentHTML('beforeend', popupHTML);
 }
 
-// Attach event listeners to reaction buttons
-function attachReactionListeners() {
-  // Get all love reaction buttons
-  document.querySelectorAll('.love-button').forEach(button => {
-    button.addEventListener('click', handleLoveReaction);
+// Initialize reaction events for a post
+function initReactionEvents(post) {
+  const postId = post.dataset.postId;
+  const plusButton = post.querySelector('.emoji-plus-btn');
+  const emojiPopup = post.querySelector('.emoji-popup');
+  const emojiReactionContainer = post.querySelector('.emoji-reaction-container');
+  
+  // Get or initialize post reaction data
+  if (!window.postReactions) window.postReactions = {};
+  if (!window.postReactions[postId]) {
+    window.postReactions[postId] = {
+      reactions: {},
+      userReaction: null
+    };
+  }
+  
+  // Plus button click event
+  plusButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleEmojiPopup(post);
   });
-
-  // Add listeners for other reaction buttons
-  document.querySelectorAll('.comment-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('comment'));
+  
+  // Set up emoji item click events
+  const emojiItems = post.querySelectorAll('.emoji-item');
+  emojiItems.forEach(emojiItem => {
+    emojiItem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const emoji = emojiItem.dataset.emoji;
+      const iconPath = emojiItem.dataset.icon;
+      const animatedPath = emojiItem.dataset.animated;
+      
+      handleEmojiSelection(post, emoji, iconPath, animatedPath);
+      toggleEmojiPopup(post, false); // Hide popup after selection
+    });
   });
-
-  document.querySelectorAll('.repost-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('repost'));
+  
+  // Close popup when clicking elsewhere
+  document.addEventListener('click', () => {
+    toggleEmojiPopup(post, false);
   });
-
-  document.querySelectorAll('.donate-button').forEach(button => {
-    button.addEventListener('click', () => handleOtherReaction('donate'));
+  
+  // Prevent popup closing when clicking inside it
+  emojiPopup.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
+  
+  // Initial rendering of reactions
+  renderReactions(post);
 }
 
-// Handle love reaction with GSAP animation
-function handleLoveReaction(event) {
-  const button = event.currentTarget;
-  const isActive = button.getAttribute('data-active') === 'true';
-  const countElement = button.querySelector('.reaction-count');
-  const heartPath = button.querySelector('.heart-path');
-  const currentCount = parseInt(countElement.textContent);
-
-  if (isActive) {
-    countElement.textContent = currentCount - 1;
-    button.setAttribute('data-active', 'false');
-    gsap.to(heartPath, { fill: 'none', stroke: 'currentColor', duration: 0.3 });
+// Toggle the emoji popup visibility
+function toggleEmojiPopup(post, forceState = null) {
+  const popup = post.querySelector('.emoji-popup');
+  const isVisible = popup.classList.contains('active');
+  
+  // Determine the new state
+  const newState = forceState !== null ? forceState : !isVisible;
+  
+  // Close all popups first
+  document.querySelectorAll('.emoji-popup').forEach(p => {
+    p.classList.remove('active');
+  });
+  
+  // Set the new state for this popup
+  if (newState) {
+    popup.classList.add('active');
   } else {
-    countElement.textContent = currentCount + 1;
-    button.setAttribute('data-active', 'true');
-    gsap.to(heartPath, { fill: 'rgb(244, 7, 82)', duration: 0.4 });
+    popup.classList.remove('active');
   }
 }
 
-// Handle other reactions (comment, repost, donate)
-function handleOtherReaction(type) {
-  switch(type) {
-    case 'comment':
-      alert('Comment feature would open here');
-      break;
-    case 'repost':
-      alert('Repost dialog would open here');
-      break;
-    case 'donate':
-      alert('Donation options would open here');
-      break;
+// Handle emoji selection
+function handleEmojiSelection(post, emoji, iconPath, animatedPath) {
+  const postId = post.dataset.postId;
+  const postData = window.postReactions[postId];
+  const previousReaction = postData.userReaction;
+  
+  // If user already selected this emoji, toggle it off
+  if (previousReaction === emoji) {
+    postData.userReaction = null;
+    if (postData.reactions[emoji]) {
+      postData.reactions[emoji]--;
+      if (postData.reactions[emoji] <= 0) {
+        delete postData.reactions[emoji];
+      }
+    }
+  } else {
+    // If user had a previous reaction, remove it
+    if (previousReaction && postData.reactions[previousReaction]) {
+      postData.reactions[previousReaction]--;
+      if (postData.reactions[previousReaction] <= 0) {
+        delete postData.reactions[previousReaction];
+      }
+    }
+    
+    // Add the new reaction
+    postData.userReaction = emoji;
+    if (!postData.reactions[emoji]) postData.reactions[emoji] = 0;
+    postData.reactions[emoji]++;
+  }
+  
+  // Re-render the reactions
+  renderReactions(post);
+  
+  // Show animation for the selected emoji
+  if (postData.userReaction) {
+    animateEmojiReaction(post, emoji);
   }
 }
 
-// Add styles for the reaction system
-function addReactionStyles() {
-  if (!document.getElementById('reaction-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'reaction-styles';
-    styleElement.textContent = `
-      .reaction-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        width: 100%;
-      }
-      .reaction-button {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-      }
-      .reaction-button:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-      .reaction-count {
-        font-size: 14px;
-        color: #555;
-      }
-      .love-button[data-active="true"] {
-        color: rgb(244, 7, 82);
-      }
+// Render the current reactions for a post
+function renderReactions(post) {
+  const postId = post.dataset.postId;
+  const postData = window.postReactions[postId];
+  const container = post.querySelector('.emoji-reaction-container');
+  
+  // Clear the container
+  container.innerHTML = '';
+  
+  // Sort reactions by count (descending)
+  const sortedReactions = Object.entries(postData.reactions)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3); // Only show top 3
+  
+  // If no reactions, container stays empty
+  if (sortedReactions.length === 0) return;
+  
+  // Create elements for each reaction
+  sortedReactions.forEach(([emoji, count]) => {
+    // Find the emoji item to get its paths
+    const emojiItem = post.querySelector(`.emoji-item[data-emoji="${emoji}"]`);
+    if (!emojiItem) return;
+    
+    const iconPath = emojiItem.dataset.icon;
+    const animatedPath = emojiItem.dataset.animated;
+    const isSelected = postData.userReaction === emoji;
+    
+    const emojiElement = document.createElement('div');
+    emojiElement.className = `emoji-display ${isSelected ? 'selected' : ''}`;
+    emojiElement.dataset.emoji = emoji;
+    emojiElement.innerHTML = `
+      <div class="emoji-image-wrapper">
+        <img src="${iconPath}" alt="${emoji}" class="emoji-image" data-static="${iconPath}" data-animated="${animatedPath}">
+      </div>
+      <div class="emoji-display-count">${count}</div>
     `;
-    document.head.appendChild(styleElement);
-  }
+    
+    // Add click event to toggle this emoji
+    emojiElement.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const clickedEmoji = emoji;
+      const iconPath = emojiItem.dataset.icon;
+      const animatedPath = emojiItem.dataset.animated;
+      
+      handleEmojiSelection(post, clickedEmoji, iconPath, animatedPath);
+    });
+    
+    container.appendChild(emojiElement);
+  });
 }
 
-// Call this manually inside `renderHomepage()`
-function setupReactions() {
-  addReactionStyles();
-  initializeReactionSystem();
+// Animate an emoji reaction
+function animateEmojiReaction(post, emoji) {
+  const emojiDisplay = post.querySelector(`.emoji-display[data-emoji="${emoji}"]`);
+  if (!emojiDisplay) return;
+  
+  // Add pulse animation class
+  emojiDisplay.classList.add('pulse');
+  
+  // Replace static image with animated one
+  const imgElement = emojiDisplay.querySelector('.emoji-image');
+  const animatedSrc = imgElement.dataset.animated;
+  const staticSrc = imgElement.dataset.static;
+  const originalSrc = imgElement.src;
+  
+  // Play the animation
+  imgElement.src = animatedSrc;
+  
+  // Remove the animation class and reset the image after animation completes
+  setTimeout(() => {
+    emojiDisplay.classList.remove('pulse');
+    // Only reset to static if it's not the current user's reaction
+    const postId = post.dataset.postId;
+    const postData = window.postReactions[postId];
+    if (postData.userReaction !== emoji) {
+      imgElement.src = staticSrc;
+    }
+  }, 1000);
 }
+
+// Add CSS styles for the reaction system
+function addReactionStyles() {
+  // Check if styles are already added
+  if (document.getElementById('reaction-styles')) return;
+  
+  const styleElement = document.createElement('style');
+  styleElement.id = 'reaction-styles';
+  styleElement.textContent = `
+    /* Reaction Container */
+    .emoji-reaction-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+    }
+    
+    /* Emoji Display */
+    .emoji-display {
+      display: flex;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 4px 8px 4px 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      opacity: 0.85;
+    }
+    
+    .emoji-display:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+      opacity: 1;
+    }
+    
+    .emoji-display.selected {
+      background-color: rgba(29, 161, 242, 0.2);
+      opacity: 1;
+    }
+    
+    .emoji-image-wrapper {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .emoji-image {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    
+    .emoji-display-count {
+      margin-left: 4px;
+      font-size: 13px;
+      color: #ffffff;
+      font-weight: 500;
+    }
+    
+    /* Plus Button */
+    .plus-button-wrapper {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .plus-button-wrapper:hover {
+      transform: scale(1.1);
+    }
+    
+    /* Emoji Popup */
+    .emoji-popup {
+      position: absolute;
+      bottom: 60px;
+      left: 10px;
+      background-color: #292f33;
+      border-radius: 24px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 8px;
+      z-index: 100;
+      display: none;
+      transform-origin: bottom left;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .emoji-popup.active {
+      display: block;
+      transform: scale(1);
+      opacity: 1;
+    }
+    
+    .emoji-popup-content {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .emoji-item {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .emoji-item:hover {
+      transform: scale(1.2);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .emoji-item img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+    
+    /* Animation */
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .pulse {
+      animation: pulse 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    /* Transition for position changes */
+    .emoji-reaction-container {
+      transition: all 0.3s ease;
+    }
+    
+    .emoji-reaction-container > * {
+      transition: all 0.3s ease;
+    }
+  `;
+  
+  document.head.appendChild(styleElement);
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  setupReactions();
+});
+
+// Update the renderHomepage function to include setupReactions
