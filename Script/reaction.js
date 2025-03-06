@@ -216,26 +216,4 @@ function setupHeartReactionSystem() {
       }
     });
   }
-
-  // 6. Set up mutation observer to handle dynamically added content
-  const observer = new MutationObserver(function(mutations) {
-    let shouldInitialize = false;
-    
-    mutations.forEach(function(mutation) {
-      if (mutation.addedNodes.length) {
-        shouldInitialize = true;
-      }
-    });
-    
-    if (shouldInitialize) {
-      initializeHeartReactions();
-    }
-  });
-  
-  // Start observing
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Expose function globally so it can be called manually if needed
-  window.setupHeartReactionSystem = setupHeartReactionSystem;
-  window.initializeHeartReactions = initializeHeartReactions;
 }
