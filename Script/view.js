@@ -1,5 +1,4 @@
-
-setupReactions();const users = [
+const users = [
     {
       id: 1,
       username: "@reddcinema",
