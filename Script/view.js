@@ -365,13 +365,10 @@ function renderHomepage() {
 
     postContainer.innerHTML += postHTML;
   });
-  setupReactions();
 
   // Initialize video functionality after rendering posts
   initializeVideoPlayers();
 }
-
-
 
 // Function to initialize video players
 function initializeVideoPlayers() {
