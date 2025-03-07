@@ -385,8 +385,11 @@ const heartStyle = `
 .like-count {
   font-size: 15px;
   font-family: ibm plex sans, roboto;
+}
 
 .heart-icon {
+  width: 20px;
+  height: 20px;
   transition: all 0.3s ease;
 }
 
