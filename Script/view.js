@@ -341,15 +341,15 @@ function renderHomepage() {
                         <span class="like-count">${post.likeCount || 0}</span>
                     </div>
                     <div class="comment-btn">
-                        <img src="pics/chat.png" alt="Comment">
+                        <img class="feeling" src="pics/chat.png" alt="Comment">
                         <span>${post.commentCount || 0}</span>
                     </div>
                     <div class="repost-btn">
-                        <img src="pics/repost.png" alt="Repost">
+                        <img class="feeling" src="pics/repost.png" alt="Repost">
                         <span>${post.repostCount || 0}</span>
                     </div>
                     <div class="donate-btn">
-                        <img src="pics/naira.png" alt="Donate">
+                        <img class="feeling" src="pics/naira.png" alt="Donate">
                         <span>${post.donateCount || 0}</span>
                     </div>
                     <div class="wish1">
@@ -377,6 +377,9 @@ const heartStyle = `
   align-items: center;
   cursor: pointer;
   gap: 4px;
+}
+.feeling {
+  width: 24px;
 }
 
 .heart-icon {
