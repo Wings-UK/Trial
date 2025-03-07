@@ -445,7 +445,7 @@ const heartStyle = `
 
 @keyframes shrinkFade {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.5; opacity: 0.5; }
+  50% { transform: scale(0.5); opacity: 0.5; }
   100% { transform: scale(1); opacity: 1; }
 }
 
