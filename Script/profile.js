@@ -244,7 +244,7 @@ function switchProfileTab(tab) {
   setTimeout(() => {
     // Update icon states based on selected tab
     if (tab === "posts") {
-      appsIcon.src = "pics/bren1.png";
+      appsIcon.src = "pics/apps.png";
       renderProfilePosts();
     } else if (tab === "comments") {
       browserIcon.src = "pics/browser1.png";
