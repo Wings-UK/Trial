@@ -1126,12 +1126,6 @@ function showUserProfile(userId) {
     }
     renderUserPosts(userId);
     setupScrollHandling();
-    
-    
-    
-    
-    
-
 }
 
 function renderUserPosts(userId) {
