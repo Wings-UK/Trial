@@ -388,8 +388,8 @@ const heartStyle = `
 }
 
 .heart-icon {
-  width: 20px !important;
-  height: 20px !important;
+  width: 20px;
+  height: 20px;
   transition: all 0.3s ease;
 }
 
@@ -451,7 +451,7 @@ function initializeHeartReactions() {
   addHeartStyles();
   
   // Get all heart buttons
-  const heartButtons = document.querySelectorAll('.heart-btn');
+  const heartButtons = document.querySelectorAll('.heart-ai');
   
   // Add click event listeners to each heart button
   heartButtons.forEach(btn => {
