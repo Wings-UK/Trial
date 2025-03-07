@@ -165,8 +165,7 @@ localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 function renderHomepage() {
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = ''; // Clear existing content
-  setupHeartReactionSystem();
-initializeHeartReactions();
+  
   // Create video modal if it doesn't exist
   if (!document.querySelector('.video-modal')) {
     const videoModal = document.createElement('div');
@@ -366,6 +365,8 @@ initializeHeartReactions();
 
     postContainer.innerHTML += postHTML;
   });
+ setupHeartReactionSystem();
+ initializeHeartReactions();
   // Initialize video functionality after rendering posts
   initializeVideoPlayers();
 }
