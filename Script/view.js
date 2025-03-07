@@ -1086,9 +1086,9 @@ function showUserProfile(userId) {
                 <img class="dee" src="pics/apps.png">
               </div>
               <div class="yeb">
-               <a href="Retail-Desktop-MyAccount-Storefront.html">
+               
                 <img class="dee" src="pics/browser.png">
-               </a>
+            
 
               </div>
               <div class="yeb">
@@ -1122,15 +1122,37 @@ function showUserProfile(userId) {
     if (wingDiv) {
         wingDiv.style.display = "none";
     }
+    currentProfileTab = "posts";
+
+  // Initialize the tab navigation
+  initProfileNavigation();
+    
+    
     renderUserPosts(userId);
     setupScrollHandling();
     
-    
-    
-    
-    
-
+      // Update history with tab information
+  history.replaceState({ page: "profile", profileTab: "posts" }, "", "#profile");
 }
+
+// Override the original switchPage function to handle profile tabs
+const originalSwitchPage = switchPage;
+switchPage = function(pageId) {
+  if (pageId === "profile") {
+    // Save current tab in history when navigating to profile
+    const historyState = { page: pageId, profileTab: currentProfileTab || "posts" };
+    history.replaceState(historyState, "", `#${pageId}`);
+  }
+  
+  // Call the original function
+  originalSwitchPage(pageId);
+  
+  // If navigating to profile, initialize the navigation
+  if (pageId === "profile") {
+    setTimeout(initProfileNavigation, 100);
+  }
+
+};
 
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
