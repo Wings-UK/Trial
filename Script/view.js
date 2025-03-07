@@ -376,7 +376,7 @@ const heartStyle = `
   display: flex;
   align-items: center;
   cursor: pointer;
-  gap: 4px;
+  gap: 0px;
 }
 .feeling {
   width: 24px;
@@ -394,7 +394,7 @@ const heartStyle = `
 }
 
 .heart-icon .heart-path {
-  stroke: #888;
+  stroke: rgb(0, 0, 0);
   fill: none;
   transition: all 0.3s ease;
 }
