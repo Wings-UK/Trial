@@ -430,7 +430,7 @@ function addProfileTabsCSS() {
         padding: 8px 16px;
         border-radius: 4px;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 500;
       }
       
       .store-subtitle {
