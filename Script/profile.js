@@ -370,7 +370,6 @@ function handleBackButtonForProfile(event) {
 
 // Enhanced showMyProfile or showUserProfile function to initialize tabs
 
-
 // Override the original switchPage function to handle profile tabs
 const originalSwitchPage = switchPage;
 switchPage = function(pageId) {
