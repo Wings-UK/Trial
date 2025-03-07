@@ -239,3 +239,6 @@ function setupHeartReactionSystem() {
   window.setupHeartReactionSystem = setupHeartReactionSystem;
   window.initializeHeartReactions = initializeHeartReactions;
 }
+
+
+document.addEventListener('DOMContentLoaded', setupHeartReactionSystem);
