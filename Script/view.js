@@ -388,8 +388,8 @@ const heartStyle = `
 }
 
 .heart-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px !important;
+  height: 22px !important;
   transition: all 0.3s ease;
 }
 
