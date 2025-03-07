@@ -382,6 +382,10 @@ const heartStyle = `
   width: 24px;
 }
 
+.like-count {
+  font-size: 15px;
+  font-family: ibm plex sans, roboto;
+
 .heart-icon {
   transition: all 0.3s ease;
 }
@@ -414,7 +418,7 @@ const heartStyle = `
 }
 
 .heart-animation {
-  animation: heartBeat 0.4s ease-in-out;
+  animation: heartBeat 0.7s ease-in-out;
 }
 
 .reaction-container {
