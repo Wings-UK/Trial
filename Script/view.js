@@ -352,10 +352,13 @@ function renderHomepage() {
                         <img src="pics/naira.png" alt="Donate">
                         <span>${post.donateCount || 0}</span>
                     </div>
-                </div>
-                <div class="wish1">
+                    <div class="wish1">
+
                     <img class="twito" src="pics/twito.png">
-                </div>            
+
+                   </div>    
+                </div>
+                        
             </div>
         </div>
     `;
