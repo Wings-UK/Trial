@@ -366,7 +366,6 @@ function renderHomepage() {
     postContainer.innerHTML += postHTML;
   });
  setupHeartReactionSystem();
- initializeHeartReactions();
   // Initialize video functionality after rendering posts
   initializeVideoPlayers();
 }
