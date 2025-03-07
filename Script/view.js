@@ -1038,7 +1038,6 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-    switchPage("profile");
     updateHeaderHTML(userId);
 
     const profileContainer = document.getElementById("profile");
@@ -1111,7 +1110,7 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
-    
+    switchPage("profile");
     
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
@@ -1137,13 +1136,7 @@ function showUserProfile(userId) {
 }
 
 // Override the original switchPage function to handle profile tabs
-const originalSwitchPage = switchPage;
-switchPage = function(pageId) {
-  if (pageId === "profile") {
-    // Save current tab in history when navigating to profile
-    const historyState = { page: pageId, profileTab: currentProfileTab || "posts" };
-    history.replaceState(historyState, "", `#${pageId}`);
-  }
+
   
   // Call the original function
   originalSwitchPage(pageId);
@@ -1153,7 +1146,7 @@ switchPage = function(pageId) {
     setTimeout(initProfileNavigation, 100);
   }
 
-}
+};
 
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
