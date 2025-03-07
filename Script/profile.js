@@ -323,7 +323,7 @@ function renderProfileStore() {
         <button class="add-product-btn">+ Add Product</button>
       </div>
       <div class="empty-store">
-        <img src="pics/empty-store.png" alt="Empty store">
+        <img src="pics/tel.png" alt="Empty store">
         <p>Your store is empty</p>
         <p class="store-subtitle">Add products to start selling</p>
       </div>
