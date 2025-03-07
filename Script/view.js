@@ -222,17 +222,16 @@ function renderHomepage() {
         </div>
       </div>
       <div class="modal-content">
-
             <p class="modal-post-text"></p>
-
           </div>
-      
       
       <div class="modal-actions">
         <div class="action-buttons">
-          <div class="action-button">
-            <img src="pics/lovv.png" alt="Like">
-            <span>0</span>
+          <div class="action-button heart-btn">
+            <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24">
+              <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span class="like-count">0</span>
           </div>
           <div class="action-button">
             <img src="pics/chat.png" alt="Comment">
@@ -334,26 +333,24 @@ function renderHomepage() {
                 </div>
             </div>
             <div class="reaction">
-                <div class="lovi">
-                    <div class="emoji-container">
-                        <div class="emoji-wrapper" data-count="0">
-                            <img src="pics/lovv.png" alt="Like" class="emoji" data-static="pics/lovv.png" data-animated="pics/lovv.png">
-                            <div class="emoji-count">${post.likeCount || 560}</div>
-                        </div>
-                        <div class="emoji-wrapper" data-count="0">
-                            <img src="pics/21[1].png" alt="Love" class="emoji" data-static="pics/21[1].png" data-animated="pics/2.gif">
-                            <div class="emoji-count">${post.loveCount || 21}</div>
-                        </div>
-                        <div class="emoji-wrapper" data-count="0">
-                            <img src="pics/angry.gif" alt="Laugh" class="emoji" data-static="pics/angry.gif" data-animated="pics/angr.gif">
-                            <div class="emoji-count">${post.angryCount || 78}</div>
-                        </div>
+                <div class="reaction-container">
+                    <div class="heart-btn" data-post-id="${post.id}" data-liked="false">
+                        <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24">
+                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <span class="like-count">${post.likeCount || 0}</span>
                     </div>
-                    
-                    <div class="share1">
-                        <div>
-                            <img class="sharo" src="pics/plu.png">
-                        </div> 
+                    <div class="comment-btn">
+                        <img src="pics/chat.png" alt="Comment">
+                        <span>${post.commentCount || 0}</span>
+                    </div>
+                    <div class="repost-btn">
+                        <img src="pics/repost.png" alt="Repost">
+                        <span>${post.repostCount || 0}</span>
+                    </div>
+                    <div class="donate-btn">
+                        <img src="pics/naira.png" alt="Donate">
+                        <span>${post.donateCount || 0}</span>
                     </div>
                 </div>
                 <div class="wish1">
@@ -366,9 +363,130 @@ function renderHomepage() {
     postContainer.innerHTML += postHTML;
   });
 
-  // Initialize video functionality after rendering posts
-  initializeVideoPlayers();
+  // Initialize heart reaction functionality after rendering posts
+  initializeHeartReactions();
 }
+
+// Add the following CSS to your stylesheet
+const heartStyle = `
+.heart-btn {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 4px;
+}
+
+.heart-icon {
+  transition: all 0.3s ease;
+}
+
+.heart-icon .heart-path {
+  stroke: #888;
+  fill: none;
+  transition: all 0.3s ease;
+}
+
+.heart-icon.liked {
+  transform: scale(1);
+}
+
+.heart-icon.liked .heart-path {
+  fill: rgb(244, 7, 82);
+  stroke: rgb(244, 7, 82);
+}
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.heart-animation {
+  animation: heartBeat 0.4s ease-in-out;
+}
+
+.reaction-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.comment-btn, .repost-btn, .donate-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+`;
+
+// Create a style element and add it to the head
+function addHeartStyles() {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = heartStyle;
+  document.head.appendChild(styleElement);
+}
+
+// Initialize heart reactions
+function initializeHeartReactions() {
+  // Add the CSS styles first
+  addHeartStyles();
+  
+  // Get all heart buttons
+  const heartButtons = document.querySelectorAll('.heart-btn');
+  
+  // Add click event listeners to each heart button
+  heartButtons.forEach(btn => {
+    const heartIcon = btn.querySelector('.heart-icon');
+    const likeCount = btn.querySelector('.like-count');
+    const postId = btn.getAttribute('data-post-id');
+    let isLiked = btn.getAttribute('data-liked') === 'true';
+    let count = parseInt(likeCount.textContent);
+    
+    btn.addEventListener('click', () => {
+      // Toggle liked state
+      isLiked = !isLiked;
+      
+      // Update heart appearance
+      if (isLiked) {
+        // Add animation class
+        heartIcon.classList.add('heart-animation');
+        heartIcon.classList.add('liked');
+        count++;
+      } else {
+        heartIcon.classList.remove('liked');
+        count = Math.max(0, count - 1);
+      }
+      
+      // Update like count
+      likeCount.textContent = count;
+      
+      // Update data attribute
+      btn.setAttribute('data-liked', isLiked);
+      
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        heartIcon.classList.remove('heart-animation');
+      }, 400);
+      
+      // Here you would typically send this information to your backend
+      console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
+    });
+  });
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Your existing initialization code
+  
+  // Initialize heart reactions
+  initializeHeartReactions();
+});
 
 
 
