@@ -425,6 +425,30 @@ const heartStyle = `
   animation: heartBeat 0.7s ease-in-out;
 }
 
+.heart-icon {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.heart-animation {
+  animation: pop 0.3s ease forwards;
+}
+
+.unfill-animation {
+  animation: shrinkFade 0.3s ease forwards;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shrinkFade {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .reaction-container {
   display: flex;
   align-items: center;
@@ -465,16 +489,20 @@ function initializeHeartReactions() {
     btn.addEventListener('click', () => {
       // Toggle liked state
       isLiked = !isLiked;
-      
-      // Update heart appearance
+
       if (isLiked) {
         // Add animation class
-        heartIcon.classList.add('heart-animation');
-        heartIcon.classList.add('liked');
+        heartIcon.classList.add('heart-animation', 'liked');
         count++;
       } else {
-        heartIcon.classList.remove('liked');
+        // Add smooth unfill animation
+        heartIcon.classList.add('unfill-animation');
         count = Math.max(0, count - 1);
+
+        // Remove class after animation completes
+        setTimeout(() => {
+          heartIcon.classList.remove('liked', 'unfill-animation');
+        }, 400);
       }
       
       // Update like count
@@ -482,7 +510,7 @@ function initializeHeartReactions() {
       
       // Update data attribute
       btn.setAttribute('data-liked', isLiked);
-      
+
       // Remove animation class after animation completes
       setTimeout(() => {
         heartIcon.classList.remove('heart-animation');
