@@ -1038,6 +1038,7 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
+    switchPage("profile");
     updateHeaderHTML(userId);
 
     const profileContainer = document.getElementById("profile");
@@ -1110,7 +1111,7 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
-    switchPage("profile");
+    
     
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
