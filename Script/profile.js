@@ -236,7 +236,7 @@ function switchProfileTab(tab) {
   mansonro.style.transform = `translateX(${direction === "left" ? "-" : ""}100%)`;
   
   // Reset all icons to default state
-  appsIcon.src = "pics/apps.png";
+  appsIcon.src = "pics/bren1.png";
   browserIcon.src = "pics/browser.png";
   storeIcon.src = "pics/bren.png";
   
@@ -349,7 +349,7 @@ function initProfileNavigation() {
   icons[2].addEventListener('click', () => switchProfileTab('store'));
   
   // Default is posts tab active
-  icons[0].querySelector('.dee').src = "pics/bren1.png";
+  icons[0].querySelector('.dee').src = "pics/apps.png";
   
   // Handle back button behavior
   window.addEventListener('popstate', handleBackButtonForProfile);
