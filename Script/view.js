@@ -1354,11 +1354,11 @@ function initializeAccountIcon() {
 function showMyProfile() {
   const user = getLoggedInUser();
   
-  switchPage("profile"); // Switch to profile page
-
-    setTimeout(() => {
-        updateHeaderHTML(user.id);
-    }, 50);
+  switchPage("profile");
+  
+  setTimeout(() => {
+    updateHeaderHTML(user.id);
+  }, 50);
   
   const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
@@ -1403,10 +1403,10 @@ function showMyProfile() {
         </div>
         <div class="ewe">
           <div class="yeb">
-            <img class="dee" src="pics/apps.png">
+            <img class="dee" src="pics/bren1.png">
           </div>
           <div class="yeb">
-           <a href="Retail-Desktop-MyAccount-Storefront.html">
+           <a href="javascript:void(0);">
             <img class="dee" src="pics/browser.png">
            </a>
           </div>
@@ -1429,18 +1429,21 @@ function showMyProfile() {
       </div>
   `;
   
-  
   lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-
-  // Attach scroll event listener
-    window.addEventListener('scroll', handleScroll);
-    
-    // **Force hide the wing div when visiting other profiles**
-    const wingDiv = document.querySelector(".wing");
-    if (wingDiv) {
-        wingDiv.style.display = "block";
-    }
-  // Render posts by checking the global posts array for matching userId
+  window.addEventListener('scroll', handleScroll);
+  
+  const wingDiv = document.querySelector(".wing");
+  if (wingDiv) {
+    wingDiv.style.display = "block";
+  }
+  
+  // Reset to posts tab
+  currentProfileTab = "posts";
+  
+  // Initialize the tab navigation
+  initProfileNavigation();
+  
+  // Render user posts
   renderUserPosts(user.id);
   
   // Add event listener for edit profile button
@@ -1448,6 +1451,9 @@ function showMyProfile() {
   if (editProfileBtn) {
     editProfileBtn.addEventListener('click', openEditProfileModal);
   }
+  
+  // Update history with tab information
+  history.replaceState({ page: "profile", profileTab: "posts" }, "", "#profile");
 }
 
 // 5. Create a modal for editing the profile
