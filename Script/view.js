@@ -1152,7 +1152,7 @@ switchPage = function(pageId) {
     setTimeout(initProfileNavigation, 100);
   }
 
-};
+}
 
 function renderUserPosts(userId) {
     const userPosts = posts.filter(post => post.userId === userId);
