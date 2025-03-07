@@ -383,7 +383,7 @@ const heartStyle = `
 }
 
 .like-count {
-  font-size: 15px;
+  font-size: 14px;
   font-family: ibm plex sans, roboto;
 }
 
