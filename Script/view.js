@@ -414,7 +414,7 @@ const heartStyle = `
     transform: scale(0.5);
   }
   50% {
-    transform: scale(1.5);
+    transform: scale(1.7);
   }
   100% {
     transform: scale(1);
@@ -439,13 +439,13 @@ const heartStyle = `
 
 @keyframes pop {
   0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
+  50% { transform: scale(1.5); }
   100% { transform: scale(1); }
 }
 
 @keyframes shrinkFade {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(0.5; opacity: 0.5; }
   100% { transform: scale(1); opacity: 1; }
 }
 
