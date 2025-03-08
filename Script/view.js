@@ -376,14 +376,11 @@ function renderHomepage() {
 const heartStyle = `
 .heart-ai {
   display: flex;
+  width: 100px;
   align-items: center;
   cursor: pointer;
   gap: 0px;
 }
-.feeling {
-  width: 100px;
-}
-
 .feeling {
   width: 23px;
 }
