@@ -381,7 +381,7 @@ const heartStyle = `
   cursor: pointer;
 }
 .feeling {
-  width: 23px;
+  width: 2px;
 }
 
 .like-count {
