@@ -342,29 +342,7 @@ function renderHomepage() {
                         <span class="like-count">${post.likeCount || 0}</span>
                     </div>
                     <div class="comment-btn">
-                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Comment bubble -->
-  <path d="M40 40
-           C40 30, 50 20, 60 20
-           L140 20
-           C150 20, 160 30, 160 40
-           L160 120
-           C160 130, 150 140, 140 140
-           L100 140
-           L80 165
-           L60 140
-           L60 140
-           C50 140, 40 130, 40 120
-           Z" 
-        fill="white" 
-        stroke="black" 
-        stroke-width="8" />
-  
-  <!-- Lines representing text (optional) -->
-  <line x1="60" y1="50" x2="140" y2="50" stroke="black" stroke-width="6" stroke-linecap="round" />
-  <line x1="60" y1="80" x2="140" y2="80" stroke="black" stroke-width="6" stroke-linecap="round" />
-  <line x1="60" y1="110" x2="120" y2="110" stroke="black" stroke-width="6" stroke-linecap="round" />
-</svg>
+                        <img class="feeling" src="pics/good.svg" alt="Comment">
                         <span>${post.commentCount || 0}</span>
                     </div>
                     <div class="repost-btn">
