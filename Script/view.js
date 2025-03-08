@@ -387,11 +387,11 @@ const heartStyle = `
   font-size: 14px;
   font-weight: 500;
   font-family: ibm plex sans, roboto;
-}
+} 
 
 .heart-icon {
-  width: 22px !important;
-  height: 22px !important;
+  width: 23px !important;
+  height: 23px !important;
   transition: all 0.3s ease;
 }
 
