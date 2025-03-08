@@ -376,7 +376,7 @@ function renderHomepage() {
 const heartStyle = `
 .heart-ai {
   display: flex;
-  width: 100px;
+  width: 100px; 
   align-items: center;
   cursor: pointer;
   gap: 0px;
