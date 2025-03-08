@@ -384,6 +384,10 @@ const heartStyle = `
   width: 100px;
 }
 
+.feeling {
+  width: 23px;
+}
+
 .like-count {
   font-size: 14px;
   font-family: ibm plex sans, roboto;
