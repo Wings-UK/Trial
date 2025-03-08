@@ -381,7 +381,7 @@ const heartStyle = `
   gap: 0px;
 }
 .feeling {
-  width: 23px;
+  width: 100px;
 }
 
 .like-count {
@@ -458,6 +458,7 @@ const heartStyle = `
 
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
+  width: 100px;
   align-items: center;
   gap: 6px;
   cursor: pointer;
