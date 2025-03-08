@@ -379,7 +379,6 @@ const heartStyle = `
   width: 100px; 
   align-items: center;
   cursor: pointer;
-  gap: 0px;
 }
 .feeling {
   width: 23px;
