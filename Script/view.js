@@ -347,7 +347,7 @@ function renderHomepage() {
                         <span>${post.commentCount || 0}</span>
                     </div>
                     <div class="repost-btn">
-                        <img class="feeling" src="pics/repost.png" alt="Repost">
+                        <img class="feeling" src="pics/tum.svg" alt="Repost">
                         <span>${post.repostCount || 0}</span>
                     </div>
                     <div class="donate-btn">
