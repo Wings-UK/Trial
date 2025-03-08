@@ -462,6 +462,7 @@ const heartStyle = `
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  font-size: 14px;
   font-family: ibm plex sans, roboto;
 }
 `;
