@@ -459,7 +459,7 @@ const heartStyle = `
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
   font-family: ibm plex sans, roboto;
 }
