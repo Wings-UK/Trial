@@ -342,7 +342,7 @@ function renderHomepage() {
                         <span class="like-count">${post.likeCount || 0}</span>
                     </div>
                     <div class="comment-btn" data-post-id="${post.id}">
-                        <img class="feeling" src="pics/good.svg" alt="Comment">
+                        <img class="feeling" src="pics/bun.svg" alt="Comment">
                         <span>${post.commentCount || 0}</span>
                     </div>
                     <div class="repost-btn">
