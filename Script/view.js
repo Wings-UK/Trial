@@ -380,7 +380,7 @@ const heartStyle = `
   gap: 0px;
 }
 .feeling {
-  width: 24px;
+  width: 23px;
 }
 
 .like-count {
