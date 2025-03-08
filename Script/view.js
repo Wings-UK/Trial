@@ -378,7 +378,7 @@ const heartStyle = `
   display: flex;
   width: 70px; 
   align-items: center;
-  cursor: pointer;
+  cursor: pointer; 
 }
 .feeling {
   width: 23px;
@@ -458,7 +458,7 @@ const heartStyle = `
 
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
-  width: 50px;
+  width: 70px;
   align-items: center;
   gap: 6px;
   cursor: pointer;
