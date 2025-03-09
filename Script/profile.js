@@ -277,26 +277,27 @@ function initStickyMenu() {
 
 // Set up optimized scroll handling
 function setupScrollHandling() {
-  // Remove any existing scroll listener to prevent duplicates
-  window.removeEventListener('scroll', handleProfileScroll);
-  
-  // Initialize sticky menu properties
-  initStickyMenu();
-  
-  // Add the scroll event listener with throttling for better performance
-  let ticking = false;
-  window.addEventListener('scroll', function() {
-    if (!ticking) {
-      window.requestAnimationFrame(function() {
-        handleProfileScroll();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  });
-  
-  // Initial check
-  handleProfileScroll();
+    window.removeEventListener('scroll', handleScroll); // Remove old listener
+    window.removeEventListener('scroll', handleProfileScroll); // Prevent duplicates
+    
+    setHeaderHeight();
+    initStickyMenu();
+    
+    // Throttle scroll events for performance
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                handleScroll(); // For header profile pic and follow button
+                handleProfileScroll(); // For ewe div
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+    
+    // Initial check
+    handleProfileScroll();
 }
 
 
