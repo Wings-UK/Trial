@@ -376,7 +376,7 @@ function renderHomepage() {
 const heartStyle = `
 .heart-ai {
   display: flex;
-  width: 70px; 
+  width: 60px; 
   align-items: center;
   cursor: pointer; 
 }
@@ -467,7 +467,7 @@ const heartStyle = `
 
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
-  width: 70px;
+  width: 60px;
   align-items: center;
   gap: 6px;
   cursor: pointer;
