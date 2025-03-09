@@ -392,6 +392,7 @@ const heartStyle = `
 }
 .mee {
 display: flex;
+gap: 20px;
 }
 
 .call {
