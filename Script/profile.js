@@ -117,33 +117,44 @@ function setHeaderHeight() {
   }
 }
 
-// Remove the existing handleProfileScroll function and replace with this
-function handleProfileScroll() {
-    const header = document.querySelector('.file');
-    const eweDiv = document.querySelector('.ewe');
-    const headerImg = document.querySelector('.frin');
-    if (!header || !eweDiv || !headerImg) return;
-
-    const headerHeight = header.offsetHeight;
-    const scrollPosition = window.scrollY;
-    const headerBottom = headerImg.getBoundingClientRect().bottom;
-
-    // When header image scrolls out of view, fix the ewe div
-    if (headerBottom <= headerHeight) {
-        eweDiv.style.position = 'fixed';
-        eweDiv.style.top = `${headerHeight}px`;
-        eweDiv.style.bottom = 'auto';
-    } else {
-        eweDiv.style.position = 'sticky';
-        eweDiv.style.top = 'auto';
-        eweDiv.style.bottom = '0';
+// Remove the existing handlesScroll function and replace with this
+function handlesScroll() {
+  const header = document.querySelector('.file');
+  const menuBar = document.querySelector('.ewe');
+  const userInfo = document.querySelector('.klr');
+  
+  if (!menuBar || !header) return;
+  
+  // Get the initial position of the menu bar if not already stored
+  if (!menuBar.dataset.initialTop) {
+    menuBar.dataset.initialTop = menuBar.getBoundingClientRect().top;
+    menuBar.dataset.initialOffset = menuBar.offsetTop;
+  }
+  
+  const headerHeight = header.offsetHeight;
+  const scrollPosition = window.scrollY;
+  const menuInitialOffset = parseInt(menuBar.dataset.initialOffset, 10);
+  
+  // Check if we've scrolled past the point where the menu should stick
+  if (scrollPosition > menuInitialOffset - headerHeight) {
+    if (!menuBar.classList.contains('fixed')) {
+      menuBar.classList.add('fixed');
+      // Add padding to the content below to prevent jumps
+      const menuHeight = menuBar.offsetHeight;
+      document.querySelector('.mansonro').style.paddingTop = `${menuHeight}px`;
     }
+  } else {
+    if (menuBar.classList.contains('fixed')) {
+      menuBar.classList.remove('fixed');
+      document.querySelector('.mansonro').style.paddingTop = '';
+    }
+  }
 }
 
 // Updated setupScrollHandling
 function setupScrollHandling() {
     window.removeEventListener('scroll', handleScroll); // Remove old listener
-    window.removeEventListener('scroll', handleProfileScroll); // Prevent duplicates
+    window.removeEventListener('scroll', handlesScroll); // Prevent duplicates
     
     setHeaderHeight();
     initStickyMenu();
@@ -154,7 +165,7 @@ function setupScrollHandling() {
         if (!ticking) {
             window.requestAnimationFrame(function() {
                 handleScroll(); // For header profile pic and follow button
-                handleProfileScroll(); // For ewe div
+                handlesScroll(); // For ewe div
                 ticking = false;
             });
             ticking = true;
@@ -162,7 +173,7 @@ function setupScrollHandling() {
     });
     
     // Initial check
-    handleProfileScroll();
+    handlesScroll();
 }
 
 
@@ -198,7 +209,7 @@ function initStickyMenu() {
       menuBar.dataset.initialOffset = rect.top + scrollTop;
       
       // Check if it should be fixed based on current scroll
-      handleProfileScroll();
+      handlesScroll();
     }
   });
 }
@@ -206,7 +217,7 @@ function initStickyMenu() {
 // Set up optimized scroll handling
 function setupScrollHandling() {
     window.removeEventListener('scroll', handleScroll); // Remove old listener
-    window.removeEventListener('scroll', handleProfileScroll); // Prevent duplicates
+    window.removeEventListener('scroll', handlesScroll); // Prevent duplicates
     
     setHeaderHeight();
     initStickyMenu();
@@ -217,7 +228,7 @@ function setupScrollHandling() {
         if (!ticking) {
             window.requestAnimationFrame(function() {
                 handleScroll(); // For header profile pic and follow button
-                handleProfileScroll(); // For ewe div
+                handlesScroll(); // For ewe div
                 ticking = false;
             });
             ticking = true;
@@ -225,7 +236,7 @@ function setupScrollHandling() {
     });
     
     // Initial check
-    handleProfileScroll();
+    handlesScroll();
 }
 
 
