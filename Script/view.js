@@ -1333,8 +1333,6 @@ function handleScroll() {
     }
 }
 
-// Attach scroll event listener
-window.addEventListener('scroll', handleScroll);
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
