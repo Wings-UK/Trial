@@ -505,12 +505,18 @@ function initializeHeartReactions() {
         const post = posts.find(p => p.id === parseInt(postId));
         let count = post ? (parseInt(post.likeCount) || 0) : 0;
         
-        // Set initial display based on count
+        // Set initial state
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
             likeCount.style.display = 'inline';
             likeCount.textContent = count;
+        }
+        
+        // Set initial liked state if applicable
+        if (isLiked) {
+            heartIcon.classList.add('liked');
+            likeCount.classList.add('liked');
         }
 
         clickableElements.forEach(element => {
@@ -521,44 +527,37 @@ function initializeHeartReactions() {
 
                 if (isLiked) {
                     heartIcon.classList.add('heart-animation', 'liked');
+                    likeCount.classList.add('liked');
                     count++;
                     
-                    // Show count and apply temporary styling
+                    // Show count
                     likeCount.style.display = 'inline';
                     likeCount.textContent = count;
-                    likeCount.classList.add('liked');
                     
-                    // Remove styling after 1 second
+                    // Remove animation class after it completes
                     setTimeout(() => {
-                        likeCount.classList.remove('liked');
-                    }, 1000);
+                        heartIcon.classList.remove('heart-animation');
+                    }, 400);
                 } else {
                     heartIcon.classList.add('unfill-animation');
+                    heartIcon.classList.remove('liked');
+                    likeCount.classList.remove('liked');
                     count = Math.max(0, count - 1);
                     
-                    // Hide count if less than 1
+                    // Update count display
                     if (count < 1) {
                         likeCount.style.display = 'none';
                     } else {
                         likeCount.style.display = 'inline';
                         likeCount.textContent = count;
-                        likeCount.classList.add('liked');
-                        
-                        setTimeout(() => {
-                            likeCount.classList.remove('liked');
-                        }, 1000);
                     }
                     
                     setTimeout(() => {
-                        heartIcon.classList.remove('liked', 'unfill-animation');
+                        heartIcon.classList.remove('unfill-animation');
                     }, 400);
                 }
                 
                 container.setAttribute('data-liked', isLiked);
-                
-                setTimeout(() => {
-                    heartIcon.classList.remove('heart-animation');
-                }, 400);
                 
                 // Update the post data
                 if (post) {
