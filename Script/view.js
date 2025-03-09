@@ -337,10 +337,12 @@ function renderHomepage() {
             <div class="reaction">
                 <div class="reaction-container">
                     <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                    <span class="heart-clickable>
                         <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24">
                             <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
                         </svg>
-                        <span class="like-count">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                        </span>
+                        <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
                     </div>
                     <div class="comment-btn" data-post-id="${post.id}">
                         <img class="feeling" src="pics/rug.svg" alt="Comment">
@@ -376,10 +378,13 @@ function renderHomepage() {
 const heartStyle = `
 .heart-ai {
   display: flex;
-  width: 60px; 
   align-items: center;
   cursor: pointer; 
 }
+.heart-clickable {
+    cursor: pointer; /* Only the heart and count are clickable */
+}
+
 .feeling {
   width: 23px;
 }
@@ -467,7 +472,6 @@ const heartStyle = `
 
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
-  width: 60px;
   align-items: center;
   gap: 6px;
   cursor: pointer;
@@ -485,56 +489,58 @@ function addHeartStyles() {
 
 // Initialize heart reactions
 function initializeHeartReactions() {
-  // Add the CSS styles first
-  addHeartStyles();
-  
-  // Get all heart buttons
-  const heartButtons = document.querySelectorAll('.heart-ai');
-  
-  heartButtons.forEach(btn => {
-    const heartIcon = btn.querySelector('.heart-icon');
-    const likeCount = btn.querySelector('.like-count');
-    const postId = btn.getAttribute('data-post-id');
-    let isLiked = btn.getAttribute('data-liked') === 'true';
+    // Add the CSS styles first
+    addHeartStyles();
     
-    // Initialize count - use empty string if 0
-    let count = parseInt(likeCount.textContent) || 0;
-    likeCount.textContent = count > 0 ? count : '';
+    // Get all heart containers
+    const heartContainers = document.querySelectorAll('.heart-ai');
     
-    btn.addEventListener('click', () => {
-      // Toggle liked state
-      isLiked = !isLiked;
+    heartContainers.forEach(container => {
+        const heartIcon = container.querySelector('.heart-icon');
+        const likeCount = container.querySelector('.like-count');
+        const clickableElements = container.querySelectorAll('.heart-clickable');
+        const postId = container.getAttribute('data-post-id');
+        let isLiked = container.getAttribute('data-liked') === 'true';
+        let count = parseInt(likeCount.textContent);
 
-      if (isLiked) {
-        // Add animation class and liked styles
-        heartIcon.classList.add('heart-animation', 'liked');
-        likeCount.classList.add('liked'); // Add liked class for bold/color
-        count++;
-        likeCount.textContent = count; // Show count when liked
-      } else {
-        // Add smooth unfill animation
-        heartIcon.classList.add('unfill-animation');
-        likeCount.classList.remove('liked'); // Remove liked class
-        count = Math.max(0, count - 1);
-        likeCount.textContent = count > 0 ? count : ''; // Hide if 0
+        // Add event listener only to clickable elements (heart and count)
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent bubbling to parent elements
+                
+                // Toggle liked state
+                isLiked = !isLiked;
 
-        // Remove class after animation completes
-        setTimeout(() => {
-          heartIcon.classList.remove('liked', 'unfill-animation');
-        }, 400);
-      }
-      
-      // Remove animation class after animation completes
-      setTimeout(() => {
-        heartIcon.classList.remove('heart-animation');
-      }, 400);
-      
-      // Update data attribute
-      btn.setAttribute('data-liked', isLiked);
-      
-      console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
+                if (isLiked) {
+                    // Add animation class
+                    heartIcon.classList.add('heart-animation', 'liked');
+                    count++;
+                } else {
+                    // Add smooth unfill animation
+                    heartIcon.classList.add('unfill-animation');
+                    count = Math.max(0, count - 1);
+
+                    // Remove class after animation completes
+                    setTimeout(() => {
+                        heartIcon.classList.remove('liked', 'unfill-animation');
+                    }, 400);
+                }
+                
+                // Update like count
+                likeCount.textContent = count;
+                
+                // Update data attribute
+                container.setAttribute('data-liked', isLiked);
+
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    heartIcon.classList.remove('heart-animation');
+                }, 400);
+                
+                console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
+            });
+        });
     });
-  });
 }
 
 // Call this function when the page loads
