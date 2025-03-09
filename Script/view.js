@@ -1267,8 +1267,7 @@ function adjustVideoPlayer(videoElement) {
 
 
 
-// Attach scroll event listener
-window.addEventListener('scroll', handleScroll);
+
 
 // Function to initialize header elements
 function setupHeaderElements(user) {
