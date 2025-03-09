@@ -1268,7 +1268,6 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-    updateHeaderHTML(userId);
 
     const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
