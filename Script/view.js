@@ -390,7 +390,7 @@ const heartStyle = `
 } 
 
 .like-count.liked {
-  font-weight: bold;
+  font-weight: 500;
   color: rgb(244, 7, 82);
 }
 
