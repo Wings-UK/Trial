@@ -1276,57 +1276,89 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-
-    switchPage("profile"); // Switch to profile page
-
+    switchPage("profile");
     setTimeout(() => {
         updateHeaderHTML(userId);
     }, 50);
-
+    
+    const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
-    if (!profileIreti) return;
-
+    
     profileIreti.innerHTML = `
-        <img class="frin" src="${user.cover}">
-        <div>
-            <img class="kor" src="${user.avatar}">
-        </div>
-        <div class="klr">
-            <div class="drun">
-                <div>
-                    <p class="spe">${user.username}</p>
-                </div>
-                <div>
-                    <img class="verify" src="pics/verifi1.png">
-                </div>
+         <img class="frin" src="${user.cover}">
+            <div>
+              <img class="kor" src="${user.avatar}">
             </div>
-            <div class="druu">
+            <div class="klr">
+              <div class="drun">
                 <div>
-                    <p class="rkl">${user.location}</p>
+                  <p class="spe">${user.username}</p>
+                </div>
+                <div>
+                  <img class="verify" src="pics/verifi1.png">
+                </div>
+              </div>
+              <div class="druu">
+                <div>
+                  <p class="rkl">${user.location}</p>
                 </div>
                 <div class="drum">
-                    <p class="swe">4</p>
-                    <img class="kiy" src="pics/kiddo.png">
+                  <p class="swe">4</p>
+                  <img class="kiy" src="pics/kiddo.png">
                 </div>
-            </div>
-            <div class="nin">
-                <p class="rkl"><span class="bld">${user.following}</span> following &#183; <span class="bld">${user.followers}</span> followers</p>
-            </div>
-            <div class="cha">
+              </div>
+              <div class="nin">
+                <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
+              </div>
+              <div class="cha">
                 <p>${user.bio}</p>
+              </div>
+              <div class="man">
+                <div class="vre">
+                  <button class="aasw">Follow</button>
+                </div>
+                <div class="vre">
+                  <button class="aasw">1 : 1</button>
+                </div>
+              </div>
             </div>
-        </div>
-    `;
+            <div class="ewe">
+              <div class="yeb">
+                <img class="dee" src="pics/apps.png">
+              </div>
+              <div class="yeb">
+               <a href="Retail-Desktop-MyAccount-Storefront.html">
+                <img class="dee" src="pics/browser.png">
+               </a>
 
+              </div>
+              <div class="yeb">
+                <img class="dee" src="pics/bren.png">
+              </div>
+
+            </div>
+            
+            <div class="mansonro">
+            <div class="masonri">
+              <!-- Left Column -->
+              <div class="column left-column">
+            
+              </div>
+  
+              <div class="column right-column">
+                
+              </div>
+            </div>
+          </div>
+    `;
+    
+    
     // **Force hide the wing div when visiting other profiles**
     const wingDiv = document.querySelector(".wing");
     if (wingDiv) {
         wingDiv.style.display = "none";
     }
-
-    setTimeout(() => {
-        renderUserPosts(user.id);
-    }, 100);
+    renderUserPosts(userId);
 }
 
 function renderUserPosts(userId) {
