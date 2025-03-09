@@ -377,9 +377,9 @@ function renderHomepage() {
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
+  width: 60px;
   display: flex;
   align-items: center;
-  cursor: pointer; 
 }
 .heart-clickable {
     cursor: pointer; /* Only the heart and count are clickable */
@@ -472,6 +472,7 @@ const heartStyle = `
 
 .comment-btn, .repost-btn, .donate-btn {
   display: flex;
+  width: 60px;
   align-items: center;
   gap: 6px;
   cursor: pointer;
