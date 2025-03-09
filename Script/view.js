@@ -354,11 +354,11 @@ function renderHomepage() {
                     </div>
                     <div class="donate-btn">
                         <img class="feeling" src="pics/hm.svg" alt="Donate">
-                        <span>${post.donateCount || 0}</span>
+                        
                     </div>
-                    <div class="wish1">
+                    <div class="donate-btn">
 
-                    <img class="twito" src="pics/twito.png">
+                    <img class="feeling" src="pics/see.svg">
 
                    </div>    
                 </div>
