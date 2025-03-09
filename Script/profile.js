@@ -165,39 +165,6 @@ function setupScrollHandling() {
     handleProfileScroll();
 }
 
-// Update showUserProfile
-function showUserProfile(userId) {
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-    updateHeaderHTML(userId);
-
-    const profileIreti = document.getElementById("ireti");
-    profileIreti.innerHTML = `
-        <img class="frin" src="${user.cover}">
-        <div>
-            <img class="kor" src="${user.avatar}">
-        </div>
-        <div class="klr">
-            <!-- Existing content remains the same -->
-        </div>
-        <div class="ewe">
-            <div class="yeb"><img class="dee" src="pics/apps.png"></div>
-            <div class="yeb"><a href="Retail-Desktop-MyAccount-Storefront.html"><img class="dee" src="pics/browser.png"></a></div>
-            <div class="yeb"><img class="dee" src="pics/bren.png"></div>
-        </div>
-        <div class="mansonro">
-            <div class="masonri">
-                <div class="column left-column"></div>
-                <div class="column right-column"></div>
-            </div>
-        </div>
-    `;
-    
-    switchPage("profile");
-    renderUserPosts(userId);
-    setupScrollHandling();
-}
-
 // Update showMyProfile
 function showMyProfile() {
     const user = getLoggedInUser();
