@@ -117,37 +117,125 @@ function setHeaderHeight() {
   }
 }
 
-function handlesScroll() {
-  const header = document.querySelector('.file');
-  const menuBar = document.querySelector('.ewe');
-  const userInfo = document.querySelector('.klr');
-  
-  if (!menuBar || !header) return;
-  
-  // Get the initial position of the menu bar if not already stored
-  if (!menuBar.dataset.initialTop) {
-    menuBar.dataset.initialTop = menuBar.getBoundingClientRect().top;
-    menuBar.dataset.initialOffset = menuBar.offsetTop;
-  }
-  
-  const headerHeight = header.offsetHeight;
-  const scrollPosition = window.scrollY;
-  const menuInitialOffset = parseInt(menuBar.dataset.initialOffset, 10);
-  
-  // Check if we've scrolled past the point where the menu should stick
-  if (scrollPosition > menuInitialOffset - headerHeight) {
-    if (!menuBar.classList.contains('fixed')) {
-      menuBar.classList.add('fixed');
-      // Add padding to the content below to prevent jumps
-      const menuHeight = menuBar.offsetHeight + 10;
-      document.querySelector('.mansonro').style.paddingTop = `${menuHeight}px`;
+// Remove the existing handleProfileScroll function and replace with this
+function handleProfileScroll() {
+    const header = document.querySelector('.file');
+    const eweDiv = document.querySelector('.ewe');
+    const headerImg = document.querySelector('.frin');
+    if (!header || !eweDiv || !headerImg) return;
+
+    const headerHeight = header.offsetHeight;
+    const scrollPosition = window.scrollY;
+    const headerBottom = headerImg.getBoundingClientRect().bottom;
+
+    // When header image scrolls out of view, fix the ewe div
+    if (headerBottom <= headerHeight) {
+        eweDiv.style.position = 'fixed';
+        eweDiv.style.top = `${headerHeight}px`;
+        eweDiv.style.bottom = 'auto';
+    } else {
+        eweDiv.style.position = 'sticky';
+        eweDiv.style.top = 'auto';
+        eweDiv.style.bottom = '0';
     }
-  } else {
-    if (menuBar.classList.contains('fixed')) {
-      menuBar.classList.remove('fixed');
-      document.querySelector('.mansonro').style.paddingTop = '';
-    }
-  }
+}
+
+// Updated setupScrollHandling
+function setupScrollHandling() {
+    window.removeEventListener('scroll', handleScroll); // Remove old listener
+    window.removeEventListener('scroll', handleProfileScroll); // Prevent duplicates
+    
+    setHeaderHeight();
+    initStickyMenu();
+    
+    // Throttle scroll events for performance
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                handleScroll(); // For header profile pic and follow button
+                handleProfileScroll(); // For ewe div
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+    
+    // Initial check
+    handleProfileScroll();
+}
+
+// Update showUserProfile
+function showUserProfile(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    updateHeaderHTML(userId);
+
+    const profileIreti = document.getElementById("ireti");
+    profileIreti.innerHTML = `
+        <img class="frin" src="${user.cover}">
+        <div>
+            <img class="kor" src="${user.avatar}">
+        </div>
+        <div class="klr">
+            <!-- Existing content remains the same -->
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/apps.png"></div>
+            <div class="yeb"><a href="Retail-Desktop-MyAccount-Storefront.html"><img class="dee" src="pics/browser.png"></a></div>
+            <div class="yeb"><img class="dee" src="pics/bren.png"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+    `;
+    
+    switchPage("profile");
+    renderUserPosts(userId);
+    setupScrollHandling();
+}
+
+// Update showMyProfile
+function showMyProfile() {
+    const user = getLoggedInUser();
+    switchPage("profile");
+    
+    setTimeout(() => {
+        updateHeaderHTML(user.id);
+    }, 50);
+    
+    const profileIreti = document.getElementById("ireti");
+    profileIreti.innerHTML = `
+        <img class="frin" src="${user.cover}">
+        <div>
+            <img class="kor" src="${user.avatar}">
+        </div>
+        <div class="klr">
+            <!-- Existing content remains the same -->
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/bren1.png"></div>
+            <div class="yeb"><a href="javascript:void(0);"><img class="dee" src="pics/browser.png"></a></div>
+            <div class="yeb"><img class="dee" src="pics/bren.png"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+    `;
+    
+    const wingDiv = document.querySelector(".wing");
+    if (wingDiv) wingDiv.style.display = "block";
+    
+    currentProfileTab = "posts";
+    initProfileNavigation();
+    renderUserPosts(user.id);
+    setupScrollHandling();
 }
 
 // Function to initialize the sticky behavior after the page loads
@@ -182,7 +270,7 @@ function initStickyMenu() {
       menuBar.dataset.initialOffset = rect.top + scrollTop;
       
       // Check if it should be fixed based on current scroll
-      handlesScroll();
+      handleProfileScroll();
     }
   });
 }
@@ -190,7 +278,7 @@ function initStickyMenu() {
 // Set up optimized scroll handling
 function setupScrollHandling() {
   // Remove any existing scroll listener to prevent duplicates
-  window.removeEventListener('scroll', handlesScroll);
+  window.removeEventListener('scroll', handleProfileScroll);
   
   // Initialize sticky menu properties
   initStickyMenu();
@@ -200,7 +288,7 @@ function setupScrollHandling() {
   window.addEventListener('scroll', function() {
     if (!ticking) {
       window.requestAnimationFrame(function() {
-        handlesScroll();
+        handleProfileScroll();
         ticking = false;
       });
       ticking = true;
@@ -208,7 +296,7 @@ function setupScrollHandling() {
   });
   
   // Initial check
-  handlesScroll();
+  handleProfileScroll();
 }
 
 
