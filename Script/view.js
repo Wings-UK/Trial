@@ -353,7 +353,7 @@ function renderHomepage() {
                         <span>${post.repostCount || 0}</span>
                     </div>
                     <div class="donate-btn">
-                        <img class="feeling" src="pics/naira.png" alt="Donate">
+                        <img class="feeling" src="pics/hm.svg" alt="Donate">
                         <span>${post.donateCount || 0}</span>
                     </div>
                     <div class="wish1">
