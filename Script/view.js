@@ -1262,85 +1262,102 @@ function adjustVideoPlayer(videoElement) {
   }
 }
 
-// Call this function when the video metadata is loaded
-function setupScrollHandling() {
-  // Get references to elements
-  const profileKor = document.querySelector(".kor");
-  const followButton = document.querySelector(".aasw");
-  const header = document.querySelector(".heado");
+// Variable to track scroll position
+let lastScrollPos = 0;
+
+// Function to add necessary elements to the header
+function updateHeaderHTML() {
+  const header = document.querySelector('.heado');
   
-  // Create the elements to be added to the existing header
-  const miniProfile = document.createElement("div");
-  miniProfile.className = "mini-profile";
-  miniProfile.innerHTML = `
-    <img class="mini-kor" src="${profileKor.src}">
-    <button class="mini-follow">Follow</button>
-  `;
-  
-  // Initially hide the mini profile
-  miniProfile.style.display = "none";
-  
-  // Add the mini profile to the existing header
-  header.appendChild(miniProfile);
-  
-  // Add styles for the mini profile
-  const styleSheet = document.createElement("style");
-  styleSheet.textContent = `
-    .mini-profile {
-      display: flex;
-      align-items: center;
-      position: absolute;
-      right: 40px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+  // Check if we already added our elements to avoid duplicates
+  if (!document.querySelector('.header-profile-pic')) {
+    // Create profile picture container for header
+    const profilePicContainer = document.createElement('div');
+    profilePicContainer.className = 'header-profile-pic';
+    profilePicContainer.style.display = 'none'; // Hidden by default
+    profilePicContainer.innerHTML = '<img class="header-avatar" src="" alt="Profile">';
     
-    .mini-kor {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 10px;
-    }
+    // Create follow button for header
+    const followBtnContainer = document.createElement('div');
+    followBtnContainer.className = 'header-follow-btn';
+    followBtnContainer.style.display = 'none'; // Hidden by default
+    followBtnContainer.innerHTML = '<button class="header-follow">Follow</button>';
     
-    .mini-follow {
-      padding: 5px 15px;
-      border-radius: 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-    }
-  `;
-  document.head.appendChild(styleSheet);
+    // Add them to the header
+    header.appendChild(profilePicContainer);
+    header.appendChild(followBtnContainer);
+  }
+}
+
+// Function to handle scroll events
+function handleScroll() {
+  // Get references to the elements
+  const profilePic = document.querySelector('.kor');
+  const followBtn = document.querySelector('.aasw');
+  const headerProfilePic = document.querySelector('.header-profile-pic');
+  const headerFollowBtn = document.querySelector('.header-follow-btn');
   
-  // Function to handle scroll events
-  function handleScroll() {
-    // Get the position and dimensions of the profile image
-    const korRect = profileKor.getBoundingClientRect();
-    
-    // Check if the top of the profileKor is about to leave the viewport
-    if (korRect.top <= 20) {
-      // Show the mini profile in the header
-      miniProfile.style.display = "flex";
-    } else {
-      // Hide the mini profile when the profileKor is fully visible
-      miniProfile.style.display = "none";
-    }
+  if (!profilePic || !followBtn || !headerProfilePic || !headerFollowBtn) return;
+  
+  // Get positions
+  const profilePicRect = profilePic.getBoundingClientRect();
+  const followBtnRect = followBtn.getBoundingClientRect();
+  
+  // Set the avatar image source (only needs to be done once)
+  if (headerProfilePic.querySelector('img').src === '') {
+    headerProfilePic.querySelector('img').src = profilePic.src;
   }
   
-  // Add scroll event listener
-  window.addEventListener('scroll', handleScroll);
+  // Track scroll direction
+  const currentScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollingDown = currentScrollPos > lastScrollPos;
+  lastScrollPos = currentScrollPos;
   
-  // Call handleScroll once to set initial state
-  handleScroll();
+  // Check if profile pic is out of view (scrolled up)
+  if (profilePicRect.bottom < 60 && profilePicRect.top < 0) { // Ensure it's actually scrolled out of view
+    headerProfilePic.style.display = 'block';
+    // Slight delay to allow display to take effect before adding visible class
+    setTimeout(() => {
+      headerProfilePic.classList.add('visible');
+    }, 10);
+  } else {
+    headerProfilePic.classList.remove('visible');
+    // Hide after transition completes
+    setTimeout(() => {
+      if (!headerProfilePic.classList.contains('visible')) {
+        headerProfilePic.style.display = 'none';
+      }
+    }, 300); // Match transition duration
+  }
+  
+  // Check if follow button is out of view (scrolled up)
+  if (followBtnRect.bottom < 60 && followBtnRect.top < 0) { // Ensure it's actually scrolled out of view
+    headerFollowBtn.style.display = 'block';
+    // Slight delay to allow display to take effect before adding visible class
+    setTimeout(() => {
+      headerFollowBtn.classList.add('visible');
+    }, 10);
+  } else {
+    headerFollowBtn.classList.remove('visible');
+    // Hide after transition completes
+    setTimeout(() => {
+      if (!headerFollowBtn.classList.contains('visible')) {
+        headerFollowBtn.style.display = 'none';
+      }
+    }, 300); // Match transition duration
+  }
 }
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-
+    updateHeaderHTML();
+    
+    lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Attach scroll event listener
+  window.addEventListener('scroll', handleScroll);
+    
     const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
     
