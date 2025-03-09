@@ -1659,12 +1659,6 @@ function showMyProfile() {
     wingDiv.style.display = "block";
   }
   
-  // Reset to posts tab
-  currentProfileTab = "posts";
-  
-  // Initialize the tab navigation
-  initProfileNavigation();
-  
   // Render user posts
   renderUserPosts(user.id);
   
