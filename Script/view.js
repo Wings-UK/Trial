@@ -469,8 +469,13 @@ const heartStyle = `
   align-items: center;
   gap: 20px;
 }
+.donate-btn {
+  display: flex;
+  width: 30px;
+  align-items: center;
+}
 
-.comment-btn, .repost-btn, .donate-btn {
+.comment-btn, .repost-btn {
   display: flex;
   width: 60px;
   align-items: center;
