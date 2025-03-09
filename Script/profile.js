@@ -151,30 +151,31 @@ function handlesScroll() {
   }
 }
 
+
 // Updated setupScrollHandling
 function setupScrollHandling() {
-    window.removeEventListener('scroll', handleScroll); // Remove old listener
-    window.removeEventListener('scroll', handlesScroll); // Prevent duplicates
-    
-    setHeaderHeight();
-    initStickyMenu();
-    
-    // Throttle scroll events for performance
-    let ticking = false;
-    window.addEventListener('scroll', function() {
-        if (!ticking) {
-            window.requestAnimationFrame(function() {
-                handleScroll(); // For header profile pic and follow button
-                handlesScroll(); // For ewe div
-                ticking = false;
-            });
-            ticking = true;
-        }
-    });
-    
-    // Initial check
-    handlesScroll();
+  // Remove any existing scroll listener to prevent duplicates
+  window.removeEventListener('scroll', handlesScroll);
+  
+  // Initialize sticky menu properties
+  initStickyMenu();
+  
+  // Add the scroll event listener with throttling for better performance
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        handlesScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+  
+  // Initial check
+  handlesScroll();
 }
+
 
 
 // Function to initialize the sticky behavior after the page loads
