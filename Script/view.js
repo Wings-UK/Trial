@@ -1263,100 +1263,89 @@ function adjustVideoPlayer(videoElement) {
 }
 
 // Variable to track scroll position
-let lastScrollPos = 0;
 
-// Function to add necessary elements to the header
-function updateHeaderHTML() {
-  const header = document.querySelector('.heado');
-  const user = users.find(u => u.id === userId);
-  // Check if we already added our elements to avoid duplicates
-  if (!document.querySelector('.header-profile-pic')) {
-    // Create profile picture container for header
-    const profilePicContainer = document.createElement('div');
-    profilePicContainer.className = 'header-profile-pic';
-    profilePicContainer.style.display = 'none'; // Hidden by default
-    profilePicContainer.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
-    
-    // Create follow button for header
-    const followBtnContainer = document.createElement('div');
-    followBtnContainer.className = 'header-follow-btn';
-    followBtnContainer.style.display = 'none'; // Hidden by default
-    followBtnContainer.innerHTML = '<button class="header-follow">Follow</button>';
-    
-    // Add them to the header
-    header.appendChild(profilePicContainer);
-    header.appendChild(followBtnContainer);
-  }
+
+
+
+// Attach scroll event listener
+window.addEventListener('scroll', handleScroll);
+
+// Function to initialize header elements
+function setupHeaderElements(user) {
+    const header = document.querySelector('.heado');
+
+    // Check if header profile pic already exists, otherwise create it
+    if (!document.querySelector('.header-profile-pic')) {
+        const profilePicContainer = document.createElement('div');
+        profilePicContainer.className = 'header-profile-pic';
+        profilePicContainer.style.display = 'none';
+        profilePicContainer.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
+
+        const followBtnContainer = document.createElement('div');
+        followBtnContainer.className = 'header-follow-btn';
+        followBtnContainer.style.display = 'none';
+        followBtnContainer.innerHTML = '<button class="header-follow">Follow</button>';
+
+        header.appendChild(profilePicContainer);
+        header.appendChild(followBtnContainer);
+    } else {
+        // Update existing elements for the new user
+        document.querySelector('.header-avatar').src = user.avatar;
+    }
 }
+setupHeaderElements();
 
-// Function to handle scroll events
+// Track last scroll position
+let lastScrollY = window.scrollY;
+
 function handleScroll() {
-  // Get references to the elements
-  const profilePic = document.querySelector('.kor');
-  const followBtn = document.querySelector('.aasw');
-  const headerProfilePic = document.querySelector('.header-profile-pic');
-  const headerFollowBtn = document.querySelector('.header-follow-btn');
-  
-  if (!profilePic || !followBtn || !headerProfilePic || !headerFollowBtn) return;
-  
-  // Get positions
-  const profilePicRect = profilePic.getBoundingClientRect();
-  const followBtnRect = followBtn.getBoundingClientRect();
-  
-  // Set the avatar image source (only needs to be done once)
-  if (headerProfilePic.querySelector('img').src === '') {
-    headerProfilePic.querySelector('img').src = profilePic.src;
-  }
-  
-  // Track scroll direction
-  const currentScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-  const scrollingDown = currentScrollPos > lastScrollPos;
-  lastScrollPos = currentScrollPos;
-  
-  // Check if profile pic is out of view (scrolled up)
-  if (profilePicRect.bottom < 60 && profilePicRect.top < 0) { // Ensure it's actually scrolled out of view
-    headerProfilePic.style.display = 'block';
-    // Slight delay to allow display to take effect before adding visible class
-    setTimeout(() => {
-      headerProfilePic.classList.add('visible');
-    }, 10);
-  } else {
-    headerProfilePic.classList.remove('visible');
-    // Hide after transition completes
-    setTimeout(() => {
-      if (!headerProfilePic.classList.contains('visible')) {
-        headerProfilePic.style.display = 'none';
-      }
-    }, 300); // Match transition duration
-  }
-  
-  // Check if follow button is out of view (scrolled up)
-  if (followBtnRect.bottom < 60 && followBtnRect.top < 0) { // Ensure it's actually scrolled out of view
-    headerFollowBtn.style.display = 'block';
-    // Slight delay to allow display to take effect before adding visible class
-    setTimeout(() => {
-      headerFollowBtn.classList.add('visible');
-    }, 10);
-  } else {
-    headerFollowBtn.classList.remove('visible');
-    // Hide after transition completes
-    setTimeout(() => {
-      if (!headerFollowBtn.classList.contains('visible')) {
-        headerFollowBtn.style.display = 'none';
-      }
-    }, 300); // Match transition duration
-  }
+    const profilePhoto = document.querySelector('.kor'); // Main profile photo
+    const followButton = document.querySelector('.aasw'); // Follow button
+    const headerPhoto = document.querySelector('.header-profile-pic'); // Header small photo
+    const headerFollowButton = document.querySelector('.header-follow-btn'); // Header follow button
+
+    if (!profilePhoto || !followButton || !headerPhoto || !headerFollowButton) return;
+
+    const profileRect = profilePhoto.getBoundingClientRect();
+    const followRect = followButton.getBoundingClientRect();
+
+    // Detect scrolling direction
+    let isScrollingDown = window.scrollY > lastScrollY;
+    lastScrollY = window.scrollY;
+
+    if (profileRect.bottom < 60 && profileRect.top < 0) {
+        // Profile photo is out of view - show header version
+        headerPhoto.style.display = 'block';
+        setTimeout(() => headerPhoto.classList.add('visible'), 10);
+    } else {
+        // Profile photo is in view - hide header version
+        headerPhoto.classList.remove('visible');
+        setTimeout(() => headerPhoto.style.display = 'none', 300);
+    }
+
+    if (followRect.bottom < 60 && followRect.top < 0) {
+        // Follow button is out of view - show header version
+        headerFollowButton.style.display = 'block';
+        setTimeout(() => headerFollowButton.classList.add('visible'), 10);
+    } else {
+        // Follow button is in view - hide header version
+        headerFollowButton.classList.remove('visible');
+        setTimeout(() => headerFollowButton.style.display = 'none', 300);
+    }
 }
+
+// Attach scroll event listener
+window.addEventListener('scroll', handleScroll);
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-    updateHeaderHTML();
-    
+    setupHeaderElements(user);
+
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   
-  // Attach scroll event listener
-  window.addEventListener('scroll', handleScroll);
+    // Attach scroll event listener
+    window.addEventListener('scroll', handleScroll);
     
     const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
@@ -1436,7 +1425,6 @@ function showUserProfile(userId) {
         wingDiv.style.display = "none";
     }
     renderUserPosts(userId);
-    setupScrollHandling();
 }
 
 function renderUserPosts(userId) {
