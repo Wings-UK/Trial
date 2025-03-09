@@ -267,7 +267,7 @@ function renderHomepage() {
             <div class="cust-name"> 
                 <div class="heading">
                     <div class="small-photo1">
-                        <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                        <a class="lino" onclick="showUserProfile(${user.id})">
                             <img class="small-photo" src="${user.avatar}" loading="lazy">
                         </a>
                     </div>
