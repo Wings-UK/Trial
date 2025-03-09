@@ -490,10 +490,8 @@ function addHeartStyles() {
 
 // Initialize heart reactions
 function initializeHeartReactions() {
-    // Add the CSS styles first
     addHeartStyles();
     
-    // Get all heart containers
     const heartContainers = document.querySelectorAll('.heart-ai');
     
     heartContainers.forEach(container => {
@@ -502,41 +500,70 @@ function initializeHeartReactions() {
         const clickableElements = container.querySelectorAll('.heart-clickable');
         const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
-        let count = parseInt(likeCount.textContent);
+        
+        // Initialize count from post data or 0, preventing NaN
+        const post = posts.find(p => p.id === parseInt(postId));
+        let count = post ? (parseInt(post.likeCount) || 0) : 0;
+        
+        // Set initial display based on count
+        if (count < 1) {
+            likeCount.style.display = 'none';
+        } else {
+            likeCount.style.display = 'inline';
+            likeCount.textContent = count;
+        }
 
-        // Add event listener only to clickable elements (heart and count)
         clickableElements.forEach(element => {
             element.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent bubbling to parent elements
+                e.stopPropagation();
                 
-                // Toggle liked state
                 isLiked = !isLiked;
 
                 if (isLiked) {
-                    // Add animation class
                     heartIcon.classList.add('heart-animation', 'liked');
                     count++;
+                    
+                    // Show count and apply temporary styling
+                    likeCount.style.display = 'inline';
+                    likeCount.textContent = count;
+                    likeCount.classList.add('liked');
+                    
+                    // Remove styling after 1 second
+                    setTimeout(() => {
+                        likeCount.classList.remove('liked');
+                    }, 1000);
                 } else {
-                    // Add smooth unfill animation
                     heartIcon.classList.add('unfill-animation');
                     count = Math.max(0, count - 1);
-
-                    // Remove class after animation completes
+                    
+                    // Hide count if less than 1
+                    if (count < 1) {
+                        likeCount.style.display = 'none';
+                    } else {
+                        likeCount.style.display = 'inline';
+                        likeCount.textContent = count;
+                        likeCount.classList.add('liked');
+                        
+                        setTimeout(() => {
+                            likeCount.classList.remove('liked');
+                        }, 1000);
+                    }
+                    
                     setTimeout(() => {
                         heartIcon.classList.remove('liked', 'unfill-animation');
                     }, 400);
                 }
                 
-                // Update like count
-                likeCount.textContent = count;
-                
-                // Update data attribute
                 container.setAttribute('data-liked', isLiked);
-
-                // Remove animation class after animation completes
+                
                 setTimeout(() => {
                     heartIcon.classList.remove('heart-animation');
                 }, 400);
+                
+                // Update the post data
+                if (post) {
+                    post.likeCount = count;
+                }
                 
                 console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
             });
