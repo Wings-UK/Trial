@@ -1276,86 +1276,57 @@ function adjustVideoPlayer(videoElement) {
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-    
-    
-    const profileContainer = document.getElementById("profile");
+
+    switchPage("profile"); // Switch to profile page
+
+    setTimeout(() => {
+        updateHeaderHTML(userId);
+    }, 50);
+
     const profileIreti = document.getElementById("ireti");
-    
+    if (!profileIreti) return;
+
     profileIreti.innerHTML = `
-         <img class="frin" src="${user.cover}">
-            <div>
-              <img class="kor" src="${user.avatar}">
+        <img class="frin" src="${user.cover}">
+        <div>
+            <img class="kor" src="${user.avatar}">
+        </div>
+        <div class="klr">
+            <div class="drun">
+                <div>
+                    <p class="spe">${user.username}</p>
+                </div>
+                <div>
+                    <img class="verify" src="pics/verifi1.png">
+                </div>
             </div>
-            <div class="klr">
-              <div class="drun">
+            <div class="druu">
                 <div>
-                  <p class="spe">${user.username}</p>
-                </div>
-                <div>
-                  <img class="verify" src="pics/verifi1.png">
-                </div>
-              </div>
-              <div class="druu">
-                <div>
-                  <p class="rkl">${user.location}</p>
+                    <p class="rkl">${user.location}</p>
                 </div>
                 <div class="drum">
-                  <p class="swe">4</p>
-                  <img class="kiy" src="pics/kiddo.png">
+                    <p class="swe">4</p>
+                    <img class="kiy" src="pics/kiddo.png">
                 </div>
-              </div>
-              <div class="nin">
-                <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
-              </div>
-              <div class="cha">
+            </div>
+            <div class="nin">
+                <p class="rkl"><span class="bld">${user.following}</span> following &#183; <span class="bld">${user.followers}</span> followers</p>
+            </div>
+            <div class="cha">
                 <p>${user.bio}</p>
-              </div>
-              <div class="man">
-                <div class="vre">
-                  <button class="aasw">Follow</button>
-                </div>
-                <div class="vre">
-                  <button class="aasw">1 : 1</button>
-                </div>
-              </div>
             </div>
-            <div class="ewe">
-              <div class="yeb">
-                <img class="dee" src="pics/apps.png">
-              </div>
-              <div class="yeb">
-               <a href="Retail-Desktop-MyAccount-Storefront.html">
-                <img class="dee" src="pics/browser.png">
-               </a>
-
-              </div>
-              <div class="yeb">
-                <img class="dee" src="pics/bren.png">
-              </div>
-
-            </div>
-            
-            <div class="mansonro">
-            <div class="masonri">
-              <!-- Left Column -->
-              <div class="column left-column">
-            
-              </div>
-  
-              <div class="column right-column">
-                
-              </div>
-            </div>
-          </div>
+        </div>
     `;
-    switchPage("profile");
-    
+
     // **Force hide the wing div when visiting other profiles**
     const wingDiv = document.querySelector(".wing");
     if (wingDiv) {
         wingDiv.style.display = "none";
     }
-    renderUserPosts(userId);
+
+    setTimeout(() => {
+        renderUserPosts(user.id);
+    }, 100);
 }
 
 function renderUserPosts(userId) {
@@ -1942,6 +1913,115 @@ function createPostHTML(post) {
   `;
 } 
 
+// Make sure to call this function when the page loads
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Initialize header if needed
+  updateHeaderHTML();
+  
+  // Initialize lastScrollPos
+  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Attach scroll event listener
+  window.addEventListener('scroll', handleScroll);
+});
+
+
+// Variable to track scroll position
+let lastScrollPos = 0;
+
+// Function to add necessary elements to the header
+function updateHeaderHTML(userId) {
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+
+  const header = document.querySelector('.file');
+  let headerProfilePic = document.querySelector('.header-profile-pic');
+  let headerFollowBtn = document.querySelector('.header-follow-btn');
+
+  // If elements do not exist, create them
+  if (!headerProfilePic) {
+    headerProfilePic = document.createElement('div');
+    headerProfilePic.className = 'header-profile-pic';
+    header.appendChild(headerProfilePic);
+  }
+
+  if (!headerFollowBtn) {
+    headerFollowBtn = document.createElement('div');
+    headerFollowBtn.className = 'header-follow-btn';
+    header.appendChild(headerFollowBtn);
+  }
+
+  // **Update the elements with the new profile data**
+  headerProfilePic.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
+  headerFollowBtn.innerHTML = `<button class="header-follow">Follow</button>`;
+
+  // Ensure elements are hidden by default (but ready to be shown when scrolling)
+  headerProfilePic.style.display = 'none';
+  headerFollowBtn.style.display = 'none';
+}
+
+// Function to handle scroll events
+
+function handleScroll() {
+
+  // Get references to the elements
+  const profilePic = document.querySelector('.kor');
+  const followBtn = document.querySelector('.aasw');
+  const headerProfilePic = document.querySelector('.header-profile-pic');
+  const headerFollowBtn = document.querySelector('.header-follow-btn');
+  
+  if (!profilePic || !followBtn || !headerProfilePic || !headerFollowBtn) return;
+  
+  // Get positions
+  const profilePicRect = profilePic.getBoundingClientRect();
+  const followBtnRect = followBtn.getBoundingClientRect();
+  
+  // Set the avatar image source (only needs to be done once)
+  if (headerProfilePic.querySelector('img').src === '') {
+    headerProfilePic.querySelector('img').src = profilePic.src;
+  }
+  
+  // Track scroll direction
+  const currentScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollingDown = currentScrollPos > lastScrollPos;
+  lastScrollPos = currentScrollPos;
+  
+  // Check if profile pic is out of view (scrolled up)
+  if (profilePicRect.bottom < 60 && profilePicRect.top < 0) { // Ensure it's actually scrolled out of view
+    headerProfilePic.style.display = 'block';
+    // Slight delay to allow display to take effect before adding visible class
+    setTimeout(() => {
+      headerProfilePic.classList.add('visible');
+    }, 10);
+  } else {
+    headerProfilePic.classList.remove('visible');
+    // Hide after transition completes
+    setTimeout(() => {
+      if (!headerProfilePic.classList.contains('visible')) {
+        headerProfilePic.style.display = 'none';
+      }
+    }, 300); // Match transition duration
+  }
+  
+  // Check if follow button is out of view (scrolled up)
+  if (followBtnRect.bottom < 60 && followBtnRect.top < 0) { // Ensure it's actually scrolled out of view
+    headerFollowBtn.style.display = 'block';
+    // Slight delay to allow display to take effect before adding visible class
+    setTimeout(() => {
+      headerFollowBtn.classList.add('visible');
+    }, 10);
+  } else {
+    headerFollowBtn.classList.remove('visible');
+    // Hide after transition completes
+    setTimeout(() => {
+      if (!headerFollowBtn.classList.contains('visible')) {
+        headerFollowBtn.style.display = 'none';
+      }
+    }, 300); // Match transition duration
+  }
+} 
 
 
 
