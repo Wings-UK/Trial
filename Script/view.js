@@ -1270,79 +1270,13 @@ function adjustVideoPlayer(videoElement) {
 
 
 // Function to initialize header elements
-function setupHeaderElements(user) {
-    const header = document.querySelector('.heado');
 
-    // Check if header profile pic already exists, otherwise create it
-    if (!document.querySelector('.header-profile-pic')) {
-        const profilePicContainer = document.createElement('div');
-        profilePicContainer.className = 'header-profile-pic';
-        profilePicContainer.style.display = 'none';
-        profilePicContainer.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
-
-        const followBtnContainer = document.createElement('div');
-        followBtnContainer.className = 'header-follow-btn';
-        followBtnContainer.style.display = 'none';
-        followBtnContainer.innerHTML = '<button class="header-follow">Follow</button>';
-
-        header.appendChild(profilePicContainer);
-        header.appendChild(followBtnContainer);
-    } else {
-        // Update existing elements for the new user
-        document.querySelector('.header-avatar').src = user.avatar;
-    }
-}
-setupHeaderElements();
-
-// Track last scroll position
-let lastScrollY = window.scrollY;
-
-function handleScroll() {
-    const profilePhoto = document.querySelector('.kor'); // Main profile photo
-    const followButton = document.querySelector('.aasw'); // Follow button
-    const headerPhoto = document.querySelector('.header-profile-pic'); // Header small photo
-    const headerFollowButton = document.querySelector('.header-follow-btn'); // Header follow button
-
-    if (!profilePhoto || !followButton || !headerPhoto || !headerFollowButton) return;
-
-    const profileRect = profilePhoto.getBoundingClientRect();
-    const followRect = followButton.getBoundingClientRect();
-
-    // Detect scrolling direction
-    let isScrollingDown = window.scrollY > lastScrollY;
-    lastScrollY = window.scrollY;
-
-    if (profileRect.bottom < 60 && profileRect.top < 0) {
-        // Profile photo is out of view - show header version
-        headerPhoto.style.display = 'block';
-        setTimeout(() => headerPhoto.classList.add('visible'), 10);
-    } else {
-        // Profile photo is in view - hide header version
-        headerPhoto.classList.remove('visible');
-        setTimeout(() => headerPhoto.style.display = 'none', 300);
-    }
-
-    if (followRect.bottom < 60 && followRect.top < 0) {
-        // Follow button is out of view - show header version
-        headerFollowButton.style.display = 'block';
-        setTimeout(() => headerFollowButton.classList.add('visible'), 10);
-    } else {
-        // Follow button is in view - hide header version
-        headerFollowButton.classList.remove('visible');
-        setTimeout(() => headerFollowButton.style.display = 'none', 300);
-    }
-}
 
 
 function showUserProfile(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-    setupHeaderElements(user);
-
-    lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-  
-    // Attach scroll event listener
-    window.addEventListener('scroll', handleScroll);
+    
     
     const profileContainer = document.getElementById("profile");
     const profileIreti = document.getElementById("ireti");
