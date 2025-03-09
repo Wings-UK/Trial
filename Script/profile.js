@@ -218,7 +218,7 @@ function initStickyMenu() {
 // Set up optimized scroll handling
 function setupScrollHandling() {
   // Remove any existing scroll listener to prevent duplicates
-  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('scroll', handlesScroll);
   
   // Initialize sticky menu properties
   initStickyMenu();
@@ -228,7 +228,7 @@ function setupScrollHandling() {
   window.addEventListener('scroll', function() {
     if (!ticking) {
       window.requestAnimationFrame(function() {
-        handleScroll();
+        handlesScroll();
         ticking = false;
       });
       ticking = true;
