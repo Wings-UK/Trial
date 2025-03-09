@@ -1340,7 +1340,7 @@ function showUserProfile(userId) {
             </div>
           </div>
     `;
-    switchPage("profile");
+    originalSwitchPage("profile");
     
     lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   // Attach scroll event listener
