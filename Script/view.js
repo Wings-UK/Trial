@@ -1268,14 +1268,14 @@ let lastScrollPos = 0;
 // Function to add necessary elements to the header
 function updateHeaderHTML() {
   const header = document.querySelector('.heado');
-  
+  const user = users.find(u => u.id === userId);
   // Check if we already added our elements to avoid duplicates
   if (!document.querySelector('.header-profile-pic')) {
     // Create profile picture container for header
     const profilePicContainer = document.createElement('div');
     profilePicContainer.className = 'header-profile-pic';
     profilePicContainer.style.display = 'none'; // Hidden by default
-    profilePicContainer.innerHTML = '<img class="header-avatar" src="" alt="Profile">';
+    profilePicContainer.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
     
     // Create follow button for header
     const followBtnContainer = document.createElement('div');
