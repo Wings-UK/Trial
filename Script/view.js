@@ -1267,9 +1267,9 @@ function setupScrollHandling() {
   // Get references to elements
   const profileKor = document.querySelector(".kor");
   const followButton = document.querySelector(".aasw");
-  const header = document.querySelector(".heador");
+  const header = document.querySelector(".heado");
   
-  // Create the elements to be added to the header when scrolling
+  // Create the elements to be added to the existing header
   const miniProfile = document.createElement("div");
   miniProfile.className = "mini-profile";
   miniProfile.innerHTML = `
@@ -1280,38 +1280,10 @@ function setupScrollHandling() {
   // Initially hide the mini profile
   miniProfile.style.display = "none";
   
-  // Add the mini profile to the header
+  // Add the mini profile to the existing header
   header.appendChild(miniProfile);
   
-  // Add styles to the header (to make it fixed)
-  header.style.position = "sticky";
-  header.style.top = "0";
-  header.style.zIndex = "100";
-  header.style.background = "#fff";
-  header.style.width = "100%";
-  
-  // Track scroll position
-  let lastScrollY = window.scrollY;
-  
-  // Function to handle scroll events
-  function handleScroll() {
-    // Get the position and dimensions of the profile image
-    const korRect = profileKor.getBoundingClientRect();
-    
-    // Check if the top of the profileKor is about to leave the viewport
-    if (korRect.top <= 20) {
-      // Show the mini profile in the header
-      miniProfile.style.display = "flex";
-    } else {
-      // Hide the mini profile when the profileKor is fully visible
-      miniProfile.style.display = "none";
-    }
-    
-    // Update last scroll position
-    lastScrollY = window.scrollY;
-  }
-  
-  // Add CSS styles to the document
+  // Add styles for the mini profile
   const styleSheet = document.createElement("style");
   styleSheet.textContent = `
     .mini-profile {
@@ -1340,15 +1312,23 @@ function setupScrollHandling() {
       font-size: 14px;
       cursor: pointer;
     }
-    
-    .heador {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 15px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
   `;
   document.head.appendChild(styleSheet);
+  
+  // Function to handle scroll events
+  function handleScroll() {
+    // Get the position and dimensions of the profile image
+    const korRect = profileKor.getBoundingClientRect();
+    
+    // Check if the top of the profileKor is about to leave the viewport
+    if (korRect.top <= 20) {
+      // Show the mini profile in the header
+      miniProfile.style.display = "flex";
+    } else {
+      // Hide the mini profile when the profileKor is fully visible
+      miniProfile.style.display = "none";
+    }
+  }
   
   // Add scroll event listener
   window.addEventListener('scroll', handleScroll);
