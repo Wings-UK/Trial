@@ -1645,9 +1645,6 @@ function showMyProfile() {
       </div>
   `;
   
-  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-  window.addEventListener('scroll', handleScroll);
-  
   const wingDiv = document.querySelector(".wing");
   if (wingDiv) {
     wingDiv.style.display = "block";
