@@ -389,6 +389,15 @@ const heartStyle = `
   font-family: ibm plex sans, roboto;
 } 
 
+.like-count.liked {
+  font-weight: bold;
+  color: rgb(244, 7, 82);
+}
+
+.like-count:empty {
+  display: none;
+}
+
 .heart-icon {
   width: 23px !important;
   height: 23px !important;
