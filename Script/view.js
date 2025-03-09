@@ -1,47 +1,47 @@
 const users = [
     {
-      id: 1,
-      username: "@reddcinema",
-      name: "Redd Cinema",
-      cover: "pics/pico9.png",
-      avatar: "pics/koreangirls.jpg",
-      bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
-      followers: 1204,
-      following: 340,
-      location: "Los Angeles, CA"
+        id: 1,
+        username: "@reddcinema",
+        name: "Redd Cinema",
+        cover: "pics/pico9.png",
+        avatar: "pics/koreangirls.jpg",
+        bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+        followers: 1204,
+        following: 340,
+        location: "Los Angeles, CA"
     },
     {
-      id: 2,
-      username: "@lena",
-      name: "Lena Marie",
-      cover: "pics/pico5.webp",
-      avatar: "pics/memo4.jpg",
-      bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
-      followers: 896,
-      following: 512,
-      location: "New York, NY"
+        id: 2,
+        username: "@lena",
+        name: "Lena Marie",
+        cover: "pics/pico5.webp",
+        avatar: "pics/memo4.jpg",
+        bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
+        followers: 896,
+        following: 512,
+        location: "New York, NY"
     },
     {
-      id: 3, 
-      username: "@nomsa",
-      name: "Lena Marie",
-      cover: "pics/d.jpg",
-      avatar: "pics/b.jpg",
-      bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
-      followers: 63,
-      following: 556,
-      location: "Madras, OR"
+        id: 3,
+        username: "@nomsa",
+        name: "Nomsa",
+        cover: "pics/d.jpg",
+        avatar: "pics/b.jpg",
+        bio: "Living my best life 💃",
+        followers: 63,
+        following: 556,
+        location: "Madras, OR"
     },
     {
-      id: 4,
-      username: "@jeremyx",
-      name: "Redd Cinemam",
-      cover: "pics/memo6.jpg",
-      avatar: "pics/mypics.jpg",
-      bio: "I just vibe on here sometimes.. I'm a girl of course.🎬✨",
-      followers: 124,
-      following: 30,
-      location: "Minna, NR"
+        id: 4,
+        username: "@jeremyx",
+        name: "Jeremy X",
+        cover: "pics/memo6.jpg",
+        avatar: "pics/mypics.jpg",
+        bio: "Just vibing out here 🎬✨",
+        followers: 124,
+        following: 30,
+        location: "Minna, NR"
     }
 ];
 
