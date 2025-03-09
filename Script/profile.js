@@ -165,45 +165,6 @@ function setupScrollHandling() {
     handleProfileScroll();
 }
 
-// Update showMyProfile
-function showMyProfile() {
-    const user = getLoggedInUser();
-    switchPage("profile");
-    
-    setTimeout(() => {
-        updateHeaderHTML(user.id);
-    }, 50);
-    
-    const profileIreti = document.getElementById("ireti");
-    profileIreti.innerHTML = `
-        <img class="frin" src="${user.cover}">
-        <div>
-            <img class="kor" src="${user.avatar}">
-        </div>
-        <div class="klr">
-            <!-- Existing content remains the same -->
-        </div>
-        <div class="ewe">
-            <div class="yeb"><img class="dee" src="pics/bren1.png"></div>
-            <div class="yeb"><a href="javascript:void(0);"><img class="dee" src="pics/browser.png"></a></div>
-            <div class="yeb"><img class="dee" src="pics/bren.png"></div>
-        </div>
-        <div class="mansonro">
-            <div class="masonri">
-                <div class="column left-column"></div>
-                <div class="column right-column"></div>
-            </div>
-        </div>
-    `;
-    
-    const wingDiv = document.querySelector(".wing");
-    if (wingDiv) wingDiv.style.display = "block";
-    
-    currentProfileTab = "posts";
-    initProfileNavigation();
-    renderUserPosts(user.id);
-    setupScrollHandling();
-}
 
 // Function to initialize the sticky behavior after the page loads
 function initStickyMenu() {
