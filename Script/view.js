@@ -336,6 +336,8 @@ function renderHomepage() {
             </div>
             <div class="reaction">
                 <div class="reaction-container">
+                <div class="call">
+                <div>
                     <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
                     
                         <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
@@ -352,6 +354,8 @@ function renderHomepage() {
                         <img class="feeling" src="pics/tum.svg" alt="Repost">
                         <span>${post.repostCount || 0}</span>
                     </div>
+                    </div>
+                    <div>
                     <div class="donate-btn">
                         <img class="feeling" src="pics/hm.svg" alt="Donate">
                         
@@ -361,6 +365,8 @@ function renderHomepage() {
                     <img class="feeling" src="pics/see.svg">
 
                    </div>    
+                   </div>
+                   </div>
                 </div>
                         
             </div>
@@ -384,7 +390,11 @@ const heartStyle = `
 .heart-clickable {
     cursor: pointer; /* Only the heart and count are clickable */
 }
-
+.call {
+width: 100%;
+display: flex;
+justify-content: space-between;
+}
 .feeling {
   width: 23px;
 }
