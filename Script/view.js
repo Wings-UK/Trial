@@ -487,7 +487,6 @@ justify-content: space-between;
 }
 .donate-btn {
   display: flex;
-  width: 30px;
   align-items: center;
 }
 
