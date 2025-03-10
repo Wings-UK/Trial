@@ -492,7 +492,7 @@ justify-content: space-between;
   display: flex;
   width: 60px;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
   font-size: 14px;
   font-family: ibm plex sans, roboto;
