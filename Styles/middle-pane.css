@@ -2537,15 +2537,15 @@
 }
 
 .detail-profile-pic img {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 8px;
     object-fit: cover;
 }
 
 .detail-username {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 .detail-right {
@@ -2564,8 +2564,8 @@
 }
 
 .detail-menu {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
 }
 
 .detail-content.visible {
