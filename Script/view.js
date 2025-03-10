@@ -338,14 +338,7 @@ function renderHomepage() {
                 <div class="reaction-container">
                 <div class="call">
                 <div class="mee">
-                    <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
                     
-                        <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
-                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
-                      
-                        <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-                    </div>
                     <div class="comment-btn" data-post-id="${post.id}">
                         <img class="feeling" src="pics/rug.svg" alt="Comment">
                         <span>${post.commentCount || 0}</span>
@@ -353,6 +346,12 @@ function renderHomepage() {
                     <div class="repost-btn">
                         <img class="feeling" src="pics/tum.svg" alt="Repost">
                         <span>${post.repostCount || 0}</span>
+                    </div>
+                    <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                        <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
                     </div>
                     </div>
                     <div class="mee">
