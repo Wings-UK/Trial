@@ -955,8 +955,6 @@ function renderPostWithNewVideoPlayer(post, user) {
 
 function showDetail(postId) {
   const originalShowDetail = showDetail;
-  switchPage("meal"); 
-  updateDetailForPost(user);
 
 showDetail = function(postId) {
     // Call the original showDetail function to render the post details
@@ -1187,7 +1185,10 @@ showDetail = function(postId) {
             </div>   
         </div>
     `;
-    setupDetailScrollListener();
+    
+  updateDetailForPost(user);
+  setupDetailScrollListener();
+  switchPage("meal"); 
     
     
     // Initialize video players AFTER the content is added to the DOM
