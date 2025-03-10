@@ -382,7 +382,7 @@ function renderHomepage() {
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
- gap: 3px;
+ gap: 4px;
   width: 60px;
   display: flex;
   align-items: center;
@@ -401,7 +401,7 @@ display: flex;
 justify-content: space-between;
 }
 .feeling {
-  width: 23px;
+  width: 22px;
 }
 
 .like-count {
@@ -492,7 +492,7 @@ justify-content: space-between;
   display: flex;
   width: 60px;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   cursor: pointer;
   font-size: 14px;
   font-family: ibm plex sans, roboto;
