@@ -419,8 +419,6 @@ justify-content: space-between;
 }
 
 .heart-icon {
-  width: 23px !important;
-  height: 23px !important;
   transition: all 0.3s ease;
 }
 
