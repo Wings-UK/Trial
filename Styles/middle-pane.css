@@ -2560,6 +2560,7 @@
     background-color: rgb(244, 7, 82);
     color: white;
     border-radius: 5px;
+    font-weight: 500;
     cursor: pointer;
 }
 
