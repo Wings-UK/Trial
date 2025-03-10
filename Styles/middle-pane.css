@@ -2573,3 +2573,8 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+.spoil {
+  width: 29px;
+  height: 29px;
+}
