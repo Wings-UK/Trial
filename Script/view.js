@@ -382,6 +382,7 @@ function renderHomepage() {
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
+gap: 5px;
   width: 60px;
   display: flex;
   align-items: center;
@@ -493,7 +494,7 @@ justify-content: space-between;
   display: flex;
   width: 60px;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   font-size: 14px;
   font-family: ibm plex sans, roboto;
