@@ -348,9 +348,9 @@ function renderHomepage() {
                         <span>${post.repostCount || 0}</span>
                     </div>
                     <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                        <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
-                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                        </svg>  
+                        <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                         <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
                     </div>
                     </div>
@@ -382,7 +382,6 @@ function renderHomepage() {
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
- gap: 5px;
   width: 60px;
   display: flex;
   align-items: center;
@@ -401,7 +400,7 @@ display: flex;
 justify-content: space-between;
 }
 .feeling {
-  width: 22px;
+  width: 23px;
 }
 
 .like-count {
@@ -419,6 +418,8 @@ justify-content: space-between;
 }
 
 .heart-icon {
+  width: 23px !important;
+  height: 23px !important;
   transition: all 0.3s ease;
 }
 
@@ -492,7 +493,7 @@ justify-content: space-between;
   display: flex;
   width: 60px;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
   font-size: 14px;
   font-family: ibm plex sans, roboto;
@@ -1184,11 +1185,8 @@ showDetail = function(postId) {
             </div>   
         </div>
     `;
-    
-  updateDetailForPost(user);
-  setupDetailScrollListener();
-  switchPage("meal"); 
-    
+
+    switchPage("meal");
     
     // Initialize video players AFTER the content is added to the DOM
     initializeVideoPlayers();
@@ -2056,47 +2054,6 @@ function handleScroll() {
   }
 } 
 
-// Function to update the sticky detail elements when scrolling
-function updateDetailForPost(user) {
-    const detailProfilePic = document.querySelector('.detail-profile-pic');
-    const detailUsername = document.querySelector('.detail-username');
-    const detailFollowBtn = document.querySelector('.detail-follow');
-
-    if (!detailProfilePic || !detailUsername || !detailFollowBtn) return;
-
-    // Set the user's avatar in the profile pic div
-    detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
-    
-    // Set the username
-    detailUsername.textContent = user.username;
-    
-    // Set follow button text
-    detailFollowBtn.textContent = "Follow";
-}
-
-
-// Function to handle scroll and show/hide detail elements
-function setupDetailScrollListener() {
-    window.addEventListener("scroll", function () {
-        // Get the elements we need to track
-        const profilePic = document.querySelector(".small-photo");
-        const followBtn = document.querySelector(".foni"); // Using the class from your HTML
-        const detailContent = document.querySelector(".detail-content");
-
-        if (!profilePic || !followBtn || !detailContent) return;
-
-        // Get the position data of elements we're tracking
-        const profilePicRect = profilePic.getBoundingClientRect();
-        const followBtnRect = followBtn.getBoundingClientRect();
-
-        // If either element is scrolled out of view (top is less than 60px from top of viewport)
-        if (profilePicRect.top < 0 || followBtnRect.top < 0) {
-            detailContent.classList.add("visible");
-        } else {
-            detailContent.classList.remove("visible");
-        }
-    });
-}
 
 
  
