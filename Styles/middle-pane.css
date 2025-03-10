@@ -2575,6 +2575,6 @@
 }
 
 .spoil {
-  width: 29px;
-  height: 29px;
+  width: 29px !important;
+  height: 29px !important;
 }
