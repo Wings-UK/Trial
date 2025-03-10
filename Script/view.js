@@ -955,6 +955,10 @@ function renderPostWithNewVideoPlayer(post, user) {
 
 function showDetail(postId) {
   const originalShowDetail = showDetail;
+  
+  setTimeout(() => {
+        updateDetailForPost(user);
+    }, 50);
 
 showDetail = function(postId) {
     // Call the original showDetail function to render the post details
@@ -1185,7 +1189,7 @@ showDetail = function(postId) {
             </div>   
         </div>
     `;
-
+    setupDetailScrollListener();
     switchPage("meal");
     
     // Initialize video players AFTER the content is added to the DOM
@@ -2054,7 +2058,43 @@ function handleScroll() {
   }
 } 
 
+// Function to update the sticky detail elements when scrolling
+function updateDetailForPost(user) {
+    const detailProfilePic = document.querySelector('.detail-profile-pic');
+    const detailUsername = document.querySelector('.detail-username');
+    const detailFollowBtn = document.querySelector('.detail-follow');
+    const detailMenu = document.querySelector('.detail-menu');
+
+    if (!detailProfilePic || !detailUsername || !detailFollowBtn || !detailMenu) return;
+
+    detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
+    detailUsername.textContent = user.username;
+    detailFollowBtn.textContent = "Follow";
+}
 
 
+// Function to handle scroll and show/hide detail elements
+function setupDetailScrollListener() {
+    let lastScrollPos = 0;
+
+    window.addEventListener("scroll", function () {
+        const profilePic = document.querySelector(".small-photo");
+        const followBtn = document.querySelector(".follow-btn");
+        const detailContent = document.querySelector(".detail-content");
+
+        if (!profilePic || !followBtn || !detailContent) return;
+
+        const profilePicRect = profilePic.getBoundingClientRect();
+        const followBtnRect = followBtn.getBoundingClientRect();
+
+        if (profilePicRect.bottom < 60 || followBtnRect.bottom < 60) {
+            detailContent.classList.add("visible");
+        } else {
+            detailContent.classList.remove("visible");
+        }
+
+        lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+    });
+}
  
  renderHomepage();
