@@ -956,9 +956,7 @@ function renderPostWithNewVideoPlayer(post, user) {
 function showDetail(postId) {
   const originalShowDetail = showDetail;
   
-  setTimeout(() => {
-        updateDetailForPost(user);
-    }, 50);
+  updateDetailForPost(user);
 
 showDetail = function(postId) {
     // Call the original showDetail function to render the post details
@@ -1190,7 +1188,7 @@ showDetail = function(postId) {
         </div>
     `;
     setupDetailScrollListener();
-    switchPage("meal");
+    switchPage("meal"); 
     
     // Initialize video players AFTER the content is added to the DOM
     initializeVideoPlayers();
@@ -2063,38 +2061,43 @@ function updateDetailForPost(user) {
     const detailProfilePic = document.querySelector('.detail-profile-pic');
     const detailUsername = document.querySelector('.detail-username');
     const detailFollowBtn = document.querySelector('.detail-follow');
-    const detailMenu = document.querySelector('.detail-menu');
 
-    if (!detailProfilePic || !detailUsername || !detailFollowBtn || !detailMenu) return;
+    if (!detailProfilePic || !detailUsername || !detailFollowBtn) return;
 
+    // Set the user's avatar in the profile pic div
     detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
+    
+    // Set the username
     detailUsername.textContent = user.username;
+    
+    // Set follow button text
     detailFollowBtn.textContent = "Follow";
 }
 
 
 // Function to handle scroll and show/hide detail elements
 function setupDetailScrollListener() {
-    let lastScrollPos = 0;
-
     window.addEventListener("scroll", function () {
+        // Get the elements we need to track
         const profilePic = document.querySelector(".small-photo");
-        const followBtn = document.querySelector(".follow-btn");
+        const followBtn = document.querySelector(".foni"); // Using the class from your HTML
         const detailContent = document.querySelector(".detail-content");
 
         if (!profilePic || !followBtn || !detailContent) return;
 
+        // Get the position data of elements we're tracking
         const profilePicRect = profilePic.getBoundingClientRect();
         const followBtnRect = followBtn.getBoundingClientRect();
 
-        if (profilePicRect.bottom < 60 || followBtnRect.bottom < 60) {
+        // If either element is scrolled out of view (top is less than 60px from top of viewport)
+        if (profilePicRect.top < 60 || followBtnRect.top < 60) {
             detailContent.classList.add("visible");
         } else {
             detailContent.classList.remove("visible");
         }
-
-        lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
     });
 }
+
+
  
  renderHomepage();
