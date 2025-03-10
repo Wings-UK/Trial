@@ -2517,10 +2517,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 80%;
+    width: 90%;
     position: fixed;
     top: 0;
     right: 0;
+    height: 52px;
     padding: 10px 20px;
     transition: opacity 0.3s ease-in-out;
     opacity: 0;
