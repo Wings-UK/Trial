@@ -401,7 +401,7 @@ display: flex;
 justify-content: space-between;
 }
 .feeling {
-  width: 23px;
+  width: 22px;
 }
 
 .like-count {
