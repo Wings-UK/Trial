@@ -2091,8 +2091,8 @@ function setupDetailScrollListener() {
         const followBtnRect = followBtn.getBoundingClientRect();
 
         // If either element is scrolled out of view (top is less than 60px from top of viewport)
-        if (profilePicRect.top < 60 || followBtnRect.top < 60) {
-            detailContent.classList.add("visible");
+        if (profilePicRect.top < 0 || followBtnRect.top < 0) {
+            detailContent.classList.add("visible"); 
         } else {
             detailContent.classList.remove("visible");
         }
