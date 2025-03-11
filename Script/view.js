@@ -1184,6 +1184,10 @@ showDetail = function(postId) {
             </div>   
         </div>
     `;
+    updateDetailForPost(user);
+    
+    // Set up scroll listener after content is loaded
+    setupDetailScrollListener();
 
     switchPage("meal");
     
@@ -2052,6 +2056,49 @@ function handleScroll() {
     }, 300); // Match transition duration
   }
 } 
+
+
+// Function to update the header detail with post user information
+function updateDetailForPost(user) {
+    const detailProfilePic = document.querySelector('.detail-profile-pic');
+    const detailUsername = document.querySelector('.detail-username');
+    const detailFollowBtn = document.querySelector('.detail-follow');
+
+    if (!detailProfilePic || !detailUsername || !detailFollowBtn) return;
+
+    // Set the user's avatar in the profile pic div
+    detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
+    
+    // Set the username
+    detailUsername.textContent = user.username;
+    
+    // Set follow button text
+    detailFollowBtn.textContent = "Follow";
+}
+
+// Function to handle scroll and show/hide detail elements
+function setupDetailScrollListener() {
+    window.addEventListener("scroll", function () {
+        // Get the elements we need to track
+        const profilePic = document.querySelector(".small-photo");
+        const followBtn = document.querySelector(".foni"); // Using the class from your HTML
+        const detailContent = document.querySelector(".detail-content");
+
+        if (!profilePic || !followBtn || !detailContent) return;
+
+        // Get the position data of elements we're tracking
+        const profilePicRect = profilePic.getBoundingClientRect();
+        const followBtnRect = followBtn.getBoundingClientRect();
+
+        // If either element is scrolled out of view (top is less than 60px from top of viewport)
+        if (profilePicRect.top < 60 || followBtnRect.top < 60) {
+            detailContent.classList.add("visible");
+        } else {
+            detailContent.classList.remove("visible");
+        }
+    });
+}
+
 
 
 
