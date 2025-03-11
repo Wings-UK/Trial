@@ -2100,6 +2100,44 @@ function setupDetailScrollListener() {
 }
 
 
+function syncLikeState(postId, isLiked) {
+    // Find all heart icons (homepage & post detail) for the same post
+    const heartIcons = document.querySelectorAll(`.heart-ai[data-post-id="${postId}"] .heart-icon`);
+    const reactionCount = document.querySelector(`.reaction-count .reaction-number`);
+
+    // Update heart icons across pages
+    heartIcons.forEach(icon => {
+        if (isLiked) {
+            icon.classList.add("liked");
+        } else {
+            icon.classList.remove("liked");
+        }
+    });
+
+    // Update reaction count text
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+        post.likeCount = isLiked ? post.likeCount + 1 : Math.max(0, post.likeCount - 1);
+        if (reactionCount) {
+            reactionCount.textContent = post.likeCount;
+        }
+    }
+}
+
+// Apply event listener to heart icons
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".heart-ai").forEach(container => {
+        const postId = parseInt(container.getAttribute("data-post-id"));
+        const heartIcon = container.querySelector(".heart-icon");
+
+        heartIcon.addEventListener("click", () => {
+            const isLiked = !heartIcon.classList.contains("liked");
+            syncLikeState(postId, isLiked);
+        });
+    });
+});
+
+
 
 
  
