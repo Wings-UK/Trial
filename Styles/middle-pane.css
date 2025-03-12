@@ -2583,11 +2583,6 @@
   height: 26px !important;
 }
 
-.comment-container .repost-btn {
-    width: 30px; /* Removes forced 60px width */
-}
-
-.comment-container .repost-btn,
-.comment-container .heart-ai {
-    gap: 20px; /* Ensures only 20px gap between them */
+.buyt {
+  width: 30px;
 }
