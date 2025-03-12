@@ -2584,7 +2584,7 @@
 }
 
 .comment-container .repost-btn {
-    width: auto; /* Removes forced 60px width */
+    width: 30px; /* Removes forced 60px width */
 }
 
 .comment-container .repost-btn,
