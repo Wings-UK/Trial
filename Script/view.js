@@ -164,7 +164,7 @@ localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
 
 // Modified renderHomepage function
-function renderHomepage() {
+function renderHomepage() {u
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = ''; // Clear existing content
   
@@ -383,7 +383,6 @@ function renderHomepage() {
 const heartStyle = `
 .heart-ai {
 gap: 5px;
-  width: 60px;
   display: flex;
   align-items: center;
 }
@@ -490,7 +489,6 @@ justify-content: space-between;
 
 .comment-btn, .repost-btn {
   display: flex;
-  width: 60px;
   align-items: center;
   gap: 5px;
   cursor: pointer;
