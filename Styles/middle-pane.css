@@ -2582,3 +2582,12 @@
   width: 26px !important;
   height: 26px !important;
 }
+
+.comment-container .repost-btn {
+    width: auto; /* Removes forced 60px width */
+}
+
+.comment-container .repost-btn,
+.comment-container .heart-ai {
+    gap: 20px; /* Ensures only 20px gap between them */
+}
