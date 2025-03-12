@@ -164,7 +164,7 @@ localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
 
 // Modified renderHomepage function
-function renderHomepage() {u
+function renderHomepage() {
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = ''; // Clear existing content
   
@@ -2098,9 +2098,6 @@ function setupDetailScrollListener() {
         }
     });
 }
-
-
-
 
 
 
