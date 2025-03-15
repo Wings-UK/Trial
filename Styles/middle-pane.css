@@ -2586,3 +2586,7 @@
 .buyt {
   width: 30px !important;
 }
+.dil {
+  display: flex;
+  gap: 20px;
+}
