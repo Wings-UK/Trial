@@ -382,6 +382,7 @@ function renderHomepage() {
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
+width: 55px;
 gap: 5px;
   display: flex;
   align-items: center;
@@ -489,6 +490,7 @@ justify-content: space-between;
 
 .comment-btn, .repost-btn {
   display: flex; 
+  width: 55px;
   align-items: center;
   gap: 5px;
   cursor: pointer;
