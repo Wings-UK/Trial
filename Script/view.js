@@ -2099,7 +2099,291 @@ function setupDetailScrollListener() {
     });
 }
 
+// 1. First, let's create a global state manager for likes
+const likeStateManager = {
+  likedPosts: new Set(), // Store post IDs that are liked
 
+  // Toggle like state and return new state
+  toggleLike(postId) {
+    postId = parseInt(postId);
+    if (this.likedPosts.has(postId)) {
+      this.likedPosts.delete(postId);
+      return false; // now unliked
+    } else {
+      this.likedPosts.add(postId);
+      return true; // now liked
+    }
+  },
+
+  // Check if a post is liked
+  isLiked(postId) {
+    return this.likedPosts.has(parseInt(postId));
+  },
+
+  // Update the UI for all instances of a post's heart icons
+  updateAllInstances(postId, isLiked) {
+    postId = parseInt(postId);
+    
+    // Find the post and update its like count
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      // Ensure likeCount is a number
+      post.likeCount = parseInt(post.likeCount || 0);
+      post.likeCount = isLiked ? post.likeCount + 1 : Math.max(0, post.likeCount - 1);
+    }
+
+    // Update all heart instances in the DOM
+    const heartContainers = document.querySelectorAll(`.heart-ai[data-post-id="${postId}"]`);
+    
+    heartContainers.forEach(container => {
+      const heartIcon = container.querySelector('.heart-icon');
+      const likeCount = container.querySelector('.like-count');
+      
+      // Update data attribute
+      container.setAttribute('data-liked', isLiked);
+      
+      // Update classes
+      if (isLiked) {
+        heartIcon.classList.add('liked');
+        if (likeCount) likeCount.classList.add('liked');
+      } else {
+        heartIcon.classList.remove('liked');
+        if (likeCount) likeCount.classList.remove('liked');
+      }
+      
+      // Update count display
+      if (likeCount) {
+        if (post && post.likeCount > 0) {
+          likeCount.style.display = 'inline';
+          likeCount.textContent = post.likeCount;
+        } else {
+          likeCount.style.display = 'none';
+          likeCount.textContent = '';
+        }
+      }
+    });
+  }
+};
+
+
+
+// 2. Modify the heart initialization function to use our state manager
+function initializeHeartReactions() {
+    addHeartStyles();
+    
+    const heartContainers = document.querySelectorAll('.heart-ai');
+    
+    heartContainers.forEach(container => {
+        const heartIcon = container.querySelector('.heart-icon');
+        const likeCount = container.querySelector('.like-count');
+        const clickableElements = container.querySelectorAll('.heart-clickable');
+        const postId = parseInt(container.getAttribute('data-post-id'));
+        
+        // Initialize from state manager
+        const post = posts.find(p => p.id === postId);
+        let isLiked = likeStateManager.isLiked(postId);
+        
+        // Set initial state
+        container.setAttribute('data-liked', isLiked);
+        
+        if (isLiked) {
+            heartIcon.classList.add('liked');
+            likeCount.classList.add('liked');
+        }
+        
+        // Set count display
+        let count = post ? (parseInt(post.likeCount) || 0) : 0;
+        if (count < 1) {
+            likeCount.style.display = 'none';
+        } else {
+            likeCount.style.display = 'inline';
+            likeCount.textContent = count;
+        }
+
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Toggle like state in manager
+                isLiked = likeStateManager.toggleLike(postId);
+                
+                if (isLiked) {
+                    heartIcon.classList.add('heart-animation', 'liked');
+                    
+                    // Remove animation class after it completes
+                    setTimeout(() => {
+                        heartIcon.classList.remove('heart-animation');
+                    }, 400);
+                } else {
+                    heartIcon.classList.add('unfill-animation');
+                    heartIcon.classList.remove('liked');
+                    
+                    setTimeout(() => {
+                        heartIcon.classList.remove('unfill-animation');
+                    }, 400);
+                }
+                
+                // Update all instances of this heart in the DOM
+                likeStateManager.updateAllInstances(postId, isLiked);
+            });
+        });
+    });
+}
+
+
+// 3. Add heart functionality to the detail view
+function setupDetailHeartReaction() {
+    const postContent = document.getElementById("nuba");
+    if (!postContent) return;
+    
+    const postIdElement = postContent.querySelector('.cust-name[data-post-id]');
+    if (!postIdElement) return;
+    
+    const postId = parseInt(postIdElement.getAttribute('data-post-id'));
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    // Find existing heart in the reaction section or create one
+    let heartContainer = postContent.querySelector('.heart-ai');
+    
+    if (!heartContainer) {
+        // Create a heart container for the detail view's reaction section
+        const reactionDiv = postContent.querySelector('.reaction');
+        if (reactionDiv) {
+            const heartDiv = document.createElement('div');
+            heartDiv.className = 'heart-ai';
+            heartDiv.setAttribute('data-post-id', postId);
+            heartDiv.setAttribute('data-liked', likeStateManager.isLiked(postId));
+            
+            heartDiv.innerHTML = `
+                <svg class="heart-icon heart-clickable" width="26" height="26" viewBox="0 0 24 24">
+                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+            `;
+            
+            // Insert at beginning of reaction div
+            reactionDiv.insertBefore(heartDiv, reactionDiv.firstChild);
+            
+            // Initialize this heart reaction
+            initializeHeartReactions();
+        }
+    } else {
+        // Update existing heart to reflect current state
+        const isLiked = likeStateManager.isLiked(postId);
+        heartContainer.setAttribute('data-liked', isLiked);
+        
+        const heartIcon = heartContainer.querySelector('.heart-icon');
+        const likeCount = heartContainer.querySelector('.like-count');
+        
+        if (isLiked) {
+            heartIcon.classList.add('liked');
+            if (likeCount) likeCount.classList.add('liked');
+        } else {
+            heartIcon.classList.remove('liked');
+            if (likeCount) likeCount.classList.remove('liked');
+        }
+        
+        // Update count display
+        if (likeCount) {
+            if (post.likeCount > 0) {
+                likeCount.style.display = 'inline';
+                likeCount.textContent = post.likeCount;
+            } else {
+                likeCount.style.display = 'none';
+                likeCount.textContent = '';
+            }
+        }
+    }
+}
+
+
+
+// 4. Update the showDetail function to call setupDetailHeartReaction
+function modifyShowDetail() {
+    const originalShowDetail = window.showDetail;
+    
+    window.showDetail = function(postId) {
+        // Call the original function
+        originalShowDetail(postId);
+        
+        // Add our heart synchronization
+        setTimeout(() => {
+            setupDetailHeartReaction();
+        }, 100);
+    };
+}
+
+// 8. Initialize persistence of likes in local storage
+function initializeLocalStorage() {
+    // Load liked posts from localStorage if available
+    try {
+        const savedLikes = localStorage.getItem('winged_liked_posts');
+        if (savedLikes) {
+            const likedPostsArray = JSON.parse(savedLikes);
+            likedPostsArray.forEach(id => likeStateManager.likedPosts.add(parseInt(id)));
+        }
+    } catch (e) {
+        console.error('Error loading liked posts from storage:', e);
+    }
+    
+    // Save likes to localStorage whenever they change
+    const originalToggleLike = likeStateManager.toggleLike;
+    
+    likeStateManager.toggleLike = function(postId) {
+        const result = originalToggleLike.call(this, postId);
+        
+        try {
+            const likedPostsArray = Array.from(this.likedPosts);
+            localStorage.setItem('winged_liked_posts', JSON.stringify(likedPostsArray));
+        } catch (e) {
+            console.error('Error saving liked posts to storage:', e);
+        }
+        
+        return result;
+    };
+}
+
+// 9. Handle the main call-to-action heart in the detail view
+function updateDetailPageMainHeart() {
+    // Find the main heart in the comment container
+    const commentContainer = document.querySelector('.comment-container');
+    if (!commentContainer) return;
+    
+    const heartAi = commentContainer.querySelector('.heart-ai');
+    if (heartAi) return; // Already set up
+    
+    // Get the post ID from the detail content
+    const postContent = document.getElementById("nuba");
+    if (!postContent) return;
+    
+    const postIdElement = postContent.querySelector('.cust-name[data-post-id]');
+    if (!postIdElement) return;
+    
+    const postId = parseInt(postIdElement.getAttribute('data-post-id'));
+    
+    // Get the existing heart SVG
+    const existingHeart = commentContainer.querySelector('.heart-clickable');
+    if (!existingHeart) return;
+    
+    // Replace with our heart-ai container
+    const parentElement = existingHeart.parentElement;
+    
+    // Create new heart-ai element
+    const heartDiv = document.createElement('div');
+    heartDiv.className = 'heart-ai';
+    heartDiv.setAttribute('data-post-id', postId);
+    heartDiv.setAttribute('data-liked', likeStateManager.isLiked(postId));
+    
+    // Copy the existing heart's content
+    heartDiv.innerHTML = parentElement.innerHTML;
+    
+    // Replace the old element
+    parentElement.parentNode.replaceChild(heartDiv, parentElement);
+    
+    // Initialize this heart reaction
+    initializeHeartReactions();
+}
 
 
 
