@@ -1497,8 +1497,6 @@ function shortenText(text, limit, showSeeMore = true) {
 
     if (event.state && event.state.page) {
         switchPage(event.state.page);
-    } else {
-        switchPage("food");  // Default back to homepage only if no history
     }
 
     setTimeout(() => {
