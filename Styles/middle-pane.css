@@ -2564,6 +2564,10 @@
     cursor: pointer;
 }
 
+.shui {
+  display: flex;
+}
+
 .detail-menu {
     width: 15px;
     height: 15px;
