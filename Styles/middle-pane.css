@@ -182,15 +182,7 @@
   padding: 16px;
   background: #fff;
 }
-.page {
-  display: none;
-  opacity: 0;
-  transition: opacity 0.6s ease-in-out;
-}
-.active {
-  display: block;
-  opacity: 1;
-}
+
 .edre {
   display: flex;
   width: 100%;
@@ -2598,8 +2590,15 @@
 }
 .page {
     opacity: 0;
-    transition: opacity 0.7s ease-in-out;
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    transition: opacity 0.5s ease-in-out;
+    display: none; /* Hide initially */
 }
+
 .page.active {
     opacity: 1;
+    display: block;
 }
