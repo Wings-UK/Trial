@@ -1097,7 +1097,7 @@ showDetail = function(postId) {
                 </div> 
             </div>
             <div>
-                <p class="foni" onclick="
+                <button class="foni" onclick="
                   const foniElem = document.querySelector('.foni');
                   
                   if (foniElem.innerHTML === 'Follow') {
@@ -1107,7 +1107,7 @@ showDetail = function(postId) {
                     foniElem.innerHTML = 'Follow';
                     foniElem.classList.remove('follow')
                   }
-                ">Follow</p>
+                ">Follow</button>
             </div>
             <div class="dots">
                 <img class="dot" src="pics/duta.png">
