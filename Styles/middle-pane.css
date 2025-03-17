@@ -182,7 +182,15 @@
   padding: 16px;
   background: #fff;
 }
-
+.page {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+.active {
+  display: block;
+  opacity: 1;
+}
 .edre {
   display: flex;
   width: 100%;
@@ -2587,4 +2595,11 @@
 .dil {
   display: flex;
   gap: 20px;
+}
+.page {
+    opacity: 0;
+    transition: opacity 0.7s ease-in-out;
+}
+.page.active {
+    opacity: 1;
 }
