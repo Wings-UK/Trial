@@ -719,7 +719,7 @@
 .foni.follow { 
   color: rgb(20, 20, 20);
   border: 2px solid rgb(97, 97, 97);
-  background-color: none;
+  background-color: transparent;
 }
 .loading-bar {
   top: 54px;
