@@ -1490,15 +1490,19 @@ function shortenText(text, limit, showSeeMore = true) {
     const modal = document.querySelector('.video-modal');
 
     // Check if modal is open, if yes, close it instead of switching pages
+  
+
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+    } else {
+        switchPage("food");  // Default back to homepage only if no history
+    }
+
     if (modal && modal.classList.contains('active')) {
         closeVideoModal();
         return; // Stop further execution
     }
-
-    if (event.state && event.state.page) {
-        switchPage(event.state.page);
-    }
-
+    
     setTimeout(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
         if (savedScrollPosition) {
