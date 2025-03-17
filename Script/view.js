@@ -1437,9 +1437,7 @@ function goBack() {
     }, 50);
  }
  
- 
  function switchPage(pageId) {
-    // Save scroll position of the current page
     const currentPage = document.querySelector(".page.active");
     if (currentPage) {
         sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
@@ -1453,6 +1451,14 @@ function goBack() {
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
+    // Ensure homepage is always in history before anything else
+    if (!history.state || history.state.page !== "food") {
+        history.replaceState({ page: "food" }, "", "#food");
+    }
+
+    // Push new page state to history
+    history.pushState({ page: pageId }, "", `#${pageId}`);
+
     // Restore scroll position for the new page
     setTimeout(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
@@ -1460,9 +1466,6 @@ function goBack() {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
     }, 50);
-
-    // Push new state into history
-    history.pushState({ page: pageId }, "", `#${pageId}`);
 }
 
 function shortenText(text, limit, showSeeMore = true) {
@@ -1482,9 +1485,12 @@ function shortenText(text, limit, showSeeMore = true) {
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
-        switchPage("food");  // Default to homepage if no history exists
+        // If no history exists, always default to homepage
+        switchPage("food");
+        history.replaceState({ page: "food" }, "", "#food");
     }
 
+    // Restore scroll position
     setTimeout(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
         if (savedScrollPosition) {
