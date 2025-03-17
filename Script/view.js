@@ -1513,7 +1513,7 @@ function shortenText(text, limit, showSeeMore = true) {
   if (!history.state) {
      history.replaceState({ page:"food" }, "", "#food");
   }
-    closeVideoModal(); 
+  
      switchPage("food");
  });
  
