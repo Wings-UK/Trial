@@ -508,82 +508,35 @@ function addHeartStyles() {
 
 // Initialize heart reactions
 function initializeHeartReactions() {
-    addHeartStyles();
-    
-    const heartContainers = document.querySelectorAll('.heart-ai');
-    
-    heartContainers.forEach(container => {
-        const heartIcon = container.querySelector('.heart-icon');
-        const likeCount = container.querySelector('.like-count');
-        const clickableElements = container.querySelectorAll('.heart-clickable');
-        const postId = container.getAttribute('data-post-id');
-        let isLiked = container.getAttribute('data-liked') === 'true';
-        
-        // Initialize count from post data or 0, preventing NaN
-        const post = posts.find(p => p.id === parseInt(postId));
-        let count = post ? (parseInt(post.likeCount) || 0) : 0;
-        
-        // Set initial state
-        if (count < 1) {
-            likeCount.style.display = 'none';
-        } else {
-            likeCount.style.display = 'inline';
-            likeCount.textContent = count;
-        }
-        
-        // Set initial liked state if applicable
-        if (isLiked) {
-            heartIcon.classList.add('liked');
-            likeCount.classList.add('liked');
-        }
+    const heartIcons = document.querySelectorAll(".heart-ai");
 
-        clickableElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                isLiked = !isLiked;
+    heartIcons.forEach(icon => {
+        // Remove any existing event listener before adding a new one
+        const newIcon = icon.cloneNode(true);
+        icon.replaceWith(newIcon);
 
-                if (isLiked) {
-                    heartIcon.classList.add('heart-animation', 'liked');
-                    likeCount.classList.add('liked');
-                    count++;
-                    
-                    // Show count
-                    likeCount.style.display = 'inline';
-                    likeCount.textContent = count;
-                    
-                    // Remove animation class after it completes
-                    setTimeout(() => {
-                        heartIcon.classList.remove('heart-animation');
-                    }, 400);
-                } else {
-                    heartIcon.classList.add('unfill-animation');
-                    heartIcon.classList.remove('liked');
-                    likeCount.classList.remove('liked');
-                    count = Math.max(0, count - 1);
-                    
-                    // Update count display
-                    if (count < 1) {
-                        likeCount.style.display = 'none';
-                    } else {
-                        likeCount.style.display = 'inline';
-                        likeCount.textContent = count;
-                    }
-                    
-                    setTimeout(() => {
-                        heartIcon.classList.remove('unfill-animation');
-                    }, 400);
-                }
-                
-                container.setAttribute('data-liked', isLiked);
-                
-                // Update the post data
-                if (post) {
-                    post.likeCount = count;
-                }
-                
-                console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
-            });
+        newIcon.addEventListener("click", function () {
+            this.classList.toggle("liked");
+
+            // Find the nearest like count container
+            const reactionCountElement = this.closest(".post").querySelector(".reaction-count");
+
+            // Get the current like count (default to 0 if empty or invalid)
+            let currentLikes = parseInt(reactionCountElement.textContent) || 0;
+
+            if (this.classList.contains("liked")) {
+                currentLikes++; // Increase count when liked
+            } else {
+                currentLikes = Math.max(0, currentLikes - 1); // Decrease but never go below 0
+            }
+
+            // Restore the missing part: Hide like count when it's below 1
+            if (currentLikes > 0) {
+                reactionCountElement.textContent = currentLikes;
+                reactionCountElement.style.display = "inline"; // Show when >= 1
+            } else {
+                reactionCountElement.style.display = "none"; // Hide when 0
+            }
         });
     });
 }
