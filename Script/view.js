@@ -379,7 +379,7 @@ function renderHomepage() {
   initializeHeartReactions();
 }
 
-  initializeVideoPlayers();function showDetail(postId) {
+function showDetail(postId) {
 
   const originalShowDetail = showDetail;
 
@@ -1475,7 +1475,7 @@ function goBack() {
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
-    }, 50); 
+    }, 300); 
 }
 
 function shortenText(text, limit, showSeeMore = true) {
