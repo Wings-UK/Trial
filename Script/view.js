@@ -1482,17 +1482,15 @@ function shortenText(text, limit, showSeeMore = true) {
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
-        switchPage("food");
-        history.replaceState({ page: "food" }, "", "#food"); // Ensure homepage is always in history
+        switchPage("food");  // Default to homepage if no history exists
     }
 
-    // Restore scroll position
-    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-    if (savedScrollPosition) {
-        setTimeout(() => {
+    setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
+        if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
-        }, 0);
-    }
+        }
+    }, 50);
     
     closeVideoModal();
 };
