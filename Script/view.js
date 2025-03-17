@@ -746,7 +746,11 @@ function closeVideoModal() {
   modal.classList.remove('active');
   document.body.style.overflow = ''; // Restore scrolling
   
-  history.back();
+  if (history.state && history.state.page === "meal") {
+    switchPage("meal"); // Stay in post detail
+  } else {
+      history.back(); // Only go back if it wasn't post detail
+  }
 }
 
 // Function to setup video controls
