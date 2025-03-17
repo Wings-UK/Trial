@@ -712,11 +712,7 @@
 
 
 .foni {
-  display: flex;
-  font-size: 14px;
-  color: rgb(244, 7, 82);
-  font-weight: 500;
-  transition: all 1s ease;
+  display: inline-block;
 }
 .foni.follow {
   
