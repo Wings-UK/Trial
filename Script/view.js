@@ -374,11 +374,269 @@ function renderHomepage() {
 
     postContainer.innerHTML += postHTML;
   });
-
+  initializeVideoPlayers();
   // Initialize heart reaction functionality after rendering posts
   initializeHeartReactions();
 }
 
+  initializeVideoPlayers();function showDetail(postId) {
+
+  const originalShowDetail = showDetail;
+
+
+showDetail = function(postId) {
+    // Call the original showDetail function to render the post details
+    originalShowDetail(postId);
+
+    // Delay comment system initialization slightly to ensure the DOM is updated
+    setTimeout(() => {
+        setupCommentSystem(); // Set up the comment system
+        renderExistingComments(postId); // Load existing comments for this post
+    }, 100);
+}; 
+    const postDetail = document.getElementById("meal");
+    const postContent = document.getElementById("nuba");
+
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    const user = users.find(u => u.id === post.userId);
+    if (!user) return;
+
+    const commentTextarea = document.querySelector('.comment-textarea');
+    if (commentTextarea) {
+        commentTextarea.placeholder = `Reply to ${user.username}...`;
+    }
+
+    const hasVideo = post.video ? true : false;
+    const hasImage = post.image ? true : false;
+
+    // Create video modal if it doesn't exist
+    if (!document.querySelector('.video-modal')) {
+        const videoModal = document.createElement('div');
+        videoModal.className = 'video-modal';
+        videoModal.innerHTML = `
+          <div class="modal-header">
+            <div class="back-button">
+              <img src="pics/backa.png" alt="Back">
+            </div>
+            <div class="modal-user-info">
+              <div class="user-avatar">
+                <img src="" alt="">
+              </div>
+              <div class="user-details">
+                <div class="username">
+                  <span></span>
+                  <img class="verify-badge" src="pics/verifi1.png">
+                </div>
+                <div class="timestamp"></div>
+              </div>
+            </div>
+            <div class="follow-button">Follow</div>
+          </div>
+          
+          <div class="video-player-container">
+            <video class="fullscreen-player">
+              <source src="" type="video/mp4">
+            </video>
+            
+            <div class="video-controls">
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-filled"></div>
+                  <div class="progress-handle"></div>
+                </div>
+                <div class="time-display">0:00 / 0:00</div>
+              </div>
+              
+              <div class="control-buttons">
+                <div class="play-pause-btn">
+                  <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" fill="white"/>
+                  </svg>
+                  <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
+                  </svg>
+                </div>
+                <div class="volume-control">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-content">
+            <p class="modal-post-text"></p>
+          </div>
+          
+          <div class="modal-actions">
+            <div class="action-buttons">
+              <div class="action-button">
+                <img src="pics/lovv.png" alt="Like">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/chat.png" alt="Comment">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/repost.png" alt="Repost">
+                <span>0</span>
+              </div>
+              <div class="action-button">
+                <img src="pics/naira.png" alt="Donate">
+                <span>0</span>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(videoModal);
+    }
+
+    postContent.innerHTML = `
+         <div class="cust-name" data-post-id="${post.id}"> 
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                        <img class="small-photo" src="${user.avatar}">
+                    </a>
+                </div>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${user.username}</p>
+                                    </div>
+                                    <div>
+                                        <img class="verify" src="pics/verifi1.png">
+                                    </div>
+                                </div>
+                            </a>
+                        </div> 
+                    </div>     
+                    <div class="comp1">
+                        <div class="cll">
+                            <p class="time">${post.date || post.timestamp}</p>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <div>
+                <button class="detail-follow foni" onclick="
+                  const foniElem = document.querySelector('.foni');
+                  
+                  if (foniElem.innerHTML === 'Follow') {
+                    foniElem.innerHTML = 'Following';
+                    foniElem.classList.add('follow')
+                  } else {
+                    foniElem.innerHTML = 'Follow';
+                    foniElem.classList.remove('follow')
+                  }
+                ">Follow</button>
+            </div>
+            <div class="dots">
+                <img class="dot" src="pics/duta.png">
+                <div class="tool">
+                    <p>More</p>
+                </div> 
+            </div>      
+        </div>
+        <div class="tir">
+            <p class="tiri">${post.content}<br></p>
+        </div>
+        ${hasImage ? `
+        <div class="swet">
+            <div class="laptop1">
+                <img class="lapto" src="${post.image}">
+            </div>
+        </div>
+        ` : ''}
+        
+        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+        
+        <div class="lefto">
+            <div class="dick">
+                <div>
+                    <p class="viewe"><span class="werey">615</span> reactions</p>
+                </div>
+                <div>
+                    <p class="viewe"><span class="werey">9</span> echoes</p>
+                </div>
+            </div>
+            <div class="twits">
+                <div>
+                    <img class="lefti" src="pics/stats.png">
+                </div>
+                <div>
+                    <p class="viewe">96.8K views</p>
+                </div>
+            </div>
+        </div>
+        <div class="reaction">
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+            
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/2.gif">
+                </div>
+            </div>   
+
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/3.gif">
+                </div>
+            </div>   
+        </div>
+    `;
+    updateDetailForPost(user);
+    
+    // Set up scroll listener after content is loaded
+    setupDetailScrollListener();
+
+    switchPage("meal");
+    
+    // Initialize video players AFTER the content is added to the DOM
+    initializeVideoPlayers();
+    
+    // Add direct click handler to the video container in the detail view
+    const detailVideoContainer = postContent.querySelector('.video-container');
+    if (detailVideoContainer) {
+        detailVideoContainer.addEventListener('click', () => {
+            openVideoModal(post);
+        });
+    }
+    
+    // Also set up modal close functionality
+    const backButtons = document.querySelectorAll('.back-button');
+    backButtons.forEach(button => {
+        button.addEventListener('click', closeVideoModal);
+    });
+}
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
@@ -957,263 +1215,6 @@ function renderPostWithNewVideoPlayer(post, user) {
 }
 
 
-
-function showDetail(postId) {
-  const originalShowDetail = showDetail;
-
-showDetail = function(postId) {
-    // Call the original showDetail function to render the post details
-    originalShowDetail(postId);
-
-    // Delay comment system initialization slightly to ensure the DOM is updated
-    setTimeout(() => {
-        setupCommentSystem(); // Set up the comment system
-        renderExistingComments(postId); // Load existing comments for this post
-    }, 100);
-}; 
-    const postDetail = document.getElementById("meal");
-    const postContent = document.getElementById("nuba");
-
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-
-    const user = users.find(u => u.id === post.userId);
-    if (!user) return;
-
-    const commentTextarea = document.querySelector('.comment-textarea');
-    if (commentTextarea) {
-        commentTextarea.placeholder = `Reply to ${user.username}...`;
-    }
-
-    const hasVideo = post.video ? true : false;
-    const hasImage = post.image ? true : false;
-
-    // Create video modal if it doesn't exist
-    if (!document.querySelector('.video-modal')) {
-        const videoModal = document.createElement('div');
-        videoModal.className = 'video-modal';
-        videoModal.innerHTML = `
-          <div class="modal-header">
-            <div class="back-button">
-              <img src="pics/backa.png" alt="Back">
-            </div>
-            <div class="modal-user-info">
-              <div class="user-avatar">
-                <img src="" alt="">
-              </div>
-              <div class="user-details">
-                <div class="username">
-                  <span></span>
-                  <img class="verify-badge" src="pics/verifi1.png">
-                </div>
-                <div class="timestamp"></div>
-              </div>
-            </div>
-            <div class="follow-button">Follow</div>
-          </div>
-          
-          <div class="video-player-container">
-            <video class="fullscreen-player">
-              <source src="" type="video/mp4">
-            </video>
-            
-            <div class="video-controls">
-              <div class="progress-container">
-                <div class="progress-bar">
-                  <div class="progress-filled"></div>
-                  <div class="progress-handle"></div>
-                </div>
-                <div class="time-display">0:00 / 0:00</div>
-              </div>
-              
-              <div class="control-buttons">
-                <div class="play-pause-btn">
-                  <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" fill="white"/>
-                  </svg>
-                  <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
-                  </svg>
-                </div>
-                <div class="volume-control">
-                  <svg width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal-content">
-            <p class="modal-post-text"></p>
-          </div>
-          
-          <div class="modal-actions">
-            <div class="action-buttons">
-              <div class="action-button">
-                <img src="pics/lovv.png" alt="Like">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/chat.png" alt="Comment">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/repost.png" alt="Repost">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/naira.png" alt="Donate">
-                <span>0</span>
-              </div>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(videoModal);
-    }
-
-    postContent.innerHTML = `
-         <div class="cust-name" data-post-id="${post.id}"> 
-            <div class="heading">
-                <div class="small-photo1">
-                    <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                        <img class="small-photo" src="${user.avatar}">
-                    </a>
-                </div>
-                <div class="pos">
-                    <div>
-                        <div class="link-wrapper">
-                            <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                                <div class="post1">
-                                    <div class="jerr">
-                                        <p class="jerry">${user.username}</p>
-                                    </div>
-                                    <div>
-                                        <img class="verify" src="pics/verifi1.png">
-                                    </div>
-                                </div>
-                            </a>
-                        </div> 
-                    </div>     
-                    <div class="comp1">
-                        <div class="cll">
-                            <p class="time">${post.date || post.timestamp}</p>
-                        </div>
-                    </div>
-                </div> 
-            </div>
-            <div>
-                <button class="detail-follow foni" onclick="
-                  const foniElem = document.querySelector('.foni');
-                  
-                  if (foniElem.innerHTML === 'Follow') {
-                    foniElem.innerHTML = 'Following';
-                    foniElem.classList.add('follow')
-                  } else {
-                    foniElem.innerHTML = 'Follow';
-                    foniElem.classList.remove('follow')
-                  }
-                ">Follow</button>
-            </div>
-            <div class="dots">
-                <img class="dot" src="pics/duta.png">
-                <div class="tool">
-                    <p>More</p>
-                </div> 
-            </div>      
-        </div>
-        <div class="tir">
-            <p class="tiri">${post.content}<br></p>
-        </div>
-        ${hasImage ? `
-        <div class="swet">
-            <div class="laptop1">
-                <img class="lapto" src="${post.image}">
-            </div>
-        </div>
-        ` : ''}
-        
-        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
-        
-        <div class="lefto">
-            <div class="dick">
-                <div>
-                    <p class="viewe"><span class="werey">615</span> reactions</p>
-                </div>
-                <div>
-                    <p class="viewe"><span class="werey">9</span> echoes</p>
-                </div>
-            </div>
-            <div class="twits">
-                <div>
-                    <img class="lefti" src="pics/stats.png">
-                </div>
-                <div>
-                    <p class="viewe">96.8K views</p>
-                </div>
-            </div>
-        </div>
-        <div class="reaction">
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-            
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/2.gif">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/3.gif">
-                </div>
-            </div>   
-        </div>
-    `;
-    updateDetailForPost(user);
-    
-    // Set up scroll listener after content is loaded
-    setupDetailScrollListener();
-
-    switchPage("meal");
-    
-    // Initialize video players AFTER the content is added to the DOM
-    initializeVideoPlayers();
-    
-    // Add direct click handler to the video container in the detail view
-    const detailVideoContainer = postContent.querySelector('.video-container');
-    if (detailVideoContainer) {
-        detailVideoContainer.addEventListener('click', () => {
-            openVideoModal(post);
-        });
-    }
-    
-    // Also set up modal close functionality
-    const backButtons = document.querySelectorAll('.back-button');
-    backButtons.forEach(button => {
-        button.addEventListener('click', closeVideoModal);
-    });
-}
 
 
 function adjustVideoPlayer(videoElement) {
