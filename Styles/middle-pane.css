@@ -1516,7 +1516,7 @@
 }
 
 .header-follow {
-  background-color: rgb(244, 7, 82); /* Twitter blue color, change as needed */
+  background-color: black; /* Twitter blue color, change as needed */
   color: white;
   border: none;
   border-radius: 5px;
@@ -1528,7 +1528,7 @@
 }
 
 .header-follow:hover {
-  background-color: rgba(244, 7, 82, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 .proo {
   display: flex;
