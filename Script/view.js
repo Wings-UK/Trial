@@ -1097,17 +1097,7 @@ showDetail = function(postId) {
                 </div> 
             </div>
             <div class="shui">
-                <button class="detail-follow foni" onclick="
-                  const foniElem = document.querySelector('.foni');
-                  
-                  if (foniElem.innerHTML === 'Follow') {
-                    foniElem.innerHTML = 'Following';
-                    foniElem.classList.add('follow')
-                  } else {
-                    foniElem.innerHTML = 'Follow';
-                    foniElem.classList.remove('follow')
-                  }
-                ">Follow</button>
+              
             <div class="dots">
                 <img class="dot" src="pics/duta.png">
                 <div class="tool">
