@@ -1475,7 +1475,7 @@ function goBack() {
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
-    }, 300); 
+    }, 0); 
 }
 
 function shortenText(text, limit, showSeeMore = true) {
