@@ -1453,11 +1453,17 @@ function goBack() {
 
     // Hide all pages
     const pages = document.querySelectorAll(".page");
-    pages.forEach(page => page.classList.remove("active"));
+    setTimeout(() => {
+      pages.forEach(page => page.classList.remove("active"));
+    }, 500);
+    
 
     // Show new page
     const newPage = document.getElementById(pageId);
-    newPage.classList.add("active");
+    setTimeout(() => {
+      newPage.classList.add("active");
+    }, 500);
+    
 
     // Ensure homepage is the first entry in history (only if it's a fresh visit)
     if (!history.state) {
