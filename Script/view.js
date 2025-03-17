@@ -1096,7 +1096,7 @@ showDetail = function(postId) {
                     </div>
                 </div> 
             </div>
-            <div>
+            <div class="shui">
                 <button class="detail-follow foni" onclick="
                   const foniElem = document.querySelector('.foni');
                   
