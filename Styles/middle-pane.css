@@ -712,12 +712,14 @@
 
 
 .foni {
+  padding: 5px 10px;
   display: inline-block;
   font-size: 13px;
 }
 .foni.follow { 
   color: rgb(20, 20, 20);
   border: 2px solid rgb(97, 97, 97);
+  background-color: none;
 }
 .loading-bar {
   top: 54px;
