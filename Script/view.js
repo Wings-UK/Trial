@@ -1437,7 +1437,7 @@ function goBack() {
     }, 50);
  }
  
- function switchPage(pageId) {
+function switchPage(pageId) {
     const currentPage = document.querySelector(".page.active");
     if (currentPage) {
         sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
@@ -1451,13 +1451,15 @@ function goBack() {
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    // Ensure homepage is always in history before anything else
-    if (!history.state || history.state.page !== "food") {
+    // Ensure homepage is the first entry in history (only if it's a fresh visit)
+    if (!history.state) {
         history.replaceState({ page: "food" }, "", "#food");
     }
 
-    // Push new page state to history
-    history.pushState({ page: pageId }, "", `#${pageId}`);
+    // Push new state only if it's different from the last one
+    if (!history.state || history.state.page !== pageId) {
+        history.pushState({ page: pageId }, "", `#${pageId}`);
+    }
 
     // Restore scroll position for the new page
     setTimeout(() => {
