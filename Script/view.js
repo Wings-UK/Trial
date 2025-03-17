@@ -1470,9 +1470,7 @@ function goBack() {
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
-    }, 50);
-    
-    closeVideoModal();
+    }, 50); 
 }
 
 function shortenText(text, limit, showSeeMore = true) {
