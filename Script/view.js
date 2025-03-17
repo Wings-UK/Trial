@@ -1489,6 +1489,14 @@ function shortenText(text, limit, showSeeMore = true) {
 }
  
  window.onpopstate = function (event) {
+    const modal = document.querySelector('.video-modal');
+
+    // Check if modal is open, if yes, close it instead of switching pages
+    if (modal && modal.classList.contains('active')) {
+        closeVideoModal();
+        return; // Stop further execution
+    }
+
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
@@ -1501,8 +1509,6 @@ function shortenText(text, limit, showSeeMore = true) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
     }, 50);
-    
-    closeVideoModal();
 };
  
  document.addEventListener("DOMContentLoaded", function () {
