@@ -1,4 +1,4 @@
-const users = [
+window.users = [
     {
         id: 1,
         username: "@reddcinema",
@@ -45,7 +45,7 @@ const users = [
     }
 ];
 
-const posts = [
+window.posts = [
     {
       id: 1,
       userId: 4,  // Refers to user with id 1 (@reddcinema)
