@@ -1453,17 +1453,11 @@ function goBack() {
 
     // Hide all pages
     const pages = document.querySelectorAll(".page");
-    setTimeout(() => {
-      pages.forEach(page => page.classList.remove("active"));
-    }, 500);
-    
+    pages.forEach(page => page.classList.remove("active"));
 
     // Show new page
     const newPage = document.getElementById(pageId);
-    setTimeout(() => {
-      newPage.classList.add("active");
-    }, 500);
-    
+    newPage.classList.add("active");
 
     // Ensure homepage is the first entry in history (only if it's a fresh visit)
     if (!history.state) {
@@ -1481,7 +1475,7 @@ function goBack() {
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
-    }, 0); 
+    }, 0);
 }
 
 function shortenText(text, limit, showSeeMore = true) {
