@@ -713,9 +713,10 @@
 
 .foni {
   display: inline-block;
+  font-size: 14px;
 }
 .foni.follow {
-  
+  color: rgb(220, 220, 220);
   background-color: rgb(97, 97, 97);
 }
 .loading-bar {
