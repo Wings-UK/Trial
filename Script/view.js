@@ -509,35 +509,84 @@ function addHeartStyles() {
 // Initialize heart reactions
 function initializeHeartReactions() {
     addHeartStyles();
-    const heartIcons = document.querySelectorAll(".heart-ai");
-
-    heartIcons.forEach(icon => {
-        // Remove any existing event listener before adding a new one
+    
+    const heartContainers = document.querySelectorAll('.heart-ai');
+    
+    heartContainers.forEach(container => {
+        const heartIcon = container.querySelector('.heart-icon');
+        const likeCount = container.querySelector('.like-count');
+        const clickableElements = container.querySelectorAll('.heart-clickable');
+        const postId = container.getAttribute('data-post-id');
+        let isLiked = container.getAttribute('data-liked') === 'true';
+        
+        // Initialize count from post data or 0, preventing NaN
+        const post = posts.find(p => p.id === parseInt(postId));
+        let count = post ? (parseInt(post.likeCount) || 0) : 0;
+        
         const newIcon = icon.cloneNode(true);
         icon.replaceWith(newIcon);
+        
+        // Set initial state
+        if (count < 1) {
+            likeCount.style.display = 'none';
+        } else {
+            likeCount.style.display = 'inline';
+            likeCount.textContent = count;
+        }
+        
+        // Set initial liked state if applicable
+        if (isLiked) {
+            heartIcon.classList.add('liked');
+            likeCount.classList.add('liked');
+        }
 
-        newIcon.addEventListener("click", function () {
-            this.classList.toggle("liked");
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                isLiked = !isLiked;
 
-            // Find the nearest like count container
-            const reactionCountElement = this.closest(".post").querySelector(".reaction-count");
-
-            // Get the current like count (default to 0 if empty or invalid)
-            let currentLikes = parseInt(reactionCountElement.textContent) || 0;
-
-            if (this.classList.contains("liked")) {
-                currentLikes++; // Increase count when liked
-            } else {
-                currentLikes = Math.max(0, currentLikes - 1); // Decrease but never go below 0
-            }
-
-            // Restore the missing part: Hide like count when it's below 1
-            if (currentLikes > 0) {
-                reactionCountElement.textContent = currentLikes;
-                reactionCountElement.style.display = "inline"; // Show when >= 1
-            } else {
-                reactionCountElement.style.display = "none"; // Hide when 0
-            }
+                if (isLiked) {
+                    heartIcon.classList.add('heart-animation', 'liked');
+                    likeCount.classList.add('liked');
+                    count++;
+                    
+                    // Show count
+                    likeCount.style.display = 'inline';
+                    likeCount.textContent = count;
+                    
+                    // Remove animation class after it completes
+                    setTimeout(() => {
+                        heartIcon.classList.remove('heart-animation');
+                    }, 400);
+                } else {
+                    heartIcon.classList.add('unfill-animation');
+                    heartIcon.classList.remove('liked');
+                    likeCount.classList.remove('liked');
+                    count = Math.max(0, count - 1);
+                    
+                    // Update count display
+                    if (count < 1) {
+                        likeCount.style.display = 'none';
+                    } else {
+                        likeCount.style.display = 'inline';
+                        likeCount.textContent = count;
+                    }
+                    
+                    setTimeout(() => {
+                        heartIcon.classList.remove('unfill-animation');
+                    }, 400);
+                }
+                
+                container.setAttribute('data-liked', isLiked);
+                
+                // Update the post data
+                if (post) {
+                    post.likeCount = count;
+                }
+                
+                console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
+            });
         });
     });
 }
@@ -560,7 +609,7 @@ function initializeVideoPlayers() {
     const thumbnailVideo = container.querySelector('.video-thumbnail');
     const durationBadge = container.querySelector('.duration-badge');
     
-    if (!thumbnailVideo || !durationBadge) return;
+    if (!thumbnailVideo || !durationBadge) return;  
     
     // Remove existing event listeners (if any)
     const thumbnailClone = thumbnailVideo.cloneNode(true);
@@ -1391,38 +1440,7 @@ function goBack() {
     }, 50);
  }
  
-function switchPage(pageId) {
-    const currentPage = document.querySelector(".page.active");
-    if (currentPage) {
-        sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
-    }
 
-    // Hide all pages
-    const pages = document.querySelectorAll(".page");
-    pages.forEach(page => page.classList.remove("active"));
-
-    // Show new page
-    const newPage = document.getElementById(pageId);
-    newPage.classList.add("active");
-
-    // Ensure homepage is the first entry in history (only if it's a fresh visit)
-    if (!history.state) {
-        history.replaceState({ page: "food" }, "", "#food");
-    }
-
-    // Push new state only if it's different from the last one
-    if (!history.state || history.state.page !== pageId) {
-        history.pushState({ page: pageId }, "", `#${pageId}`);
-    }
-
-    // Restore scroll position for the new page
-    setTimeout(() => {
-        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        if (savedScrollPosition) {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        }
-    }, 50);
-}
 
 function shortenText(text, limit, showSeeMore = true) {
     if (text.length <= limit) return text; // No need to shorten
