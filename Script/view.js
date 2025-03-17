@@ -1509,17 +1509,6 @@ function shortenText(text, limit, showSeeMore = true) {
     }, 50);
 };
  
- document.addEventListener("DOMContentLoaded", function () {
-  if (!history.state) {
-     history.replaceState({ page:"food" }, "", "#food");
-  }
-  
-     switchPage("food");
- });
- 
-
-
-
 
 
 
