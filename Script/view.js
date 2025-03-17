@@ -1107,8 +1107,7 @@ showDetail = function(postId) {
                     foniElem.innerHTML = 'Follow';
                     foniElem.classList.remove('follow')
                   }
-                ">Follow</p>
-            </button>
+                ">Follow</button>
             <div class="dots">
                 <img class="dot" src="pics/duta.png">
                 <div class="tool">
