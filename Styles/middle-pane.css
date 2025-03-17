@@ -2588,17 +2588,3 @@
   display: flex;
   gap: 20px;
 }
-.page {
-    opacity: 0;
-    position: absolute;
-    width: 100%;
-    top: 0;
-    left: 0;
-    transition: opacity 0.5s ease-in-out;
-    display: none; /* Hide initially */
-}
-
-.page.active {
-    opacity: 1;
-    display: block;
-}
