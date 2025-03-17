@@ -1,4 +1,4 @@
-window.users = [
+const users = [
     {
         id: 1,
         username: "@reddcinema",
@@ -45,7 +45,7 @@ window.users = [
     }
 ];
 
-window.posts = [
+const posts = [
     {
       id: 1,
       userId: 4,  // Refers to user with id 1 (@reddcinema)
@@ -523,7 +523,6 @@ function initializeHeartReactions() {
         const post = posts.find(p => p.id === parseInt(postId));
         let count = post ? (parseInt(post.likeCount) || 0) : 0;
         
-      
         // Set initial state
         if (count < 1) {
             likeCount.style.display = 'none';
@@ -607,7 +606,7 @@ function initializeVideoPlayers() {
     const thumbnailVideo = container.querySelector('.video-thumbnail');
     const durationBadge = container.querySelector('.duration-badge');
     
-    if (!thumbnailVideo || !durationBadge) return;  
+    if (!thumbnailVideo || !durationBadge) return;
     
     // Remove existing event listeners (if any)
     const thumbnailClone = thumbnailVideo.cloneNode(true);
@@ -1438,7 +1437,39 @@ function goBack() {
     }, 50);
  }
  
+ 
+ function switchPage(pageId) {
+    const currentPage = document.querySelector(".page.active");
+    if (currentPage) {
+        sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+    }
 
+    // Hide all pages
+    const pages = document.querySelectorAll(".page");
+    pages.forEach(page => page.classList.remove("active"));
+
+    // Show new page
+    const newPage = document.getElementById(pageId);
+    newPage.classList.add("active");
+
+    // Ensure homepage is the first entry in history (only if it's a fresh visit)
+    if (!history.state) {
+        history.replaceState({ page: "food" }, "", "#food");
+    }
+
+    // Push new state only if it's different from the last one
+    if (!history.state || history.state.page !== pageId) {
+        history.pushState({ page: pageId }, "", `#${pageId}`);
+    }
+
+    // Restore scroll position for the new page
+    setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+        }
+    }, 50);
+}
 
 function shortenText(text, limit, showSeeMore = true) {
     if (text.length <= limit) return text; // No need to shorten
@@ -1457,12 +1488,9 @@ function shortenText(text, limit, showSeeMore = true) {
     if (event.state && event.state.page) {
         switchPage(event.state.page);
     } else {
-        // If no history exists, always default to homepage
-        switchPage("food");
-        history.replaceState({ page: "food" }, "", "#food");
+        switchPage("food");  // Default back to homepage only if no history
     }
 
-    // Restore scroll position
     setTimeout(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
         if (savedScrollPosition) {
