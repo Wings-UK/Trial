@@ -1469,6 +1469,8 @@ function goBack() {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
     }, 50);
+    
+    closeVideoModal();
 }
 
 function shortenText(text, limit, showSeeMore = true) {
@@ -1505,6 +1507,7 @@ function shortenText(text, limit, showSeeMore = true) {
   if (!history.state) {
      history.replaceState({ page:"food" }, "", "#food");
   }
+    closeVideoModal(); 
      switchPage("food");
  });
  
