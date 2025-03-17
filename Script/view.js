@@ -1439,31 +1439,30 @@ function goBack() {
  
  
  function switchPage(pageId) {
-   if (pageId !== "food" && pageId !== "profile") {
-    sessionStorage.setItem("scrollPosition", window.scrollY);
-   }
+    // Save scroll position of the current page
+    const currentPage = document.querySelector(".page.active");
+    if (currentPage) {
+        sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+    }
 
+    // Hide all pages
     const pages = document.querySelectorAll(".page");
     pages.forEach(page => page.classList.remove("active"));
 
+    // Show new page
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    // Add history entry (only push if not the same as current state)
-  
-        history.pushState({ page: pageId }, "", `#${pageId}`);
-    
-    
-    if (pageId === "food") {
-      setTimeout(() => {
-        const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    // Restore scroll position for the new page
+    setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
         if (savedScrollPosition) {
-          window.scrollTo(0, parseInt(savedScrollPosition));
+            window.scrollTo(0, parseInt(savedScrollPosition));
         }
-      }, 50);
-    } else {
-      window.scrollTo(0, 0);
-    }
+    }, 50);
+
+    // Push new state into history
+    history.pushState({ page: pageId }, "", `#${pageId}`);
 }
 
 function shortenText(text, limit, showSeeMore = true) {
