@@ -1450,9 +1450,9 @@ function goBack() {
     newPage.classList.add("active");
 
     // Add history entry (only push if not the same as current state)
-    if (!history.state || history.state.page !== pageId) {
+  
         history.pushState({ page: pageId }, "", `#${pageId}`);
-    }
+    
     
     if (pageId === "food") {
       setTimeout(() => {
