@@ -1003,7 +1003,7 @@ showDetail = function(postId) {
                 <div class="timestamp"></div>
               </div>
             </div>
-            <button class="detail-follow follow-button">Follow</button>
+            <div class="follow-button">Follow</div>
           </div>
           
           <div class="video-player-container">
@@ -1097,7 +1097,7 @@ showDetail = function(postId) {
                 </div> 
             </div>
             <div>
-                <p class="foni" onclick="
+                <button class="detail-follow foni" onclick="
                   const foniElem = document.querySelector('.foni');
                   
                   if (foniElem.innerHTML === 'Follow') {
@@ -1108,7 +1108,7 @@ showDetail = function(postId) {
                     foniElem.classList.remove('follow')
                   }
                 ">Follow</p>
-            </div>
+            </button>
             <div class="dots">
                 <img class="dot" src="pics/duta.png">
                 <div class="tool">
