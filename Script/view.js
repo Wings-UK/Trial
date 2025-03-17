@@ -718,11 +718,11 @@ function openVideoModal(post) {
       pauseIcon.style.display = 'none';
     });
   }
-   if (pageId !== "food" || pageId !== "profile") {
-    sessionStorage.setItem("scrollPositio", window.scrollY);
-   } 
+   
+    sessionStorage.setItem("scrollPosition", window.scrollY);
   
-  history.pushState({ modalOpen: true }, '', window.location.href);
+  
+  history.pushState({ modalOpen: true }, '', '#video-modal');
 }
 
 
@@ -735,7 +735,7 @@ function closeVideoModal() {
   // Pause the video
   videoPlayer.pause();
   
-  const savedScrollPosition = sessionStorage.getItem("scrollPositio");
+  const savedScrollPosition = sessionStorage.getItem("scrollPosition");
     if (savedScrollPosition) {
         setTimeout(() => {
             window.scrollTo(0, parseInt(savedScrollPosition));
@@ -745,6 +745,8 @@ function closeVideoModal() {
   // Hide the modal
   modal.classList.remove('active');
   document.body.style.overflow = ''; // Restore scrolling
+  
+  history.back();
 }
 
 // Function to setup video controls
