@@ -1003,7 +1003,7 @@ showDetail = function(postId) {
                 <div class="timestamp"></div>
               </div>
             </div>
-            <div class="follow-button">Follow</div>
+            <button class="detail-follow follow-button">Follow</button>
           </div>
           
           <div class="video-player-container">
