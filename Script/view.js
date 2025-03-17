@@ -523,9 +523,7 @@ function initializeHeartReactions() {
         const post = posts.find(p => p.id === parseInt(postId));
         let count = post ? (parseInt(post.likeCount) || 0) : 0;
         
-        const newIcon = icon.cloneNode(true);
-        icon.replaceWith(newIcon);
-        
+      
         // Set initial state
         if (count < 1) {
             likeCount.style.display = 'none';
