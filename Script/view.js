@@ -1067,7 +1067,7 @@ showDetail = function(postId) {
     }
 
     postContent.innerHTML = `
-        <div class="cust-name" data-post-id="${post.id}"> 
+         <div class="cust-name" data-post-id="${post.id}"> 
             <div class="heading">
                 <div class="small-photo1">
                     <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
@@ -1096,8 +1096,19 @@ showDetail = function(postId) {
                     </div>
                 </div> 
             </div>
-            <div class="shui">
-              
+            <div>
+                <p class="foni" onclick="
+                  const foniElem = document.querySelector('.foni');
+                  
+                  if (foniElem.innerHTML === 'Follow') {
+                    foniElem.innerHTML = 'Following';
+                    foniElem.classList.add('follow')
+                  } else {
+                    foniElem.innerHTML = 'Follow';
+                    foniElem.classList.remove('follow')
+                  }
+                ">Follow</p>
+            </div>
             <div class="dots">
                 <img class="dot" src="pics/duta.png">
                 <div class="tool">
