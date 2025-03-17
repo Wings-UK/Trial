@@ -508,6 +508,7 @@ function addHeartStyles() {
 
 // Initialize heart reactions
 function initializeHeartReactions() {
+    addHeartStyles();
     const heartIcons = document.querySelectorAll(".heart-ai");
 
     heartIcons.forEach(icon => {
