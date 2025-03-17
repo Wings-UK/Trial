@@ -1097,7 +1097,7 @@ showDetail = function(postId) {
                 </div> 
             </div>
             <div>
-                <button class="foni" onclick="
+                <button class="detail-follow foni" onclick="
                   const foniElem = document.querySelector('.foni');
                   
                   if (foniElem.innerHTML === 'Follow') {
