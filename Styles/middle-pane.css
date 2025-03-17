@@ -2596,3 +2596,10 @@
   display: flex;
   gap: 20px;
 }
+.page {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+.page.active {
+    opacity: 1;
+}
