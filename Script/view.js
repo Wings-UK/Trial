@@ -249,21 +249,7 @@ function createPostElement(post) {
     </div>
     ` : ''}
     
-    ${hasVideo ? `
-    <div class="video-container" data-post-id="${post.id}">
-        <video class="video-player" playsinline loop>
-            <source src="${post.video}" type="video/mp4">
-        </video>
-        <div class="video-controls">
-            <div class="play-button">
-                <img src="pics/play.png" alt="Play">
-            </div>
-            <div class="volume-button">
-                <img src="pics/sound.png" alt="Volume">
-            </div>
-        </div>
-    </div>
-    ` : ''}
+     ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
     
     <div class="tir" onclick="showDetail(${post.id})">
         <p class="tired">${shortenText(post.content, textLimit, true)}</p>
