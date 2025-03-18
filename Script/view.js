@@ -320,7 +320,7 @@ function createPostElement(post) {
         </div>
     </div>
   `;
-
+  initializeVideoPlayers();
   return posterElement;
 }
 
@@ -452,7 +452,7 @@ function initializeHomepage() {
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = '';
   
-  initializeVideoPlayers();
+  
   // Reset loaded posts
   loadedPostIds.clear();
   
