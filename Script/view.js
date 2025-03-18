@@ -179,7 +179,7 @@ let postsPerLoad = 10; // Number of posts to load at a time
 let loadedPosts = 0; // Tracks how many posts are loaded
 
 // Modified renderHomepage function
-function renderHomepage() {
+ function renderHomepage() {
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = ''; // Clear existing content
   
