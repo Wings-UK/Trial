@@ -476,11 +476,7 @@ function scrollHandler() {
 window.addEventListener("scroll", scrollHandler);
 
 // Helper function to shorten text
-function shortenText(text, maxLength, addEllipsis = true) {
-  if (!text) return '';
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + (addEllipsis ? '...' : '');
-}
+
 
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', function() {
