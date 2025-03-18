@@ -182,14 +182,187 @@ const loggedInUser = {
 };
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
+// Keep track of which posts have been loaded to avoid duplicates
+let loadedPostIds = new Set();
 let postsPerLoad = 5; // Number of posts to load at a time
-let loadedPosts = 0; // Tracks how many posts are loaded
+let isLoading = false; // Flag to prevent multiple simultaneous loads
 
-// Modified renderHomepage function
- function renderHomepage() {
+// Function to create a post element
+function createPostElement(post) {
+  const user = users.find(u => u.id === post.userId);
+  if (!user) return null; // Skip if no user found
+
+  const textLimit = (post.image || post.video) ? 150 : 300;
+  const hasVideo = post.video ? true : false;
+  const hasImage = post.image ? true : false;
+
+  // Create the post container
+  const posterElement = document.createElement('div');
+  posterElement.className = 'poster';
+  posterElement.setAttribute('data-post-id', post.id);
+
+  // Construct the post HTML
+  posterElement.innerHTML = `
+    <div class="cust-name"> 
+        <div class="heading">
+            <div class="small-photo1">
+                <a class="lino" onclick="showUserProfile(${user.id})">
+                    <img class="small-photo" src="${user.avatar}" loading="lazy">
+                </a>
+            </div>
+            <div class="pos">
+                <div>
+                    <div class="link-wrapper">
+                        <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                            <div class="post1">
+                                <div class="jerr">
+                                    <p class="jerry">${user.username}</p>
+                                </div>
+                                <div>
+                                    <img class="verify" src="pics/verifi1.png">
+                                </div>
+                            </div>
+                        </a>
+                    </div> 
+                </div>     
+                <div class="comp1">
+                    <div class="cll">
+                        <p class="time">${post.timestamp}</p>
+                        <div class="tool">
+                            <p>7.23pm &#183; Sept 23, 2024 </p>
+                        </div> 
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <div class="dots">
+            <img class="dot" src="pics/duta.png">
+            <div class="tool">
+                <p>More</p>
+            </div> 
+        </div>      
+    </div>
+    
+    ${hasImage ? `
+    <div class="laptop1">
+        <img class="laptop" src="${post.image}" loading="lazy">
+    </div>
+    ` : ''}
+    
+    ${hasVideo ? `
+    <div class="video-container" data-post-id="${post.id}">
+        <video class="video-player" playsinline loop>
+            <source src="${post.video}" type="video/mp4">
+        </video>
+        <div class="video-controls">
+            <div class="play-button">
+                <img src="pics/play.png" alt="Play">
+            </div>
+            <div class="volume-button">
+                <img src="pics/sound.png" alt="Volume">
+            </div>
+        </div>
+    </div>
+    ` : ''}
+    
+    <div class="tir" onclick="showDetail(${post.id})">
+        <p class="tired">${shortenText(post.content, textLimit, true)}</p>
+    </div>
+    
+    <div class="lefto">
+        <div class="dick">
+            <div>
+                <img class="lefti" src="pics/lefti.png">
+            </div>
+            <div>
+                <p class="viewe">View all ${post.diveCount || 142} dives</p>
+            </div>
+        </div>
+        <div class="twits">
+            <div>
+                <img class="lefti" src="pics/stats.png">
+            </div>
+            <div>
+                <p class="viewe">${post.views || '96.8K'} views</p>
+            </div>
+        </div>
+    </div>
+    <div class="reaction">
+        <div class="reaction-container">
+        <div class="call">
+        <div class="mee">
+            
+            <div class="comment-btn" data-post-id="${post.id}">
+                <img class="feeling" src="pics/rug.svg" alt="Comment">
+                <span>${post.commentCount || 0}</span>
+            </div>
+            <div class="repost-btn">
+                <img class="feeling" src="pics/tum.svg" alt="Repost">
+                <span>${post.repostCount || 0}</span>
+            </div>
+            <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
+                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+            </div>
+            </div>
+            <div class="mee">
+            <div class="donate-btn">
+                <img class="feeling" src="pics/hm.svg" alt="Donate">
+                
+            </div>
+            <div class="donate-btn">
+                <img class="feeling" src="pics/see.svg">
+            </div>    
+            </div>
+            </div>
+        </div>
+    </div>
+  `;
+
+  return posterElement;
+}
+
+// Function to load more posts
+function loadMorePosts() {
+  if (isLoading) return; // Prevent multiple simultaneous load operations
+  isLoading = true;
+
   const postContainer = document.getElementById("flyer");
-  postContainer.innerHTML = ''; // Clear existing content
   
+  // Calculate how many posts we need to load
+  let postsToLoad = 0;
+  let postsLoaded = 0;
+  
+  for (let i = 0; i < posts.length && postsLoaded < postsPerLoad; i++) {
+    if (!loadedPostIds.has(posts[i].id)) {
+      postsToLoad++;
+      loadedPostIds.add(posts[i].id);
+      
+      // Create and append the post element
+      const postElement = createPostElement(posts[i]);
+      if (postElement) {
+        postContainer.appendChild(postElement);
+        postsLoaded++;
+      }
+    }
+  }
+
+  // Initialize video players and heart reactions for new posts
+  initializeVideoPlayers();
+  initializeHeartReactions();
+  
+  // If we've loaded all posts, remove the scroll event listener
+  if (loadedPostIds.size >= posts.length) {
+    window.removeEventListener("scroll", scrollHandler);
+  }
+  
+  isLoading = false;
+}
+
+// Initial load of posts
+function initializeHomepage() {
   // Create video modal if it doesn't exist
   if (!document.querySelector('.video-modal')) {
     const videoModal = document.createElement('div');
@@ -246,8 +419,8 @@ let loadedPosts = 0; // Tracks how many posts are loaded
         </div>
       </div>
       <div class="modal-content">
-            <p class="modal-post-text"></p>
-          </div>
+        <p class="modal-post-text"></p>
+      </div>
       
       <div class="modal-actions">
         <div class="action-buttons">
@@ -274,151 +447,47 @@ let loadedPosts = 0; // Tracks how many posts are loaded
     `;
     document.body.appendChild(videoModal);
   }
+
+  // Clear the container
+  const postContainer = document.getElementById("flyer");
+  postContainer.innerHTML = '';
   
-  for (let i = loadedPosts; i < loadedPosts + postsPerLoad && i < posts.length; i++) {
-  const post = posts[i];
+  // Reset loaded posts
+  loadedPostIds.clear();
   
-    const user = users.find(u => u.id === post.userId); // Find user by ID
-
-    if (!user) return; // Skip if no user found (shouldn't happen)
-    const textLimit = (post.image || post.video) ? 150 : 300;
-
-    // Determine if the post has a video
-    const hasVideo = post.video ? true : false;
-    const hasImage = post.image ? true : false;
-
-    const postHTML = `
-        <div class="poster" data-post-id="${post.id}">
-            <div class="cust-name"> 
-                <div class="heading">
-                    <div class="small-photo1">
-                        <a class="lino" onclick="showUserProfile(${user.id})">
-                            <img class="small-photo" src="${user.avatar}" loading="lazy">
-                        </a>
-                    </div>
-                    <div class="pos">
-                        <div>
-                            <div class="link-wrapper">
-                                <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                                    <div class="post1">
-                                        <div class="jerr">
-                                            <p class="jerry">${user.username}</p>
-                                        </div>
-                                        <div>
-                                            <img class="verify" src="pics/verifi1.png">
-                                        </div>
-                                    </div>
-                                </a>
-                            </div> 
-                        </div>     
-                        <div class="comp1">
-                            <div class="cll">
-                                <p class="time">${post.timestamp}</p>
-                                <div class="tool">
-                                    <p>7.23pm &#183; Sept 23, 2024 </p>
-                                </div> 
-                            </div>
-                        </div>
-                    </div> 
-                </div>
-                <div class="dots">
-                    <img class="dot" src="pics/duta.png">
-                    <div class="tool">
-                        <p>More</p>
-                    </div> 
-                </div>      
-            </div>
-            
-            ${hasImage ? `
-            <div class="laptop1">
-                <img class="laptop" src="${post.image}" loading="lazy">
-            </div>
-            ` : ''}
-            
-            ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
-            
-            <div class="tir" onclick="showDetail(${post.id})">
-                <p class="tired">${shortenText(post.content, textLimit, true)}</p>
-            </div>
-            
-            <div class="lefto">
-                <div class="dick">
-                    <div>
-                        <img class="lefti" src="pics/lefti.png">
-                    </div>
-                    <div>
-                        <p class="viewe">View all ${post.diveCount || 142} dives</p>
-                    </div>
-                </div>
-                <div class="twits">
-                    <div>
-                        <img class="lefti" src="pics/stats.png">
-                    </div>
-                    <div>
-                        <p class="viewe">${post.views || '96.8K'} views</p>
-                    </div>
-                </div>
-            </div>
-            <div class="reaction">
-                <div class="reaction-container">
-                <div class="call">
-                <div class="mee">
-                    
-                    <div class="comment-btn" data-post-id="${post.id}">
-                        <img class="feeling" src="pics/rug.svg" alt="Comment">
-                        <span>${post.commentCount || 0}</span>
-                    </div>
-                    <div class="repost-btn">
-                        <img class="feeling" src="pics/tum.svg" alt="Repost">
-                        <span>${post.repostCount || 0}</span>
-                    </div>
-                    <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                        <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
-                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                        <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-                    </div>
-                    </div>
-                    <div class="mee">
-                    <div class="donate-btn">
-                        <img class="feeling" src="pics/hm.svg" alt="Donate">
-                        
-                    </div>
-                    <div class="donate-btn">
-
-                    <img class="feeling" src="pics/see.svg">
-
-                   </div>    
-                   </div>
-                   </div>
-                </div>
-                        
-            </div>
-        </div>
-    `;
-
-    postContainer.innerHTML += postHTML;
-    }
-  loadedPosts += postsPerLoad;
-  initializeVideoPlayers();
-  // Initialize heart reaction functionality after rendering posts
-  initializeHeartReactions();
+  // Load initial posts
+  loadMorePosts();
 }
 
-window.addEventListener("scroll", function () {
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const documentHeight = document.documentElement.scrollHeight;
+// Scroll event handler
+function scrollHandler() {
+  if (isLoading) return;
+  
+  const scrollPosition = window.innerHeight + window.scrollY;
+  const documentHeight = document.documentElement.scrollHeight;
 
-    // If the user is near the bottom, load more posts
-    if (scrollPosition >= documentHeight - 100) {
-        let newLoadedPosts = loadedPosts + postsPerLoad;
-        if (newLoadedPosts <= posts.length) {
-            loadedPosts = newLoadedPosts;
-            sessionStorage.setItem("loadedPosts", loadedPosts); // Save the new count
-            renderHomepage();
-        }
-    }
+  // If the user is near the bottom, load more posts
+  if (scrollPosition >= documentHeight - 200) {
+    loadMorePosts();
+  }
+}
+
+// Initialize scroll event listener
+window.addEventListener("scroll", scrollHandler);
+
+// Helper function to shorten text
+function shortenText(text, maxLength, addEllipsis = true) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + (addEllipsis ? '...' : '');
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  initializeHomepage();
 });
+
+
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
