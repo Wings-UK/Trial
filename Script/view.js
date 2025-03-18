@@ -175,7 +175,8 @@ const loggedInUser = {
 };
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
-
+let postsPerLoad = 10; // Number of posts to load at a time
+let loadedPosts = 0; // Tracks how many posts are loaded
 
 // Modified renderHomepage function
 function renderHomepage() {
@@ -276,6 +277,8 @@ function renderHomepage() {
     const hasVideo = post.video ? true : false;
     const hasImage = post.image ? true : false;
 
+    for (let i = loadedPosts; i < loadedPosts + postsPerLoad && i < posts.length; i++) {
+    const post = posts[i];
     const postHTML = `
         <div class="poster" data-post-id="${post.id}">
             <div class="cust-name"> 
@@ -387,12 +390,27 @@ function renderHomepage() {
     `;
 
     postContainer.innerHTML += postHTML;
+    }
   });
   initializeVideoPlayers();
   // Initialize heart reaction functionality after rendering posts
   initializeHeartReactions();
 }
 
+window.addEventListener("scroll", function () {
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // If the user is near the bottom, load more posts
+    if (scrollPosition >= documentHeight - 100) {
+        let newLoadedPosts = loadedPosts + postsPerLoad;
+        if (newLoadedPosts <= posts.length) {
+            loadedPosts = newLoadedPosts;
+            sessionStorage.setItem("loadedPosts", loadedPosts); // Save the new count
+            renderHomepage();
+        }
+    }
+});
 // Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
