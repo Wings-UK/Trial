@@ -16,16 +16,16 @@ body.no-scroll {
   flex-direction: row;
   min-height: 100vh;
   align-items: flex-start;
-  gap: 5px; /* This is to make the homepage scroll while others don't*/
+  gap: 5px; /* This is to make the homepage scroll while others don't */
 }
 p {
-  font-family: Montserrat, roboto;
+  font-family: Noto Sans JP, roboto;
   font-weight: normal;
   margin-top: 0px;
   margin-bottom: 0px;
 }
 button {
-  font-family: Montserrat, roboto;
+  font-family: Noto Sans JP, roboto;
 }
 .main-container {
   display: flex;
