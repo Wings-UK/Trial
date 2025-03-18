@@ -182,7 +182,7 @@ const loggedInUser = {
 };
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
-let postsPerLoad = 10; // Number of posts to load at a time
+let postsPerLoad = 5; // Number of posts to load at a time
 let loadedPosts = 0; // Tracks how many posts are loaded
 
 // Modified renderHomepage function
