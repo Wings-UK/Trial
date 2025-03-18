@@ -454,7 +454,7 @@ function scrollHandler() {
   const documentHeight = document.documentElement.scrollHeight;
 
   // If the user is near the bottom, load more posts
-  if (scrollPosition >= documentHeight - 200) {
+  if (scrollPosition >= documentHeight - 250) {
     loadMorePosts();
   }
 }
