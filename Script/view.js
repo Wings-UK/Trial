@@ -160,7 +160,7 @@ const posts = [
     },
     {
       id: 13,
-      userId: 3,  // Refers to user with id 2 (@lena)
+      userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "8 hours ago",
       date: "Feb 28, 2025 3:56 PM",
       content: "Shutdown Rivers Assembly. Declare State of Emergency in Rivers State - Obasanjo Visits SIM Fubara. Withdraw security personnel from all Rivers Assembly members. Shut down NNPC, shut down NDDC, and dismantle any forces that may rise against you. You are the governor, elected by the people. You are the Chief Security Officer of Rivers State. What you order stands—neither Tinubu nor Wike put you in power. Demolish any hall or arena set to host your impeachment. Tinubu needs Rivers votes to win the 2027 election, and you stand in his way. Stop playing U.S. politics in a country like this—there is no law here, everything is lawless. Obasanjo Visits Sim Fubara, Advises Him on How to Handle Wike and Tinubu.",
