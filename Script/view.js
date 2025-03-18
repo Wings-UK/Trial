@@ -1,32 +1,15 @@
 // Disable browser's automatic scroll restoration
 history.scrollRestoration = "manual";
 
-// Restore scroll position on page load
 window.addEventListener("DOMContentLoaded", function () {
-    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-    if (savedScrollPosition) {
-        window.scrollTo(0, parseInt(savedScrollPosition));
-    }
-});
-
-// Save scroll position when switching pages or refreshing
-window.addEventListener("beforeunload", function () {
-    sessionStorage.setItem("scrollPosition", window.scrollY);
-});
-
-// Ensure scroll position is restored when navigating back
-window.onpopstate = function (event) {
-    if (event.state && event.state.page) {
-        switchPage(event.state.page);
-    }
-
-    setTimeout(() => {
-        const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    const pageId = document.querySelector(".page.active")?.id;
+    if (pageId) {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
         }
-    }, 0);
-};
+    }
+});
 
 
 const users = [
@@ -1500,12 +1483,10 @@ function goBack() {
     }
 
     // Restore scroll position for the new page
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        if (savedScrollPosition) {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        }
-    }, 50); 
+        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+    });
 }
 
 function shortenText(text, limit, showSeeMore = true) {
