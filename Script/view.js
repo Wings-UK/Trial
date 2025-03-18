@@ -1,3 +1,34 @@
+// Disable browser's automatic scroll restoration
+history.scrollRestoration = "manual";
+
+// Restore scroll position on page load
+window.addEventListener("DOMContentLoaded", function () {
+    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    if (savedScrollPosition) {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+    }
+});
+
+// Save scroll position when switching pages or refreshing
+window.addEventListener("beforeunload", function () {
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+});
+
+// Ensure scroll position is restored when navigating back
+window.onpopstate = function (event) {
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+    }
+
+    setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+        }
+    }, 0);
+};
+
+
 const users = [
     {
         id: 1,
