@@ -452,6 +452,7 @@ function initializeHomepage() {
   const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = '';
   
+  initializeVideoPlayers();
   // Reset loaded posts
   loadedPostIds.clear();
   
