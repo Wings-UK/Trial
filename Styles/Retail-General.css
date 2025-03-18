@@ -19,13 +19,13 @@ body.no-scroll {
   gap: 5px; /* This is to make the homepage scroll while others don't*/
 }
 p {
-  font-family: ibm plex sans, roboto;
+  font-family: Montserrat, roboto;
   font-weight: normal;
   margin-top: 0px;
   margin-bottom: 0px;
 }
 button {
-  font-family: ibm plex sans, roboto;
+  font-family: Montserrat, roboto;
 }
 .main-container {
   display: flex;
