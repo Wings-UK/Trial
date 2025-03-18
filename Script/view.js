@@ -192,7 +192,7 @@ function createPostElement(post) {
   const user = users.find(u => u.id === post.userId);
   if (!user) return null; // Skip if no user found
 
-  const textLimit = (post.image || post.video) ? 150 : 300;
+  const textLimit = (post.image || post.video) ? 250 : 500;
   const hasVideo = post.video ? true : false;
   const hasImage = post.image ? true : false;
 
