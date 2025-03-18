@@ -267,7 +267,10 @@ function renderHomepage() {
     `;
     document.body.appendChild(videoModal);
   }
-  posts.forEach(post => {
+  
+  for (let i = loadedPosts; i < loadedPosts + postsPerLoad && i < posts.length; i++) {
+  const post = posts[i];
+  
     const user = users.find(u => u.id === post.userId); // Find user by ID
 
     if (!user) return; // Skip if no user found (shouldn't happen)
@@ -277,8 +280,6 @@ function renderHomepage() {
     const hasVideo = post.video ? true : false;
     const hasImage = post.image ? true : false;
 
-    for (let i = loadedPosts; i < loadedPosts + postsPerLoad && i < posts.length; i++) {
-    const post = posts[i];
     const postHTML = `
         <div class="poster" data-post-id="${post.id}">
             <div class="cust-name"> 
@@ -391,7 +392,7 @@ function renderHomepage() {
 
     postContainer.innerHTML += postHTML;
     }
-  });
+  loadedPosts += postsPerLoad;
   initializeVideoPlayers();
   // Initialize heart reaction functionality after rendering posts
   initializeHeartReactions();
