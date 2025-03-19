@@ -210,7 +210,7 @@ function createPostElement(post) {
                 <a class="lino" onclick="showUserProfile(${user.id})">
                     <!-- Profile picture with lazy loading -->
                     <div class="placeholder small-photo" data-large="${user.avatar}">  
-                      <img src="${user.avatar}" class="img-small small-photo">  
+                      <img src="pics/tt.png" class="img-small small-photo">  
                       <div style="padding-bottom: 100%;"></div>  
                     </div>
                 </a>
@@ -252,7 +252,7 @@ function createPostElement(post) {
     <div class="laptop1">
         <!-- Content image with lazy loading -->
         <div class="placeholder" data-large="${post.image}">  
-          <img src="${post.image}" class="laptop img-small">  
+          <img src="pics/tt.png" class="laptop img-small">  
           <div style="padding-bottom: 100%;"></div>  
         </div>
     </div>
