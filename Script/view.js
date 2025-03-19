@@ -64,7 +64,7 @@ const posts = [
       id: 1,
       userId: 4,  // Refers to user with id 1 (@reddcinema)
       timestamp: "11 mins ago",
-      video: "pics/single.mp4",
+      video: "pics/tru.mp4",
       date: "Feb 28, 2025 3:56 PM",
       likeCount: 720,
       commentCount: 53,
@@ -241,7 +241,7 @@ function createPostElement(post) {
             </div> 
         </div>
         <div class="dots">
-            <img class="dot" src="pics/duta.png">
+            <img class="dot" src="pics/dots.svg">
             <div class="tool">
                 <p>More</p>
             </div> 
@@ -267,15 +267,15 @@ function createPostElement(post) {
     <div class="lefto">
         <div class="dick">
             <div>
-                <img class="lefti" src="pics/lefti.png">
+                <img class="lefti" src="pics/bounce.svg">
             </div>
             <div>
-                <p class="viewe">View all ${post.diveCount || 142} dives</p>
+                <p class="viewe">View all ${post.diveCount || 142} discuss</p>
             </div>
         </div>
         <div class="twits">
             <div>
-                <img class="lefti" src="pics/stats.png">
+                <img class="leti" src="pics/stats.svg">
             </div>
             <div>
                 <p class="viewe">${post.views || '96.8K'} views</p>
@@ -288,11 +288,11 @@ function createPostElement(post) {
         <div class="mee">
             
             <div class="comment-btn" data-post-id="${post.id}">
-                <img class="feeling" src="pics/rug.svg" alt="Comment">
+                <img class="feeling" src="pics/comment.svg" alt="Comment">
                 <span>${post.commentCount || 0}</span>
             </div>
             <div class="repost-btn">
-                <img class="feeling" src="pics/tum.svg" alt="Repost">
+                <img class="feeling" src="pics/retweet.svg" alt="Repost">
                 <span>${post.repostCount || 0}</span>
             </div>
             <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
@@ -304,11 +304,11 @@ function createPostElement(post) {
             </div>
             <div class="mee">
             <div class="donate-btn">
-                <img class="feeling" src="pics/hm.svg" alt="Donate">
+                <img class="feeling" src="pics/bookmark.svg" alt="Donate">
                 
             </div>
             <div class="donate-btn">
-                <img class="feeling" src="pics/see.svg">
+                <img class="feeling" src="pics/share.svg">
             </div>    
             </div>
             </div>
