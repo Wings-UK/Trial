@@ -63,7 +63,7 @@ const posts = [
     {
       id: 1,
       userId: 4,  // Refers to user with id 1 (@reddcinema)
-      timestamp: "11 mins ago",
+      timestamp: "13 mins ago",
       video: "pics/tru.mp4",
       date: "Feb 28, 2025 3:56 PM",
       likeCount: 720,
