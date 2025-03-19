@@ -253,7 +253,7 @@ function createPostElement(post) {
         <!-- Content image with lazy loading -->
         <div class="placeholder laptop" data-large="${post.image}">  
           <img src="${post.image}" class="img-small laptop">  
-          <div style="padding-bottom: 66.6%;"></div>  
+          <div style="padding-bottom: 100%;"></div>  
         </div>
     </div>
     ` : ''}
