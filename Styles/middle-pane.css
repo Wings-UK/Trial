@@ -2626,6 +2626,5 @@
  }
  
  .img-small {
- filter: blur(50px);
- transform: scale(1);
+ transform: scale(1); 
  }
