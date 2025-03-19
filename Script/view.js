@@ -187,7 +187,8 @@ let loadedPostIds = new Set();
 let postsPerLoad = 5; // Number of posts to load at a time
 let isLoading = false; // Flag to prevent multiple simultaneous loads
 
-// Function to create a post element
+
+// Function to create a post element with lazy loading
 function createPostElement(post) {
   const user = users.find(u => u.id === post.userId);
   if (!user) return null; // Skip if no user found
@@ -201,13 +202,17 @@ function createPostElement(post) {
   posterElement.className = 'poster';
   posterElement.setAttribute('data-post-id', post.id);
 
-  // Construct the post HTML
+  // Construct the post HTML with lazy loading for images
   posterElement.innerHTML = `
     <div class="cust-name"> 
         <div class="heading">
             <div class="small-photo1">
                 <a class="lino" onclick="showUserProfile(${user.id})">
-                    <img class="small-photo" src="${user.avatar}" loading="lazy">
+                    <!-- Profile picture with lazy loading -->
+                    <div class="placeholder" data-large="${user.avatar}">  
+                      <img src="${user.avatar}" class="img-small small-photo">  
+                      <div style="padding-bottom: 100%;"></div>  
+                    </div>
                 </a>
             </div>
             <div class="pos">
@@ -245,7 +250,11 @@ function createPostElement(post) {
     
     ${hasImage ? `
     <div class="laptop1">
-        <img class="laptop" src="${post.image}" loading="lazy">
+        <!-- Content image with lazy loading -->
+        <div class="placeholder" data-large="${post.image}">  
+          <img src="${post.image}" class="img-small">  
+          <div style="padding-bottom: 66.6%;"></div>  
+        </div>
     </div>
     ` : ''}
     
@@ -306,11 +315,41 @@ function createPostElement(post) {
         </div>
     </div>
   `;
+  
+  // After adding to DOM, initialize the lazy loading for this post
+  setTimeout(() => {
+    initializeLazyLoading(posterElement);
+  }, 100);
+  
   initializeVideoPlayers();
   return posterElement;
 }
 
-// Function to load more posts
+// Function to initialize lazy loading for all placeholders in an element
+function initializeLazyLoading(element) {
+  const placeholders = element.querySelectorAll('.placeholder');
+  
+  placeholders.forEach(placeholder => {
+    const small = placeholder.querySelector('.img-small');
+    
+    // 1: load small image and show it
+    const img = new Image();
+    img.src = small.src;
+    img.onload = function () {
+      small.classList.add('loaded');
+    };
+    
+    // 2: load large image
+    const imgLarge = new Image();
+    imgLarge.src = placeholder.dataset.large;
+    imgLarge.classList.add('loaded');
+    imgLarge.onload = function () {
+      placeholder.appendChild(imgLarge);
+    };
+  });
+}
+
+// Modify the loadMorePosts function to include lazy loading initialization
 function loadMorePosts() {
   if (isLoading) return; // Prevent multiple simultaneous load operations
   isLoading = true;
@@ -346,6 +385,16 @@ function loadMorePosts() {
   
   isLoading = false;
 }
+
+// Initialize lazy loading on page load for any existing posts
+function initializeLazyLoadingOnLoad() {
+  document.querySelectorAll('.poster').forEach(poster => {
+    initializeLazyLoading(poster);
+  });
+}
+
+// Add event listener to initialize lazy loading when window loads
+window.addEventListener('load', initializeLazyLoadingOnLoad);
 
 // Initial load of posts
 function initializeHomepage() {
