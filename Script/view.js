@@ -224,7 +224,7 @@ function createPostElement(post) {
                                     <p class="jerry">${user.username}</p>
                                 </div>
                                 <div>
-                                    <img class="verify" src="pics/verifi1.png">
+                                    <img class="verify" src="pics/very.svg">
                                 </div>
                             </div>
                         </a>
@@ -1821,6 +1821,13 @@ function showMyProfile() {
   // Update history with tab information
   history.replaceState({ page: "profile", profileTab: "posts" }, "", "#profile");
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (loggedInUser && loggedInUser.avatar) {
+        document.getElementById("usero").src = loggedInUser.avatar;
+    }
+});
 
 // 5. Create a modal for editing the profile
 function openEditProfileModal() {

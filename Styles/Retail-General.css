@@ -2260,8 +2260,8 @@ button {
     background-color: rgba(234, 237, 240, 0.8);
     width: 100%;
     z-index: 100;
-    padding-top: 15px;
-    padding-bottom: 10px;
+    padding-top: 13px;
+    padding-bottom: 8px;
     backdrop-filter: blur(10px);
     position: fixed;
     top: 0;
