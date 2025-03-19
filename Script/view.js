@@ -251,8 +251,8 @@ function createPostElement(post) {
     ${hasImage ? `
     <div class="laptop1">
         <!-- Content image with lazy loading -->
-        <div class="placeholder img-small" src="${post.image}">  
-          <img data-large="${post.image}" class="laptop">  
+        <div class="img-small" src="${post.image}">  
+          <img data-large="${post.image}" class="laptop placeholder">  
           <div style="padding-bottom: 100%;"></div>  
         </div>
     </div>
