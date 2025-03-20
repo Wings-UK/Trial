@@ -99,7 +99,7 @@ const posts = [
       userId: 2,  // Refers to user with id 2 (@lena)
       timestamp: "just now",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/g.jpg",
+      image: "pics/6.jpg",
       content: "I get back to my hotel and realize housekeeping cleaned room and stole my damn cocaine and I just called down to the front desk and asked for it... the lady was like your what? “my bag of cocaine sweetie”... they got me fucked up if they think I ain’t gonna ask for my shit.",
     },
     {
