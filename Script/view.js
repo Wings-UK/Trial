@@ -18,7 +18,7 @@ const users = [
         username: "@reddcinema",
         name: "Redd Cinema",
         cover: "pics/pico9.png",
-        avatar: "pics/koreangirls.jpg",
+        avatar: "pics/3.jpg",
         bio: "Film lover & storyteller. I just vibe on here sometimes.. I'm a girl of course.🎬✨",
         followers: 1204,
         following: 340,
@@ -29,7 +29,7 @@ const users = [
         username: "@lena",
         name: "Lena Marie",
         cover: "pics/pico5.webp",
-        avatar: "pics/memo4.jpg",
+        avatar: "pics/4.jpg",
         bio: "Dancing through life 💃 | Coffee addict | We love niggas that pay for shit ☕",
         followers: 896,
         following: 512,
@@ -75,7 +75,7 @@ const posts = [
       userId: 2,  // Refers to user with id 2 (@lena)
       timestamp: "6 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/a.jpg",
+      image: "pics/1.jpg",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
     {
@@ -83,7 +83,7 @@ const posts = [
       userId: 3,  // Refers to user with id 2 (@lena)
       timestamp: "4 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/e.jpg",
+      image: "pics/2.jpg",
       content: "So as a prank, I started texting my best friend on one of those text numbers pretending to be this dube she was in love with but he did her dirty. And this girl is sooo excited that now I feel guilty😭 should I tell or just stop texting and pretend it never happened please help.",
     },
     {
@@ -91,7 +91,7 @@ const posts = [
       userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "an hour ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/f.jpg",
+      image: "pics/5.jpg",
       content: "do you guys think that how a child turns out is 100% the parents fault or do you think that no matter how good someone may parent their child they may still turn out bad because that's just who they are?",
     },
     {
@@ -207,10 +207,10 @@ function createPostElement(post) {
     <div class="cust-name"> 
         <div class="heading">
             <div class="small-photo1">
-                <a class="lino" onclick="showUserProfile(${user.id})">
+                <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
                     <!-- Profile picture with lazy loading -->
                     <div class="placeholder small-photo" data-large="${user.avatar}">  
-                      <img src="pics/tt.png" class="img-small small-photo">  
+                      <img src="pics/tt.jpg.jpg" class="img-small small-photo">  
                       <div style="padding-bottom: 100%;"></div>  
                     </div>
                 </a>
@@ -252,7 +252,7 @@ function createPostElement(post) {
     <div class="laptop1">
         <!-- Content image with lazy loading -->
         <div class="placeholder" data-large="${post.image}">  
-          <img src="pics/tt.png" class="laptop img-small">  
+          <img src="pics/tt_2.png" class="laptop img-small">  
           <div style="padding-bottom: 100%;"></div>  
         </div>
     </div>
