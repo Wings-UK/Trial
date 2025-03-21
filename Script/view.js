@@ -847,18 +847,11 @@ function openVideoModal(post) {
   });
   
   // Auto play the video with proper error handling
-  const playPromise = updatedPlayer.play();
-  
-  if (playPromise !== undefined) {
-    playPromise.catch(error => {
-      console.log('Auto-play prevented:', error);
-      // Show play button if autoplay is blocked
-      const playIcon = modal.querySelector('.play-icon');
-      const pauseIcon = modal.querySelector('.pause-icon');
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
+  document.addEventListener('click', () => {
+    videoPlayer.play().catch(error => {
+        console.log('Auto-play prevented:', error);
     });
-  }
+}, { once: true });
    
     sessionStorage.setItem("scrollPosition", window.scrollY);
   
@@ -894,9 +887,8 @@ function closeVideoModal() {
   }
 }
 
-// Function to setup video controls
-// Function to setup video controls
-// Function to setup video controls
+// Function to setup video control
+// This function initializes video controls for all videos on the page
 function setupVideoControls(videoPlayer) {
     const modal = videoPlayer.closest('.video-modal');
     const progressBar = modal.querySelector('.progress-bar');
@@ -924,41 +916,49 @@ function setupVideoControls(videoPlayer) {
     });
 
     // Play/Pause button handler
-    playPauseBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent event from bubbling to video
+    const newPlayPauseBtn = playPauseBtn.cloneNode(true);
+    playPauseBtn.parentNode.replaceChild(newPlayPauseBtn, playPauseBtn);
+
+    // Update icon references to point to the new button's icons
+    const newPlayIcon = newPlayPauseBtn.querySelector('.play-icon');
+    const newPauseIcon = newPlayPauseBtn.querySelector('.pause-icon');
+
+    newPlayPauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         toggleVideoPlayback();
     });
 
+    // Ensure icons switch properly when the video plays/pauses
+    videoPlayer.addEventListener('play', updatePlayPauseIcon);
+    videoPlayer.addEventListener('pause', updatePlayPauseIcon);
+
+    function updatePlayPauseIcon() {
+        if (videoPlayer.paused) {
+            newPlayIcon.style.display = 'block';
+            newPauseIcon.style.display = 'none';
+        } else {
+            newPlayIcon.style.display = 'none';
+            newPauseIcon.style.display = 'block';
+        }
+    }
+    
     // Function to toggle video playback
     function toggleVideoPlayback() {
         if (videoPlayer.paused) {
             videoPlayer.play().then(() => {
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
+                updatePlayPauseIcon();
             }).catch(error => {
                 console.error('Error attempting to play video:', error);
             });
         } else {
             videoPlayer.pause();
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
+            updatePlayPauseIcon();
         }
     }
 
     // Video click handler to toggle playback
     videoPlayer.addEventListener('click', (e) => {
         toggleVideoPlayback();
-    });
-
-    // Update icons when video is played/paused
-    videoPlayer.addEventListener('play', () => {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-    });
-
-    videoPlayer.addEventListener('pause', () => {
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
     });
 
     // Format time function
@@ -989,12 +989,14 @@ function setupVideoControls(videoPlayer) {
 
     // Video end handling
     videoPlayer.addEventListener('ended', () => {
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
+        updatePlayPauseIcon();
         modal.querySelector('.video-controls').style.opacity = '1';
     });
+
+    // Return the video player element
+    return videoPlayer;
 }
-    
+
 
 
 
@@ -1291,10 +1293,10 @@ showDetail = function(postId) {
     });
 }
 
-
 function adjustVideoPlayer(videoElement) {
   // Get video's natural aspect ratio
   const videoAspect = videoElement.videoWidth / videoElement.videoHeight;
+  
   // Get container dimensions
   const container = videoElement.closest('.video-player-container');
   const containerWidth = container.clientWidth;
@@ -1308,25 +1310,20 @@ function adjustVideoPlayer(videoElement) {
   videoElement.style.transform = '';
   
   if (videoAspect < 1) {
-    // Portrait video - prioritize full height
-    const newWidth = containerHeight * videoAspect;
-    if (newWidth <= containerWidth) {
-      // Can fit full height without overflow
-      videoElement.style.height = '100%';
-      videoElement.style.width = 'auto';
-      // Center horizontally
+    // Portrait video - fill height with 70px space at top
+    const availableHeight = containerHeight - 70;
+    videoElement.style.height = availableHeight + 'px';
+    videoElement.style.width = 'auto';
+    videoElement.style.top = '70px'; // Position below the header
+    
+    // Center horizontally
+    const newWidth = availableHeight * videoAspect;
+    if (newWidth < containerWidth) {
       videoElement.style.left = '50%';
       videoElement.style.transform = 'translateX(-50%)';
-    } else {
-      // Can't fit height, use full width
-      videoElement.style.width = '100%';
-      videoElement.style.height = 'auto';
-      // Center vertically - THIS IS THE FIX
-      videoElement.style.top = '50%';
-      videoElement.style.transform = 'translateY(-50%)';
     }
   } else {
-    // Landscape video - prioritize full width
+    // Landscape video - keep original behavior (unchanged)
     const newHeight = containerWidth / videoAspect;
     if (newHeight <= containerHeight) {
       // Can fit full width without overflow
