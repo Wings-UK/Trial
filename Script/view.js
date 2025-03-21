@@ -1311,10 +1311,10 @@ function adjustVideoPlayer(videoElement) {
   
   if (videoAspect < 1) {
     // Portrait video - fill height with 70px space at top
-    const availableHeight = containerHeight - 70;
+    const availableHeight = containerHeight - 50;
     videoElement.style.height = availableHeight + 'px';
     videoElement.style.width = 'auto';
-    videoElement.style.top = '70px'; // Position below the header
+    videoElement.style.top = '50px'; // Position below the header
     
     // Center horizontally
     const newWidth = availableHeight * videoAspect;

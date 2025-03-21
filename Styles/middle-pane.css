@@ -366,12 +366,12 @@
   position: absolute;
   top: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.5));
   font-family: Noto Sans JP, roboto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 6px 15px;
   color: white;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 10000;
@@ -395,7 +395,7 @@
 
 .modal-user-info {
   display: flex;
-  align-items: top;
+  align-items: center;
   gap: 10px;
 }
 
