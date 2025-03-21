@@ -895,173 +895,108 @@ function closeVideoModal() {
 }
 
 // Function to setup video controls
+// Function to setup video controls
+// Function to setup video controls
 function setupVideoControls(videoPlayer) {
-  const modal = videoPlayer.closest('.video-modal');
-  const progressBar = modal.querySelector('.progress-bar');
-  const progressFilled = modal.querySelector('.progress-filled');
-  const progressHandle = modal.querySelector('.progress-handle');
-  const timeDisplay = modal.querySelector('.time-display');
-  const playPauseBtn = modal.querySelector('.play-pause-btn');
-  const playIcon = playPauseBtn.querySelector('.play-icon');
-  const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-  const videoControls = modal.querySelector('.video-controls');
-  
-  // Clear any existing event listeners (to prevent duplicates)
-  const videoPlayerClone = videoPlayer.cloneNode(true);
-  videoPlayer.parentNode.replaceChild(videoPlayerClone, videoPlayer);
-  videoPlayer = videoPlayerClone;
-  
-  // Re-add source to the cloned video player
-  const sourceElement = videoPlayer.querySelector('source');
-  const videoSource = sourceElement.src;
-  sourceElement.src = videoSource;
-  videoPlayer.load();
-  
-  // Update progress bar as video plays
-  videoPlayer.addEventListener('timeupdate', () => {
-    if (videoPlayer.duration) {
-      const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-      progressFilled.style.width = `${percent}%`;
-      progressHandle.style.left = `${percent}%`;
-      
-      // Update time display
-      timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+    const modal = videoPlayer.closest('.video-modal');
+    const progressBar = modal.querySelector('.progress-bar');
+    const progressFilled = modal.querySelector('.progress-filled');
+    const timeDisplay = modal.querySelector('.time-display');
+    const playPauseBtn = modal.querySelector('.play-pause-btn');
+    const playIcon = playPauseBtn.querySelector('.play-icon');
+    const pauseIcon = playPauseBtn.querySelector('.pause-icon');
+
+    // Update progress bar as video plays
+    videoPlayer.addEventListener('timeupdate', () => {
+        if (videoPlayer.duration) {
+            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+            progressFilled.style.width = `${percent}%`;
+            timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+        }
+    });
+
+    // Click on progress bar to seek
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const percent = offsetX / progressBar.offsetWidth;
+        videoPlayer.currentTime = percent * videoPlayer.duration;
+    });
+
+    // Play/Pause button handler
+    playPauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event from bubbling to video
+        toggleVideoPlayback();
+    });
+
+    // Function to toggle video playback
+    function toggleVideoPlayback() {
+        if (videoPlayer.paused) {
+            videoPlayer.play().then(() => {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            }).catch(error => {
+                console.error('Error attempting to play video:', error);
+            });
+        } else {
+            videoPlayer.pause();
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        }
     }
-  });
-  
-  // Click on progress bar to seek
-  progressBar.addEventListener('click', (e) => {
-    const progressTime = (e.offsetX / progressBar.offsetWidth) * videoPlayer.duration;
-    videoPlayer.currentTime = progressTime;
-  });
-  
-  // Dragging progress handle
-  let isDragging = false;
-  
-  progressHandle.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    e.stopPropagation(); // Prevent other click handlers
-  });
-  
-  document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      const rect = progressBar.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      const clampedPos = Math.max(0, Math.min(1, pos));
-      
-      progressFilled.style.width = `${clampedPos * 100}%`;
-      progressHandle.style.left = `${clampedPos * 100}%`;
+
+    // Video click handler to toggle playback
+    videoPlayer.addEventListener('click', (e) => {
+        toggleVideoPlayback();
+    });
+
+    // Update icons when video is played/paused
+    videoPlayer.addEventListener('play', () => {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+    });
+
+    videoPlayer.addEventListener('pause', () => {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+    });
+
+    // Format time function
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
-  });
-  
-  document.addEventListener('mouseup', () => {
-    if (isDragging) {
-      const width = parseFloat(progressFilled.style.width) / 100;
-      videoPlayer.currentTime = width * videoPlayer.duration;
-      isDragging = false;
+
+    // Hide controls when inactive
+    let controlsTimeout;
+    function showControls() {
+        clearTimeout(controlsTimeout);
+        modal.querySelector('.video-controls').style.opacity = '1';
+        controlsTimeout = setTimeout(() => {
+            if (!videoPlayer.paused) {
+                modal.querySelector('.video-controls').style.opacity = '0';
+            }
+        }, 3000);
     }
-  });
-  
-  // Play/Pause button functionality - improved event handling
-  function togglePlayPause(e) {
-    e.stopPropagation(); // Prevent event bubbling
-    
-    if (videoPlayer.paused) {
-      const playPromise = videoPlayer.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'block';
-        }).catch(error => {
-          console.error('Play failed:', error);
-          // Keep showing play icon if play fails
-          playIcon.style.display = 'block';
-          pauseIcon.style.display = 'none';
-        });
-      }
-    } else {
-      videoPlayer.pause();
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
-    }
-  }
-  
-  // Remove old event listeners if they exist (to prevent duplicates)
-  playPauseBtn.removeEventListener('click', togglePlayPause);
-  
-  // Add event listeners with improved handling
-  playPauseBtn.addEventListener('click', togglePlayPause);
-  
-  // Separate video click handler with stopPropagation
-  videoPlayer.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent event propagation
-    
-    if (videoPlayer.paused) {
-      const playPromise = videoPlayer.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'block';
-        }).catch(error => {
-          console.error('Play failed:', error);
-        });
-      }
-    } else {
-      videoPlayer.pause();
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
-    }
-  });
-  
-  // Update icons when video is played/paused
-  videoPlayer.addEventListener('play', () => {
-    playIcon.style.display = 'none';
-    pauseIcon.style.display = 'block';
-  });
-  
-  videoPlayer.addEventListener('pause', () => {
-    playIcon.style.display = 'block';
-    pauseIcon.style.display = 'none';
-  });
-  
-  // Touch events for mobile
-  playPauseBtn.addEventListener('touchend', (e) => {
-    e.preventDefault(); // Prevent default touch behavior
-    e.stopPropagation();
-    togglePlayPause(e);
-  });
-  
-  // Hide controls when inactive
-  let controlsTimeout;
-  
-  function showControls() {
-    videoControls.style.opacity = '1';
-    clearTimeout(controlsTimeout);
-    
-    controlsTimeout = setTimeout(() => {
-      if (!videoPlayer.paused) {
-        videoControls.style.opacity = '0';
-      }
-    }, 3000);
-  }
-  
-  videoPlayer.addEventListener('mousemove', showControls);
-  videoControls.addEventListener('mousemove', showControls);
-  
-  // Show controls initially
-  showControls();
-  
-  // Video end handling
-  videoPlayer.addEventListener('ended', () => {
-    playIcon.style.display = 'block';
-    pauseIcon.style.display = 'none';
-    videoControls.style.opacity = '1';
-  });
-  
-  return videoPlayer; // Return the cloned player
+
+    // Show controls on mouse move
+    videoPlayer.addEventListener('mousemove', showControls);
+    modal.querySelector('.video-controls').addEventListener('mousemove', showControls);
+
+    // Show controls initially
+    showControls();
+
+    // Video end handling
+    videoPlayer.addEventListener('ended', () => {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        modal.querySelector('.video-controls').style.opacity = '1';
+    });
 }
+    
+
+
 
 // Helper function to format time (converts seconds to MM:SS format)
 function formatTime(seconds) {
