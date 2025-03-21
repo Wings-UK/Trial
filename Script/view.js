@@ -139,7 +139,7 @@ const posts = [
       userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/13.mp4",
+      video: "pics/13.mp4",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
     {
@@ -147,7 +147,7 @@ const posts = [
       userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/14.mp4",
+      video: "pics/14.mp4",
       content: "I think i like this dance. Can someone tell me the name and the country where i can go to learn this? It looks difficult though",
     },
     {
