@@ -139,7 +139,7 @@ const posts = [
       userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      video: "pics/13.mp4",
+      video: "pics/18.mp4",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
     {
@@ -1087,7 +1087,7 @@ showDetail = function(postId) {
                 <div class="timestamp"></div>
               </div>
             </div>
-            <div class="follow-button">Follow</div>
+            <div class="detail-follow">Follow</div>
           </div>
           
           <div class="video-player-container">
@@ -1167,7 +1167,7 @@ showDetail = function(postId) {
                                         <p class="jerry">${user.username}</p>
                                     </div>
                                     <div>
-                                        <img class="verify" src="pics/verifi1.png">
+                                        <img class="verify" src="pics/very.svg">
                                     </div>
                                 </div>
                             </a>
@@ -1194,7 +1194,7 @@ showDetail = function(postId) {
                 ">Follow</button>
             </div>
             <div class="dots">
-                <img class="dot" src="pics/duta.png">
+                <img class="dot" src="pics/dots.svg">
                 <div class="tool">
                     <p>More</p>
                 </div> 
@@ -1224,7 +1224,7 @@ showDetail = function(postId) {
             </div>
             <div class="twits">
                 <div>
-                    <img class="lefti" src="pics/stats.png">
+                    <img class="lefti" src="pics/stats.svg">
                 </div>
                 <div>
                     <p class="viewe">96.8K views</p>
@@ -1233,35 +1233,35 @@ showDetail = function(postId) {
         </div>
         <div class="reaction">
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man3.webp"></a>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
                 <div class="vrea">
                     <img class="luve" src="pics/lovv.png">
                 </div>
             </div>   
             
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/girl2.webp"></a>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
                 <div class="vrea">
                     <img class="luve" src="pics/lovv.png">
                 </div>
             </div>   
 
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/man4.jpg"></a>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
                 <div class="vrea">
                     <img class="luve" src="pics/2.gif">
                 </div>
             </div>   
 
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
                 <div class="vrea">
                     <img class="luve" src="pics/lovv.png">
                 </div>
             </div>   
 
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/pico8.webp"></a>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
                 <div class="vrea">
                     <img class="luve" src="pics/3.gif">
                 </div>
@@ -1330,7 +1330,7 @@ function adjustVideoPlayer(videoElement) {
       videoElement.style.width = '100%';
       videoElement.style.height = 'auto';
       // Center vertically
-      videoElement.style.top = '50%';
+      videoElement.style.top = '40%';
       videoElement.style.transform = 'translateY(-50%)';
     } else {
       // Can't fit width, use full height

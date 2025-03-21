@@ -130,7 +130,7 @@ function addCommentToDOM(comment, isReply = false, parentElement = null) {
   // Determine if verified
   const isVerified = Math.random() > 0.7;
   const verifiedBadge = isVerified ? 
-    `<img class="verify-small" src="pics/verifi1.png">` : '';
+    `<img class="verify-small" src="pics/very.svg">` : '';
   
   commentElement.innerHTML = `
     <div class="comment-avatar">
@@ -186,7 +186,7 @@ function addCommentToDOM(comment, isReply = false, parentElement = null) {
     const commentTextarea = document.querySelector('.comment-textarea');
     
     if (commentTextarea) {
-      commentTextarea.value = `@${comment.username} `;
+      commentTextarea.value = `${comment.username} `;
       commentTextarea.focus();
       
       // Scroll to textarea if needed
