@@ -40,7 +40,7 @@ const users = [
         username: "@nomsa",
         name: "Nomsa",
         cover: "pics/d.jpg",
-        avatar: "pics/b.jpg",
+        avatar: "pics/8.jpg",
         bio: "Living my best life 💃",
         followers: 63,
         following: 556,
@@ -107,7 +107,7 @@ const posts = [
       userId: 3,  // Refers to user with id 2 (@lena)
       timestamp: "4 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/h.jpg",
+      image: "pics/7.jpg",
       content: "I had my daughter today at 10:29am it was very long and emotional labor but it was worth every second she’s perfect 💞 her registry is still available please contribute if you can me and her both have a long road ahead of us. Thank you everyone who did what they could💕💕",
     },
     {
@@ -115,7 +115,7 @@ const posts = [
       userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "2 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/i.jpg",
+      image: "pics/9.jpg",
       content: "So yall I been dating this girl. (A stud) and she went back to the previous girl she was dating & kinda like tryna have us both. She been with her these past few days. & im tryna see the exact words to say to get her over here so I can sneak my key back from her?😩",
     },
     {
@@ -123,7 +123,7 @@ const posts = [
       userId: 2,  // Refers to user with id 2 (@lena)
       timestamp: "9 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      video: "pics/olope.mp4",
+      video: "pics/12.mp4",
       content: "why do mothers treat they daughters like they the scum? me & my momma can’t seem to get along at all why i get off a 10 FUCKING HOUR SHIFT OVERNIGHT TO BE EXACT & my “ ROOM” that i pay for monthly which i share w a fucking 12 years old and all my shit is scatter? bro im pissed",
     },
     {
@@ -131,7 +131,7 @@ const posts = [
       userId: 3,  // Refers to user with id 2 (@lena)
       timestamp: "3 mins ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/k.jpg",
+      image: "pics/11.jpg",
       content: "I don't think many people talk about the beauty of ageing, especially with grey hair. I want to age beautifully old with grey hair. I feel like some ppl have such a big fear of ageing to the point where they will try their hardest to look young which is kinda sad",
     },
     {
@@ -139,7 +139,7 @@ const posts = [
       userId: 1,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
+      image: "pics/13.mp4",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
     {
@@ -147,7 +147,7 @@ const posts = [
       userId: 4,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/memo.webp",
+      image: "pics/14.mp4",
       content: "I think i like this dance. Can someone tell me the name and the country where i can go to learn this? It looks difficult though",
     },
     {
@@ -155,7 +155,7 @@ const posts = [
       userId: 3,  // Refers to user with id 2 (@lena)
       timestamp: "14 hours ago",
       date: "Feb 28, 2025 3:56 PM",
-      image: "pics/pico7.webp",
+      image: "pics/15.jpg",
       content: "My guy is 18 with 0 experience, I got lil past, and it bothers him every time. I like him a lot, but what should I do ladies?",
     },
     {
@@ -249,7 +249,7 @@ function createPostElement(post) {
     </div>
     
     ${hasImage ? `
-    <div class="laptop1">
+    <div class="laptop1" onclick="showDetail(${post.id})">
         <!-- Content image with lazy loading -->
         <div class="placeholder" data-large="${post.image}">  
           <img src="pics/tt_2.png" class="laptop img-small">  
@@ -635,7 +635,7 @@ justify-content: space-between;
   align-items: center;
   gap: 5px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-family: ibm plex sans, roboto;
 }
 `;
