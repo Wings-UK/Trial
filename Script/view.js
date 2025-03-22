@@ -11,6 +11,31 @@ window.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then((registration) => {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Show update message
+                    let updateBanner = document.createElement('div');
+                    updateBanner.innerHTML = `
+                        <div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+                                    background: #f40752; color: white; padding: 10px 20px; border-radius: 5px;
+                                    cursor: pointer; font-size: 14px;">
+                            New update available! <b>Click to refresh</b>
+                        </div>
+                    `;
+                    updateBanner.addEventListener('click', () => {
+                        location.reload();
+                    });
+                    document.body.appendChild(updateBanner);
+                }
+            });
+        });
+    });
+}
+
 
 const users = [
     {
@@ -1376,7 +1401,7 @@ function showUserProfile(userId) {
                   <p class="spe">${user.username}</p>
                 </div>
                 <div>
-                  <img class="verify" src="pics/verifi1.png">
+                  <img class="verify" src="pics/very.svg">
                 </div>
               </div>
               <div class="druu">
