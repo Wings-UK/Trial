@@ -25,6 +25,9 @@ const FILES_TO_CACHE = [
     '/pics/stats.svg',
     '/pics/talk.svg',
     '/pics/up.svg',
+    '/pics/gallery.svg',
+    '/pics/at.svg',
+    '/pics/emoji.svg',
     '/pics/very.svg',// Logo
 // Another script
 ];

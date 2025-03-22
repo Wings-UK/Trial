@@ -420,8 +420,8 @@
 }
 
 .verify-badge {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .timestamp {
@@ -1098,9 +1098,14 @@
   text-decoration-thickness: 2px;
 }
 .verify {
-  width: 16px;
+  width: 18px;
   margin-left: 5px;
   display: block;
+}
+.verif {
+  width: 15px;
+  display: block;
+  margin-left: 3px;
 }
 .comp, .compo {
   font-size: 15px;

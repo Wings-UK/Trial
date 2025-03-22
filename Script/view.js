@@ -249,7 +249,7 @@ function createPostElement(post) {
                                     <p class="jerry">${user.username}</p>
                                 </div>
                                 <div>
-                                    <img class="verify" src="pics/very.svg">
+                                    <img class="verif" src="pics/very.svg">
                                 </div>
                             </div>
                         </a>
@@ -1192,7 +1192,7 @@ showDetail = function(postId) {
                                         <p class="jerry">${user.username}</p>
                                     </div>
                                     <div>
-                                        <img class="verify" src="pics/very.svg">
+                                        <img class="verif" src="pics/very.svg">
                                     </div>
                                 </div>
                             </a>
