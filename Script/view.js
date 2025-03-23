@@ -208,9 +208,87 @@ const loggedInUser = {
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
 // Keep track of which posts have been loaded to avoid duplicates
-let loadedPostIds = new Set();
-let postsPerLoad = 5; // Number of posts to load at a time
-let isLoading = false; // Flag to prevent multiple simultaneous loads
+ let loadedPostIds = new Set();
+let postsPerLoad = 5; // Initial batch size
+let isLoading = false;
+const postContainer = document.getElementById("flyer");
+const viewportHeight = window.innerHeight;// Flag to prevent multiple simultaneous loads
+
+
+function createSkeletonPost(postId) {
+  const skeleton = document.createElement('div');
+  skeleton.className = 'poster skeleton';
+  skeleton.setAttribute('data-post-id', postId);
+  skeleton.innerHTML = `
+    <div class="cust-name">
+      <div class="heading">
+        <div class="small-photo1 skeleton-avatar"></div>
+        <div class="pos">
+          <div class="skeleton-text short"></div>
+          <div class="skeleton-text medium"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tir">
+      <div class="skeleton-text long"></div>
+      <div class="skeleton-text medium"></div>
+    </div>
+    <div class="lefto skeleton-reactions"></div>
+  `;
+  return skeleton;
+}
+
+const skeletonStyles = `
+  .skeleton {
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    animation: shimmer 1.5s infinite;
+  }
+  .skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+  }
+  .skeleton-text {
+    height: 16px;
+    background: #e0e0e0;
+    margin: 8px 0;
+    border-radius: 4px;
+  }
+  .skeleton-text.short { width: 60%; }
+  .skeleton-text.medium { width: 80%; }
+  .skeleton-text.long { width: 100%; }
+  .skeleton-reactions {
+    height: 30px;
+    background: #e0e0e0;
+    border-radius: 4px;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+`;
+function addSkeletonStyles() {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = skeletonStyles;
+  document.head.appendChild(styleElement);
+}
+
+
+
+
 
 
 // Function to create a post element with lazy loading
@@ -375,41 +453,7 @@ function initializeLazyLoading(element) {
 }
 
 // Modify the loadMorePosts function to include lazy loading initialization
-function loadMorePosts() {
-  if (isLoading) return; // Prevent multiple simultaneous load operations
-  isLoading = true;
 
-  const postContainer = document.getElementById("flyer");
-  
-  // Calculate how many posts we need to load
-  let postsToLoad = 0;
-  let postsLoaded = 0;
-  
-  for (let i = 0; i < posts.length && postsLoaded < postsPerLoad; i++) {
-    if (!loadedPostIds.has(posts[i].id)) {
-      postsToLoad++;
-      loadedPostIds.add(posts[i].id);
-      
-      // Create and append the post element
-      const postElement = createPostElement(posts[i]);
-      if (postElement) {
-        postContainer.appendChild(postElement);
-        postsLoaded++;
-      }
-    }
-  }
-
-  // Initialize video players and heart reactions for new posts
-  initializeVideoPlayers();
-  initializeHeartReactions();
-  
-  // If we've loaded all posts, remove the scroll event listener
-  if (loadedPostIds.size >= posts.length) {
-    window.removeEventListener("scroll", scrollHandler);
-  }
-  
-  isLoading = false;
-}
 
 // Initialize lazy loading on page load for any existing posts
 function initializeLazyLoadingOnLoad() {
@@ -423,12 +467,11 @@ window.addEventListener('load', initializeLazyLoadingOnLoad);
 
 // Initial load of posts
 function initializeHomepage() {
-  // Create video modal if it doesn't exist
   if (!document.querySelector('.video-modal')) {
     const videoModal = document.createElement('div');
     videoModal.className = 'video-modal';
     videoModal.innerHTML = `
-      <div class="modal-header">
+       <div class="modal-header">
         <div class="back-button">
           <img src="pics/backa.png" alt="Back">
         </div>
@@ -508,17 +551,180 @@ function initializeHomepage() {
     document.body.appendChild(videoModal);
   }
 
-  // Clear the container
-  const postContainer = document.getElementById("flyer");
   postContainer.innerHTML = '';
-  
-  
-  // Reset loaded posts
   loadedPostIds.clear();
   
-  // Load initial posts
-  loadMorePosts();
+  // Initial loading with skeletons
+  const initialCount = Math.min(postsPerLoad, posts.length);
+  for (let i = 0; i < initialCount; i++) {
+    const skeleton = createSkeletonPost(posts[i].id);
+    postContainer.appendChild(skeleton);
+  }
+
+  addSkeletonStyles();
+  
+  // Start virtualization after a small delay to ensure DOM is ready
+  setTimeout(() => {
+    setupVirtualScroll();
+  }, 100);
+  
+  // Add scroll event listener for infinite scrolling backup
+  window.addEventListener('scroll', () => {
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    if (scrollPosition >= documentHeight - 300 && !isLoading) {
+      loadMoreVirtualPosts();
+    }
+  }, { passive: true });
 }
+
+function setupVirtualScroll() {
+  const observerOptions = {
+    root: null,
+    rootMargin: '300px', // Increased for better preloading
+    threshold: 0.1
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const postElement = entry.target;
+      const postId = parseInt(postElement.dataset.postId);
+      
+      if (entry.isIntersecting && postElement.classList.contains('skeleton')) {
+        const post = posts.find(p => p.id === postId);
+        if (post && !loadedPostIds.has(postId)) {
+          const realPost = createPostElement(post);
+          if (realPost) {
+            postElement.replaceWith(realPost);
+            loadedPostIds.add(postId);
+            initializeHeartReactions();
+            initializeVideoPlayers();
+            
+            // Check if we need to load more posts (if this was near the end)
+            if (loadedPostIds.size >= posts.length - 3) {
+              loadMoreVirtualPosts();
+            }
+          }
+        }
+      }
+    });
+  }, observerOptions);
+  
+  // Create a separate observer for the last post to trigger loading more
+  const lastPostObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadMoreVirtualPosts();
+      }
+    });
+  }, {
+    rootMargin: '200px',
+    threshold: 0.1
+  });
+  
+  // Observe all posts
+  document.querySelectorAll('.poster').forEach(post => {
+    if (!post.hasAttribute('data-observed')) {
+      observer.observe(post);
+      post.setAttribute('data-observed', 'true');
+    }
+  });
+  
+  // Observe the last post separately to trigger loading more
+  const lastPost = postContainer.lastElementChild;
+  if (lastPost) {
+    lastPostObserver.observe(lastPost);
+  }
+  
+  return { postObserver: observer, lastPostObserver };
+}
+
+
+function loadMorePosts() {
+  // Empty function - virtualization handles this now
+}
+
+function loadMoreVirtualPosts() {
+  if (isLoading || loadedPostIds.size >= posts.length) return;
+  isLoading = true;
+  
+  const startIndex = loadedPostIds.size;
+  const endIndex = Math.min(startIndex + postsPerLoad, posts.length);
+  
+  if (startIndex >= endIndex) {
+    isLoading = false;
+    return; // No more posts to load
+  }
+  
+  // Create and add skeleton posts
+  const newSkeletons = [];
+  for (let i = startIndex; i < endIndex; i++) {
+    const post = posts[i];
+    if (!loadedPostIds.has(post.id)) {
+      const skeleton = createSkeletonPost(post.id);
+      postContainer.appendChild(skeleton);
+      newSkeletons.push(skeleton);
+    }
+  }
+  
+  // Create a new observer for the new skeletons
+  const observerOptions = {
+    root: null,
+    rootMargin: '300px',
+    threshold: 0.1
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const postElement = entry.target;
+      const postId = parseInt(postElement.dataset.postId);
+      
+      if (entry.isIntersecting && postElement.classList.contains('skeleton')) {
+        const post = posts.find(p => p.id === postId);
+        if (post && !loadedPostIds.has(postId)) {
+          const realPost = createPostElement(post);
+          if (realPost) {
+            postElement.replaceWith(realPost);
+            loadedPostIds.add(postId);
+            initializeHeartReactions();
+            initializeVideoPlayers();
+          }
+        }
+      }
+    });
+  }, observerOptions);
+  
+  // Observe all new skeletons
+  newSkeletons.forEach(skeleton => {
+    observer.observe(skeleton);
+    skeleton.setAttribute('data-observed', 'true');
+  });
+  
+  // Observe the last post to trigger loading more
+  const lastPostObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadMoreVirtualPosts();
+      }
+    });
+  }, {
+    rootMargin: '200px',
+    threshold: 0.1
+  });
+  
+  if (newSkeletons.length > 0) {
+    lastPostObserver.observe(newSkeletons[newSkeletons.length - 1]);
+  }
+  
+  isLoading = false;
+}
+
+
+
+window.removeEventListener("scroll", scrollHandler);
+
+
 
 // Scroll event handler
 function scrollHandler() {
@@ -529,12 +735,11 @@ function scrollHandler() {
 
   // If the user is near the bottom, load more posts
   if (scrollPosition >= documentHeight - 250) {
-    loadMorePosts();
+    loadMorePosts()
   }
 }
 
 // Initialize scroll event listener
-window.addEventListener("scroll", scrollHandler);
 
 // Helper function to shorten text
 
