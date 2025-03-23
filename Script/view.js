@@ -208,17 +208,20 @@ const loggedInUser = {
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
 // Keep track of which posts have been loaded to avoid duplicates
- let loadedPostIds = new Set();
-let postsPerLoad = 5; // Initial batch size
+// Flag to prevent multiple simultaneous loads
+
+let loadedPostIds = new Set();
 let isLoading = false;
-const postContainer = document.getElementById("flyer");
-const viewportHeight = window.innerHeight;// Flag to prevent multiple simultaneous loads
+let postsPerLoad = 5;
 
 
+
+// Function to create a post element with lazy loading
 function createSkeletonPost(postId) {
   const skeleton = document.createElement('div');
   skeleton.className = 'poster skeleton';
   skeleton.setAttribute('data-post-id', postId);
+  skeleton.setAttribute('data-skeleton', 'true');
   skeleton.innerHTML = `
     <div class="cust-name">
       <div class="heading">
@@ -238,60 +241,6 @@ function createSkeletonPost(postId) {
   return skeleton;
 }
 
-const skeletonStyles = `
-  .skeleton {
-    background: #f0f0f0;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-  }
-  .skeleton::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    animation: shimmer 1.5s infinite;
-  }
-  .skeleton-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e0e0e0;
-  }
-  .skeleton-text {
-    height: 16px;
-    background: #e0e0e0;
-    margin: 8px 0;
-    border-radius: 4px;
-  }
-  .skeleton-text.short { width: 60%; }
-  .skeleton-text.medium { width: 80%; }
-  .skeleton-text.long { width: 100%; }
-  .skeleton-reactions {
-    height: 30px;
-    background: #e0e0e0;
-    border-radius: 4px;
-  }
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-`;
-function addSkeletonStyles() {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = skeletonStyles;
-  document.head.appendChild(styleElement);
-}
-
-
-
-
-
-
-// Function to create a post element with lazy loading
 function createPostElement(post) {
   const user = users.find(u => u.id === post.userId);
   if (!user) return null; // Skip if no user found
@@ -361,7 +310,7 @@ function createPostElement(post) {
     </div>
     ` : ''}
     
-     ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+    ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
     
     <div class="tir" onclick="showDetail(${post.id})">
         <p class="tired">${shortenText(post.content, textLimit, true)}</p>
@@ -419,14 +368,61 @@ function createPostElement(post) {
     </div>
   `;
   
-  // After adding to DOM, initialize the lazy loading for this post
-  setTimeout(() => {
-    initializeLazyLoading(posterElement);
-  }, 100);
-  
-  initializeVideoPlayers();
   return posterElement;
 }
+
+function addSkeletonStyles() {
+  if (document.getElementById('skeleton-styles')) return;
+  
+  const styleElement = document.createElement('style');
+  styleElement.id = 'skeleton-styles';
+  styleElement.textContent = `
+    .skeleton {
+      background: #f0f0f0;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    .skeleton-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e0e0e0;
+    }
+    .skeleton-text {
+      height: 16px;
+      background: #e0e0e0;
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-text.medium { width: 80%; }
+    .skeleton-text.long { width: 100%; }
+    .skeleton-reactions {
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 4px;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  `;
+  document.head.appendChild(styleElement);
+}
+
+
 
 // Function to initialize lazy loading for all placeholders in an element
 function initializeLazyLoading(element) {
@@ -434,6 +430,7 @@ function initializeLazyLoading(element) {
   
   placeholders.forEach(placeholder => {
     const small = placeholder.querySelector('.img-small');
+    if (!small) return;
     
     // 1: load small image and show it
     const img = new Image();
@@ -453,7 +450,41 @@ function initializeLazyLoading(element) {
 }
 
 // Modify the loadMorePosts function to include lazy loading initialization
+function loadMorePosts() {
+  if (isLoading) return; // Prevent multiple simultaneous load operations
+  isLoading = true;
 
+  const postContainer = document.getElementById("flyer");
+  
+  // Calculate how many posts we need to load
+  let postsToLoad = 0;
+  let postsLoaded = 0;
+  
+  for (let i = 0; i < posts.length && postsLoaded < postsPerLoad; i++) {
+    if (!loadedPostIds.has(posts[i].id)) {
+      postsToLoad++;
+      loadedPostIds.add(posts[i].id);
+      
+      // Create and append the post element
+      const postElement = createPostElement(posts[i]);
+      if (postElement) {
+        postContainer.appendChild(postElement);
+        postsLoaded++;
+      }
+    }
+  }
+
+  // Initialize video players and heart reactions for new posts
+  initializeVideoPlayers();
+  initializeHeartReactions();
+  
+  // If we've loaded all posts, remove the scroll event listener
+  if (loadedPostIds.size >= posts.length) {
+    window.removeEventListener("scroll", scrollHandler);
+  }
+  
+  isLoading = false;
+}
 
 // Initialize lazy loading on page load for any existing posts
 function initializeLazyLoadingOnLoad() {
@@ -467,262 +498,180 @@ window.addEventListener('load', initializeLazyLoadingOnLoad);
 
 // Initial load of posts
 function initializeHomepage() {
-  if (!document.querySelector('.video-modal')) {
-    const videoModal = document.createElement('div');
-    videoModal.className = 'video-modal';
-    videoModal.innerHTML = `
-       <div class="modal-header">
-        <div class="back-button">
-          <img src="pics/backa.png" alt="Back">
-        </div>
-        <div class="modal-user-info">
-          <div class="user-avatar">
-            <img src="" alt="">
-          </div>
-          <div class="user-details">
-            <div class="username">
-              <span></span>
-              <img class="verify-badge" src="pics/verifi1.png">
-            </div>
-            <div class="timestamp"></div>
-          </div>
-        </div>
-        <div class="follow-button">Follow</div>
-      </div>
-      
-      <div class="video-player-container">
-        <video class="fullscreen-player">
-          <source src="" type="video/mp4">
-        </video>
-        
-        <div class="video-controls">
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div class="progress-filled"></div>
-              <div class="progress-handle"></div>
-            </div>
-            <div class="time-display">0:00 / 0:00</div>
-          </div>
-          
-          <div class="control-buttons">
-            <div class="play-pause-btn">
-              <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" fill="white"/>
-              </svg>
-              <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
-              </svg>
-            </div>
-            <div class="volume-control">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-content">
-        <p class="modal-post-text"></p>
-      </div>
-      
-      <div class="modal-actions">
-        <div class="action-buttons">
-          <div class="action-button heart-btn">
-            <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24">
-              <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            <span class="like-count">0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/chat.png" alt="Comment">
-            <span>0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/repost.png" alt="Repost">
-            <span>0</span>
-          </div>
-          <div class="action-button">
-            <img src="pics/naira.png" alt="Donate">
-            <span>0</span>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(videoModal);
-  }
-
+  const postContainer = document.getElementById("flyer");
+  if (!postContainer) return;
+  
+  // Clear any existing content
   postContainer.innerHTML = '';
   loadedPostIds.clear();
   
-  // Initial loading with skeletons
+  // Add skeleton styles
+  addSkeletonStyles();
+  
+  // Create and add initial skeleton posts
   const initialCount = Math.min(postsPerLoad, posts.length);
   for (let i = 0; i < initialCount; i++) {
     const skeleton = createSkeletonPost(posts[i].id);
     postContainer.appendChild(skeleton);
   }
-
-  addSkeletonStyles();
   
-  // Start virtualization after a small delay to ensure DOM is ready
-  setTimeout(() => {
-    setupVirtualScroll();
-  }, 100);
+  // Set up intersection observer for skeleton replacement
+  setupVirtualizedScrolling();
   
-  // Add scroll event listener for infinite scrolling backup
-  window.addEventListener('scroll', () => {
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const documentHeight = document.documentElement.scrollHeight;
-    
-    if (scrollPosition >= documentHeight - 300 && !isLoading) {
-      loadMoreVirtualPosts();
-    }
-  }, { passive: true });
+  // Also set up a backup scroll listener for additional loading
+  window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
 }
 
-function setupVirtualScroll() {
-  const observerOptions = {
-    root: null,
-    rootMargin: '300px', // Increased for better preloading
-    threshold: 0.1
-  };
-  
-  const observer = new IntersectionObserver((entries) => {
+function setupVirtualizedScrolling() {
+  // Main observer to replace skeletons with real content
+  const contentObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const postElement = entry.target;
-      const postId = parseInt(postElement.dataset.postId);
+      if (!entry.isIntersecting) return;
       
-      if (entry.isIntersecting && postElement.classList.contains('skeleton')) {
-        const post = posts.find(p => p.id === postId);
-        if (post && !loadedPostIds.has(postId)) {
-          const realPost = createPostElement(post);
-          if (realPost) {
-            postElement.replaceWith(realPost);
-            loadedPostIds.add(postId);
-            initializeHeartReactions();
-            initializeVideoPlayers();
-            
-            // Check if we need to load more posts (if this was near the end)
-            if (loadedPostIds.size >= posts.length - 3) {
-              loadMoreVirtualPosts();
-            }
-          }
-        }
+      const element = entry.target;
+      
+      // Only process skeleton elements
+      if (element.getAttribute('data-skeleton') !== 'true') {
+        contentObserver.unobserve(element);
+        return;
+      }
+      
+      const postId = parseInt(element.getAttribute('data-post-id'));
+      if (isNaN(postId) || loadedPostIds.has(postId)) {
+        contentObserver.unobserve(element);
+        return;
+      }
+      
+      // Find the post data
+      const post = posts.find(p => p.id === postId);
+      if (!post) {
+        contentObserver.unobserve(element);
+        return;
+      }
+      
+      // Create the real post element
+      const realPostElement = createPostElement(post);
+      if (!realPostElement) {
+        contentObserver.unobserve(element);
+        return;
+      }
+      
+      // Replace the skeleton with the real post
+      element.parentNode.replaceChild(realPostElement, element);
+      
+      // Initialize lazy loading and other features for the new post
+      initializeLazyLoading(realPostElement);
+      
+      // Mark this post as loaded
+      loadedPostIds.add(postId);
+      
+      // Unobserve the replaced element
+      contentObserver.unobserve(element);
+      
+      // Initialize heart reactions for the new post
+      initializeHeartReactions();
+      
+      // Initialize video players if needed
+      if (post.video) {
+        initializeVideoPlayers();
       }
     });
-  }, observerOptions);
+  }, {
+    root: null,
+    rootMargin: '200px 0px',
+    threshold: 0.1
+  });
   
-  // Create a separate observer for the last post to trigger loading more
-  const lastPostObserver = new IntersectionObserver((entries) => {
+  // Observer for loading more content when reaching the bottom
+  const loadMoreObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && !isLoading) {
         loadMoreVirtualPosts();
       }
     });
   }, {
-    rootMargin: '200px',
+    root: null,
+    rootMargin: '300px 0px',
     threshold: 0.1
   });
   
-  // Observe all posts
-  document.querySelectorAll('.poster').forEach(post => {
-    if (!post.hasAttribute('data-observed')) {
-      observer.observe(post);
-      post.setAttribute('data-observed', 'true');
-    }
+  // Observe all current skeleton posts
+  document.querySelectorAll('.poster.skeleton').forEach(skeleton => {
+    contentObserver.observe(skeleton);
   });
   
-  // Observe the last post separately to trigger loading more
-  const lastPost = postContainer.lastElementChild;
-  if (lastPost) {
-    lastPostObserver.observe(lastPost);
+  // Observe the last element to trigger loading more
+  const lastElement = document.querySelector('.poster:last-child');
+  if (lastElement) {
+    loadMoreObserver.observe(lastElement);
   }
   
-  return { postObserver: observer, lastPostObserver };
+  return { contentObserver, loadMoreObserver };
 }
 
-
-function loadMorePosts() {
-  // Empty function - virtualization handles this now
+function handleVirtualizedScroll() {
+  if (isLoading) return;
+  
+  const scrollPosition = window.scrollY + window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  
+  // If we're near the bottom and not currently loading, load more posts
+  if (scrollPosition >= documentHeight - 400) {
+    loadMoreVirtualPosts();
+  }
 }
 
 function loadMoreVirtualPosts() {
+  const postContainer = document.getElementById("flyer");
+  if (!postContainer) return;
+  
+  // Don't load if already loading or if we've loaded all posts
   if (isLoading || loadedPostIds.size >= posts.length) return;
+  
   isLoading = true;
   
-  const startIndex = loadedPostIds.size;
-  const endIndex = Math.min(startIndex + postsPerLoad, posts.length);
+  // Determine which posts to load next
+  const nextPostsToLoad = [];
+  let loaded = 0;
   
-  if (startIndex >= endIndex) {
-    isLoading = false;
-    return; // No more posts to load
-  }
-  
-  // Create and add skeleton posts
-  const newSkeletons = [];
-  for (let i = startIndex; i < endIndex; i++) {
-    const post = posts[i];
-    if (!loadedPostIds.has(post.id)) {
-      const skeleton = createSkeletonPost(post.id);
-      postContainer.appendChild(skeleton);
-      newSkeletons.push(skeleton);
+  for (const post of posts) {
+    if (!loadedPostIds.has(post.id) && !document.querySelector(`.poster[data-post-id="${post.id}"]`)) {
+      nextPostsToLoad.push(post);
+      loaded++;
+      
+      if (loaded >= postsPerLoad) break;
     }
   }
   
-  // Create a new observer for the new skeletons
-  const observerOptions = {
-    root: null,
-    rootMargin: '300px',
-    threshold: 0.1
-  };
+  // If no more posts to load, exit
+  if (nextPostsToLoad.length === 0) {
+    isLoading = false;
+    return;
+  }
   
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const postElement = entry.target;
-      const postId = parseInt(postElement.dataset.postId);
-      
-      if (entry.isIntersecting && postElement.classList.contains('skeleton')) {
-        const post = posts.find(p => p.id === postId);
-        if (post && !loadedPostIds.has(postId)) {
-          const realPost = createPostElement(post);
-          if (realPost) {
-            postElement.replaceWith(realPost);
-            loadedPostIds.add(postId);
-            initializeHeartReactions();
-            initializeVideoPlayers();
-          }
-        }
-      }
-    });
-  }, observerOptions);
+  // Create and append skeleton posts
+  const newSkeletons = [];
+  nextPostsToLoad.forEach(post => {
+    const skeleton = createSkeletonPost(post.id);
+    postContainer.appendChild(skeleton);
+    newSkeletons.push(skeleton);
+  });
   
-  // Observe all new skeletons
+  // Set up observers for the new skeletons
+  const { contentObserver, loadMoreObserver } = setupVirtualizedScrolling();
+  
+  // Observe each new skeleton
   newSkeletons.forEach(skeleton => {
-    observer.observe(skeleton);
-    skeleton.setAttribute('data-observed', 'true');
+    contentObserver.observe(skeleton);
   });
   
-  // Observe the last post to trigger loading more
-  const lastPostObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        loadMoreVirtualPosts();
-      }
-    });
-  }, {
-    rootMargin: '200px',
-    threshold: 0.1
-  });
-  
+  // Observe the last skeleton for loading more
   if (newSkeletons.length > 0) {
-    lastPostObserver.observe(newSkeletons[newSkeletons.length - 1]);
+    loadMoreObserver.observe(newSkeletons[newSkeletons.length - 1]);
   }
   
   isLoading = false;
 }
-
-
-
-window.removeEventListener("scroll", scrollHandler);
 
 
 
@@ -735,11 +684,12 @@ function scrollHandler() {
 
   // If the user is near the bottom, load more posts
   if (scrollPosition >= documentHeight - 250) {
-    loadMorePosts()
+    loadMorePosts();
   }
 }
 
 // Initialize scroll event listener
+window.addEventListener("scroll", scrollHandler);
 
 // Helper function to shorten text
 
@@ -879,84 +829,180 @@ function addHeartStyles() {
 
 // Initialize heart reactions
 function initializeHeartReactions() {
-    addHeartStyles();
+  // Add heart styles if they don't exist
+  if (!document.getElementById('heart-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'heart-styles';
+    styleElement.textContent = `
+      .heart-ai {
+        width: 55px;
+        gap: 5px;
+        display: flex;
+        align-items: center;
+      }
+      .heart-clickable {
+        cursor: pointer;
+      }
+      .mee {
+        display: flex;
+        gap: 20px;
+      }
+      .call {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+      .feeling {
+        width: 22px;
+      }
+      .like-count {
+        font-size: 14px;
+        font-family: ibm plex sans, roboto;
+      } 
+      .like-count.liked {
+        font-weight: 500;
+        color: rgb(244, 7, 82);
+      }
+      .like-count:empty {
+        display: none;
+      }
+      .heart-icon {
+        transition: all 0.3s ease;
+      }
+      .heart-icon .heart-path {
+        stroke: rgb(0, 0, 0);
+        fill: none;
+        transition: all 0.3s ease;
+      }
+      .heart-icon.liked {
+        transform: scale(1);
+      }
+      .heart-icon.liked .heart-path {
+        fill: rgb(244, 7, 82);
+        stroke: rgb(244, 7, 82);
+      }
+      .heart-animation {
+        animation: pop 0.3s ease forwards;
+      }
+      .unfill-animation {
+        animation: shrinkFade 0.3s ease forwards;
+      }
+      @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.5); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shrinkFade {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(0.5); opacity: 0.5; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .reaction-container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .donate-btn {
+        display: flex;
+        align-items: center;
+      }
+      .comment-btn, .repost-btn {
+        display: flex; 
+        width: 55px;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        font-family: ibm plex sans, roboto;
+      }
+    `;
+    document.head.appendChild(styleElement);
+  }
+  
+  // Find all heart containers that haven't been initialized
+  const heartContainers = document.querySelectorAll('.heart-ai:not([data-initialized])');
+  
+  heartContainers.forEach(container => {
+    // Mark this container as initialized
+    container.setAttribute('data-initialized', 'true');
     
-    const heartContainers = document.querySelectorAll('.heart-ai');
+    const heartIcon = container.querySelector('.heart-icon');
+    const likeCount = container.querySelector('.like-count');
+    const clickableElements = container.querySelectorAll('.heart-clickable');
+    const postId = parseInt(container.getAttribute('data-post-id'));
+    let isLiked = container.getAttribute('data-liked') === 'true';
     
-    heartContainers.forEach(container => {
-        const heartIcon = container.querySelector('.heart-icon');
-        const likeCount = container.querySelector('.like-count');
-        const clickableElements = container.querySelectorAll('.heart-clickable');
-        const postId = container.getAttribute('data-post-id');
-        let isLiked = container.getAttribute('data-liked') === 'true';
+    // Find the post data
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    // Get initial count
+    let count = parseInt(post.likeCount) || 0;
+    
+    // Set initial display state
+    if (count < 1) {
+      likeCount.style.display = 'none';
+    } else {
+      likeCount.style.display = 'inline';
+      likeCount.textContent = count;
+    }
+    
+    // Apply initial liked state if needed
+    if (isLiked) {
+      heartIcon.classList.add('liked');
+      likeCount.classList.add('liked');
+    }
+    
+    // Attach click event listeners
+    clickableElements.forEach(element => {
+      element.addEventListener('click', (e) => {
+        e.stopPropagation();
         
-        // Initialize count from post data or 0, preventing NaN
-        const post = posts.find(p => p.id === parseInt(postId));
-        let count = post ? (parseInt(post.likeCount) || 0) : 0;
+        isLiked = !isLiked;
         
-        // Set initial state
-        if (count < 1) {
-            likeCount.style.display = 'none';
+        if (isLiked) {
+          heartIcon.classList.add('heart-animation', 'liked');
+          likeCount.classList.add('liked');
+          count++;
+          
+          // Show count
+          likeCount.style.display = 'inline';
+          likeCount.textContent = count;
+          
+          // Remove animation class after it completes
+          setTimeout(() => {
+            heartIcon.classList.remove('heart-animation');
+          }, 400);
         } else {
+          heartIcon.classList.add('unfill-animation');
+          heartIcon.classList.remove('liked');
+          likeCount.classList.remove('liked');
+          count = Math.max(0, count - 1);
+          
+          // Update count display
+          if (count < 1) {
+            likeCount.style.display = 'none';
+          } else {
             likeCount.style.display = 'inline';
             likeCount.textContent = count;
+          }
+          
+          setTimeout(() => {
+            heartIcon.classList.remove('unfill-animation');
+          }, 400);
         }
         
-        // Set initial liked state if applicable
-        if (isLiked) {
-            heartIcon.classList.add('liked');
-            likeCount.classList.add('liked');
+        // Update the data attributes
+        container.setAttribute('data-liked', isLiked.toString());
+        
+        // Update the post data
+        if (post) {
+          post.likeCount = count;
         }
-
-        clickableElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                isLiked = !isLiked;
-
-                if (isLiked) {
-                    heartIcon.classList.add('heart-animation', 'liked');
-                    likeCount.classList.add('liked');
-                    count++;
-                    
-                    // Show count
-                    likeCount.style.display = 'inline';
-                    likeCount.textContent = count;
-                    
-                    // Remove animation class after it completes
-                    setTimeout(() => {
-                        heartIcon.classList.remove('heart-animation');
-                    }, 400);
-                } else {
-                    heartIcon.classList.add('unfill-animation');
-                    heartIcon.classList.remove('liked');
-                    likeCount.classList.remove('liked');
-                    count = Math.max(0, count - 1);
-                    
-                    // Update count display
-                    if (count < 1) {
-                        likeCount.style.display = 'none';
-                    } else {
-                        likeCount.style.display = 'inline';
-                        likeCount.textContent = count;
-                    }
-                    
-                    setTimeout(() => {
-                        heartIcon.classList.remove('unfill-animation');
-                    }, 400);
-                }
-                
-                container.setAttribute('data-liked', isLiked);
-                
-                // Update the post data
-                if (post) {
-                    post.likeCount = count;
-                }
-                
-                console.log(`Post ${postId} liked: ${isLiked}, new count: ${count}`);
-            });
-        });
+      });
     });
+  });
 }
 
 // Call this function when the page loads
@@ -971,75 +1017,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to initialize video players
 function initializeVideoPlayers() {
-  const videoContainers = document.querySelectorAll('.video-container');
+  // Find video containers that haven't been initialized
+  const videoContainers = document.querySelectorAll('.video-container:not([data-initialized])');
   
   videoContainers.forEach(container => {
+    // Mark as initialized
+    container.setAttribute('data-initialized', 'true');
+    
     const thumbnailVideo = container.querySelector('.video-thumbnail');
     const durationBadge = container.querySelector('.duration-badge');
     
-    if (!thumbnailVideo || !durationBadge) return;
+    if (!thumbnailVideo) return;
     
-    // Remove existing event listeners (if any)
-    const thumbnailClone = thumbnailVideo.cloneNode(true);
-    thumbnailVideo.parentNode.replaceChild(thumbnailClone, thumbnailVideo);
-    
-    // Re-set the source and load
-    const sourceElement = thumbnailClone.querySelector('source');
-    if (sourceElement) {
-      const videoSource = sourceElement.src;
-      sourceElement.src = videoSource;
-      thumbnailClone.load();
+    // Set up video metadata loading
+    if (durationBadge && thumbnailVideo.readyState >= 1) {
+      // If metadata is already loaded
+      const duration = formatTime(thumbnailVideo.duration);
+      durationBadge.textContent = duration;
+    } else if (durationBadge) {
+      // Wait for metadata to load
+      thumbnailVideo.addEventListener('loadedmetadata', () => {
+        const duration = formatTime(thumbnailVideo.duration);
+        durationBadge.textContent = duration;
+      });
     }
     
-    // Set duration badge once metadata is loaded
-    thumbnailClone.addEventListener('loadedmetadata', () => {
-      const duration = formatTime(thumbnailClone.duration);
-      durationBadge.textContent = duration;
-    });
-    
-    // Open video modal on click with improved event handling
+    // Set up click handling
     container.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent event bubbling
+      e.stopPropagation();
       
       const postElement = container.closest('.poster');
       if (!postElement) return;
       
-      const postId = postElement.getAttribute('data-post-id');
-      if (!postId) return;
+      const postId = parseInt(postElement.getAttribute('data-post-id'));
+      if (isNaN(postId)) return;
       
-      // Find the corresponding post data
-      const post = posts.find(p => p.id === parseInt(postId));
+      const post = posts.find(p => p.id === postId);
       if (!post) return;
       
-      openVideoModal(post);
-    });
-  });
-  
-  // Set up modal close functionality
-  const backButtons = document.querySelectorAll('.back-button');
-  backButtons.forEach(button => {
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
-    
-    newButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeVideoModal();
-    });
-  });
-  
-  // Setup follow buttons
-  const followButtons = document.querySelectorAll('.follow-button');
-  followButtons.forEach(button => {
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
-    
-    newButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      newButton.classList.toggle('following');
-      newButton.textContent = newButton.classList.contains('following') ? 'Following' : 'Follow';
+      // Call the function to open the video modal
+      if (typeof openVideoModal === 'function') {
+        openVideoModal(post);
+      }
     });
   });
 }
+
+
 
 // Function to open video modal
 function openVideoModal(post) {
@@ -1227,14 +1251,40 @@ function setupVideoControls(videoPlayer) {
     return videoPlayer;
 }
 
+function shortenText(text, limit, showSeeMore = true) {
+  if (!text) return '';
+  if (text.length <= limit) return text;
+  
+  let shortened = text.slice(0, limit);
+  const lastSpace = shortened.lastIndexOf(' ');
+  
+  if (lastSpace > 0) {
+    shortened = shortened.slice(0, lastSpace);
+  }
+  
+  return showSeeMore ? 
+    shortened + `...<br><span class="reer">see more</span>` : 
+    shortened + "...";
+}
 
-
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize the homepage with virtualized scrolling
+  initializeHomepage();
+  
+  // Initialize any existing heart reactions
+  initializeHeartReactions();
+  
+  // Initialize any existing video players
+  initializeVideoPlayers();
+});
 
 // Helper function to format time (converts seconds to MM:SS format)
 function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+  
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
 // Function to add to the renderHomepage function
