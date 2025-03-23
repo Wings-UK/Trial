@@ -451,18 +451,15 @@ function initializeLazyLoading(element) {
 
 // Modify the loadMorePosts function to include lazy loading initialization
 function loadMorePosts() {
-  if (isLoading) return; // Prevent multiple simultaneous load operations
+  if (isLoading) return;
   isLoading = true;
 
   const postContainer = document.getElementById("flyer");
   
-  // Calculate how many posts we need to load
-  let postsToLoad = 0;
   let postsLoaded = 0;
   
   for (let i = 0; i < posts.length && postsLoaded < postsPerLoad; i++) {
     if (!loadedPostIds.has(posts[i].id)) {
-      postsToLoad++;
       loadedPostIds.add(posts[i].id);
       
       // Create and append the post element
@@ -474,11 +471,12 @@ function loadMorePosts() {
     }
   }
 
-  // Initialize video players and heart reactions for new posts
-  initializeVideoPlayers();
-  initializeHeartReactions();
+  // Initialize video players AFTER posts are added to DOM
+  setTimeout(() => {
+    initializeVideoPlayers();
+    initializeHeartReactions();
+  }, 0);
   
-  // If we've loaded all posts, remove the scroll event listener
   if (loadedPostIds.size >= posts.length) {
     window.removeEventListener("scroll", scrollHandler);
   }
@@ -1015,13 +1013,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-// Function to initialize video players
+// Function to initialize vide
 function initializeVideoPlayers() {
-  // Find video containers that haven't been initialized
+  // Find all video containers that haven't been initialized
   const videoContainers = document.querySelectorAll('.video-container:not([data-initialized])');
   
   videoContainers.forEach(container => {
-    // Mark as initialized
+    // Mark as initialized to prevent duplicate handlers
     container.setAttribute('data-initialized', 'true');
     
     const thumbnailVideo = container.querySelector('.video-thumbnail');
@@ -1029,7 +1027,7 @@ function initializeVideoPlayers() {
     
     if (!thumbnailVideo) return;
     
-    // Set up video metadata loading
+    // Set up video metadata loading for duration display
     if (durationBadge && thumbnailVideo.readyState >= 1) {
       // If metadata is already loaded
       const duration = formatTime(thumbnailVideo.duration);
@@ -1042,8 +1040,8 @@ function initializeVideoPlayers() {
       });
     }
     
-    // Set up click handling
-    container.addEventListener('click', (e) => {
+    // Important: Add click handler directly to the container
+    container.addEventListener('click', function(e) {
       e.stopPropagation();
       
       const postElement = container.closest('.poster');
@@ -1055,62 +1053,170 @@ function initializeVideoPlayers() {
       const post = posts.find(p => p.id === postId);
       if (!post) return;
       
-      // Call the function to open the video modal
-      if (typeof openVideoModal === 'function') {
-        openVideoModal(post);
-      }
+      // Create the video modal if it doesn't exist yet
+      ensureVideoModalExists();
+      
+      // Open the video modal
+      openVideoModal(post);
     });
   });
 }
 
-
+function ensureVideoModalExists() {
+  if (!document.querySelector('.video-modal')) {
+    const videoModal = document.createElement('div');
+    videoModal.className = 'video-modal';
+    videoModal.innerHTML = `
+      <div class="modal-header">
+        <div class="back-button">
+          <img src="pics/backa.png" alt="Back">
+        </div>
+        <div class="modal-user-info">
+          <div class="user-avatar">
+            <img src="" alt="">
+          </div>
+          <div class="user-details">
+            <div class="username">
+              <span></span>
+              <img class="verify-badge" src="pics/verifi1.png">
+            </div>
+            <div class="timestamp"></div>
+          </div>
+        </div>
+        <div class="detail-follow">Follow</div>
+      </div>
+      
+      <div class="video-player-container">
+        <video class="fullscreen-player">
+          <source src="" type="video/mp4">
+        </video>
+        
+        <div class="video-controls">
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-filled"></div>
+              <div class="progress-handle"></div>
+            </div>
+            <div class="time-display">0:00 / 0:00</div>
+          </div>
+          
+          <div class="control-buttons">
+            <div class="play-pause-btn">
+              <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" fill="white"/>
+              </svg>
+              <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
+              </svg>
+            </div>
+            <div class="volume-control">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-content">
+        <p class="modal-post-text"></p>
+      </div>
+      
+      <div class="modal-actions">
+        <div class="action-buttons">
+          <div class="action-button">
+            <img src="pics/lovv.png" alt="Like">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/chat.png" alt="Comment">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/repost.png" alt="Repost">
+            <span>0</span>
+          </div>
+          <div class="action-button">
+            <img src="pics/naira.png" alt="Donate">
+            <span>0</span>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(videoModal);
+    
+    // Set up modal close functionality
+    const backButton = videoModal.querySelector('.back-button');
+    backButton.addEventListener('click', closeVideoModal);
+  }
+}
 
 // Function to open video modal
 function openVideoModal(post) {
- 
+  // Make sure modal exists
+  ensureVideoModalExists();
+
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   const user = users.find(u => u.id === post.userId);
   
+  if (!user) return; // Exit if no user found
+  
   // Set the source of the video
-  videoPlayer.querySelector('source').src = post.video;
+  const videoSource = videoPlayer.querySelector('source');
+  videoSource.src = post.video;
   videoPlayer.load();
   
   // Update user details in the modal
   modal.querySelector('.user-avatar img').src = user.avatar;
   modal.querySelector('.username span').textContent = user.username;
-  modal.querySelector('.timestamp').textContent = post.timestamp;
-  modal.querySelector('.modal-post-text').textContent = post.content;
+  modal.querySelector('.timestamp').textContent = post.timestamp || post.date || '';
+  modal.querySelector('.modal-post-text').textContent = post.content || '';
   
   // Update action counts
-  modal.querySelector('.action-button:nth-child(1) span').textContent = post.likes || 358;
-  modal.querySelector('.action-button:nth-child(2) span').textContent = post.comments || 36;
-  modal.querySelector('.action-button:nth-child(3) span').textContent = post.reposts || 0;
-  modal.querySelector('.action-button:nth-child(4) span').textContent = post.donations || 8;
+  modal.querySelector('.action-button:nth-child(1) span').textContent = post.likeCount || 0;
+  modal.querySelector('.action-button:nth-child(2) span').textContent = post.commentCount || 0;
+  modal.querySelector('.action-button:nth-child(3) span').textContent = post.repostCount || 0;
+  modal.querySelector('.action-button:nth-child(4) span').textContent = post.diveCount || 0;
   
   // Show the modal
   modal.classList.add('active');
   document.body.style.overflow = 'hidden'; // Prevent background scrolling
   
-  // Set up video controls (with improved function)
-  const updatedPlayer = setupVideoControls(videoPlayer);
+  // Set up video controls
+  setupVideoControls(videoPlayer);
   
   // Adjust the video player size based on orientation
-  updatedPlayer.addEventListener('loadedmetadata', () => {
-    adjustVideoPlayer(updatedPlayer);
+  videoPlayer.addEventListener('loadedmetadata', () => {
+    adjustVideoPlayer(videoPlayer);
   });
   
-  // Auto play the video with proper error handling
-  document.addEventListener('click', () => {
-    videoPlayer.play().catch(error => {
-        console.log('Auto-play prevented:', error);
-    });
-}, { once: true });
-   
-    sessionStorage.setItem("scrollPosition", window.scrollY);
+  // Store scroll position for restoration later
+  sessionStorage.setItem("scrollPosition", window.scrollY);
   
-  
+  // Update history state
   history.pushState({ modalOpen: true }, '', '#video-modal');
+  
+  // Try to play the video
+  videoPlayer.play().catch(error => {
+    console.log('Auto-play prevented:', error);
+    // Add a play button overlay that users can click
+    const playOverlay = document.createElement('div');
+    playOverlay.className = 'play-overlay';
+    playOverlay.innerHTML = `
+      <div class="big-play-button">
+        <svg width="64" height="64" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" fill="white"/>
+        </svg>
+      </div>
+    `;
+    modal.querySelector('.video-player-container').appendChild(playOverlay);
+    
+    playOverlay.addEventListener('click', () => {
+      videoPlayer.play();
+      playOverlay.remove();
+    });
+  });
 }
 
 
@@ -1572,6 +1678,21 @@ showDetail = function(postId) {
         button.addEventListener('click', closeVideoModal);
     });
 }
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Make sure the video modal exists
+  ensureVideoModalExists();
+  
+  // Initialize the homepage with virtualized scrolling
+  initializeHomepage();
+  
+  // Initialize heart reactions and video players
+  setTimeout(() => {
+    initializeHeartReactions();
+    initializeVideoPlayers();
+  }, 100);
+});
 
 function adjustVideoPlayer(videoElement) {
   // Get video's natural aspect ratio
