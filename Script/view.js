@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", function () {
             // Use setTimeout to ensure DOM is fully ready
             setTimeout(() => {
                 window.scrollTo(0, parseInt(savedScrollPosition));
-            }, 100);
+            }, 0);
         }
     }
 });
@@ -499,7 +499,16 @@ function initializeHomepage() {
     // Clear any existing observers
     cleanupVirtualization();
     
-    // Reset state variables
+    // If posts are already rendered, reuse them and adjust scroll
+    if (postContainer.children.length > 0 && loadedPostIds.size > 0) {
+        setupVirtualizedScrolling(); // Reattach observers
+        window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
+        initializeHeartReactions();
+        initializeVideoPlayers();
+        return;
+    }
+
+    // Reset state variables only if starting fresh
     loadedPostIds.clear();
     isLoading = false;
     
@@ -507,24 +516,22 @@ function initializeHomepage() {
     addSkeletonStyles();
 
     // Create and add initial skeleton posts
-    postContainer.innerHTML = ''; // Ensure container is empty
+    postContainer.innerHTML = ''; // Ensure container is empty only if needed
     const initialCount = Math.min(postsPerLoad, posts.length);
     for (let i = 0; i < initialCount; i++) {
         const skeleton = createSkeletonPost(posts[i].id);
         postContainer.appendChild(skeleton);
     }
 
-    // Set up virtualization after a short delay
-    setTimeout(() => {
-        setupVirtualizedScrolling();
-        
-        // Add scroll listener with passive flag for performance
-        window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
-        
-        // Initialize other components
-        initializeHeartReactions();
-        initializeVideoPlayers();
-    }, 30);
+    // Set up virtualization
+    setupVirtualizedScrolling();
+    
+    // Add scroll listener with passive flag for performance
+    window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
+    
+    // Initialize other components
+    initializeHeartReactions();
+    initializeVideoPlayers();
 }
 
 function setupVirtualizedScrolling() {
@@ -1418,7 +1425,7 @@ function renderUserPosts(userId) {
 }
 
 function showDetail(postId) {
-    // Save current scroll position before showing detail
+    // Save current scroll position before showing detail (only for the originating page)
     sessionStorage.setItem("scrollPosition", window.scrollY);
     
     const postDetail = document.getElementById("meal");
@@ -1435,126 +1442,126 @@ function showDetail(postId) {
         commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
 
-    // Build post detail HTML (your existing code)
-    // ...
+    // Build post detail HTML (unchanged)
     const hasVideo = post.video ? true : false;
-const hasImage = post.image ? true : false;
+    const hasImage = post.image ? true : false;
 
-ensureVideoModalExists();
+    ensureVideoModalExists();
 
-postContent.innerHTML = `
-    <div class="cust-name" data-post-id="${post.id}"> 
-        <div class="heading">
-            <div class="small-photo1">
-                <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                    <img class="small-photo" src="${user.avatar}">
-                </a>
-            </div>
-            <div class="pos">
-                <div>
-                    <div class="link-wrapper">
-                        <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                            <div class="post1">
-                                <div class="jerr">
-                                    <p class="jerry">${user.username}</p>
-                                </div>
-                                <div>
-                                    <img class="verif" src="pics/very.svg">
-                                </div>
-                            </div>
-                        </a>
-                    </div> 
-                </div>     
-                <div class="comp1">
-                    <div class="cll">
-                        <p class="time">${post.date || post.timestamp}</p>
-                    </div>
+    postContent.innerHTML = `
+        <div class="cust-name" data-post-id="${post.id}"> 
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                        <img class="small-photo" src="${user.avatar}">
+                    </a>
                 </div>
-            </div> 
-        </div>
-        <div>
-            <button class="detail-follow foni" onclick="
-              const foniElem = document.querySelector('.foni');
-              if (foniElem.innerHTML === 'Follow') {
-                foniElem.innerHTML = 'Following';
-                foniElem.classList.add('follow')
-              } else {
-                foniElem.innerHTML = 'Follow';
-                foniElem.classList.remove('follow')
-              }
-            ">Follow</button>
-        </div>
-        <div class="dots">
-            <img class="dot" src="pics/dots.svg">
-            <div class="tool">
-                <p>More</p>
-            </div> 
-        </div>      
-    </div>
-    <div class="tir">
-        <p class="tiri">${post.content}<br></p>
-    </div>
-    ${hasImage ? `
-    <div class="swet">
-        <div class="laptop1">
-            <img class="lapto" src="${post.image}">
-        </div>
-    </div>
-    ` : ''}
-    
-    ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
-    
-    <div class="lefto">
-        <div class="dick">
-            <div>
-                <p class="viewe"><span class="werey">615</span> reactions</p>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${user.username}</p>
+                                    </div>
+                                    <div>
+                                        <img class="verif" src="pics/very.svg">
+                                    </div>
+                                </div>
+                            </a>
+                        </div> 
+                    </div>     
+                    <div class="comp1">
+                        <div class="cll">
+                            <p class="time">${post.date || post.timestamp}</p>
+                        </div>
+                    </div>
+                </div> 
             </div>
             <div>
-                <p class="viewe"><span class="werey">9</span> echoes</p>
+                <button class="detail-follow foni" onclick="
+                  const foniElem = document.querySelector('.foni');
+                  if (foniElem.innerHTML === 'Follow') {
+                    foniElem.innerHTML = 'Following';
+                    foniElem.classList.add('follow')
+                  } else {
+                    foniElem.innerHTML = 'Follow';
+                    foniElem.classList.remove('follow')
+                  }
+                ">Follow</button>
+            </div>
+            <div class="dots">
+                <img class="dot" src="pics/dots.svg">
+                <div class="tool">
+                    <p>More</p>
+                </div> 
+            </div>      
+        </div>
+        <div class="tir">
+            <p class="tiri">${post.content}<br></p>
+        </div>
+        ${hasImage ? `
+        <div class="swet">
+            <div class="laptop1">
+                <img class="lapto" src="${post.image}">
             </div>
         </div>
-        <div class="twits">
-            <div>
-                <img class="lefti" src="pics/stats.svg">
+        ` : ''}
+        
+        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+        
+        <div class="lefto">
+            <div class="dick">
+                <div>
+                    <p class="viewe"><span class="werey">615</span> reactions</p>
+                </div>
+                <div>
+                    <p class="viewe"><span class="werey">9</span> echoes</p>
+                </div>
             </div>
-            <div>
-                <p class="viewe">96.8K views</p>
+            <div class="twits">
+                <div>
+                    <img class="lefti" src="pics/stats.svg">
+                </div>
+                <div>
+                    <p class="viewe">96.8K views</p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="reaction">
-        <div class="small-photo1">
-            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
-            <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-            </div>
-        </div>   
-        <div class="small-photo1">
-            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
-            <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-            </div>
-        </div>   
-        <div class="small-photo1">
-            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
-            <div class="vrea">
-                <img class="luve" src="pics/2.gif">
-            </div>
-        </div>   
-        <div class="small-photo1">
-            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
-            <div class="vrea">
-                <img class="luve" src="pics/lovv.png">
-            </div>
-        </div>   
-        <div class="small-photo1">
-            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
-            <div class="vrea">
-                <img class="luve" src="pics/3.gif">
-            </div>
-        </div>   
-    </div>
-  `;
+        <div class="reaction">
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/2.gif">
+                </div>
+            </div>   
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>   
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/3.gif">
+                </div>
+            </div>   
+        </div>
+    `;
+
     // Switch to detail page with proper history state
     switchPage("meal");
     history.replaceState({ 
@@ -1569,6 +1576,7 @@ postContent.innerHTML = `
         initializeVideoPlayers();
         updateDetailForPost(user);
         setupDetailScrollListener();
+        window.scrollTo(0, 0); // Ensure scroll is at top after initialization
     }, 30);
 }
 
@@ -1635,14 +1643,9 @@ function switchPage(pageId) {
         }, 20);
     } else if (pageId === "meal") {
         // For post detail page
-        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        if (savedScrollPosition) {
-            setTimeout(() => {
-                window.scrollTo(0, parseInt(savedScrollPosition));
-            }, 20);
-        } else {
+        
             window.scrollTo(0, 0);
-        }
+       
         
         // Initialize any post-specific components
         setTimeout(() => {
@@ -1673,24 +1676,28 @@ window.onpopstate = function(event) {
   
   // Navigate to appropriate page based on history state
   if (event.state && event.state.page) {
-    // Save current scroll position before navigation
+    // Save current scroll position before navigation (except for "meal")
     const currentPage = document.querySelector(".page.active");
-    if (currentPage) {
+    if (currentPage && event.state.page !== "meal") {
       sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
     }
     
     // Switch to the page from history
     switchPage(event.state.page);
     
-    // Restore scroll position with delay to ensure page is rendered
-    setTimeout(() => {
-      const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
-      if (savedScrollPosition) {
-        window.scrollTo(0, parseInt(savedScrollPosition));
-      } else {
-        window.scrollTo(0, 0);
-      }
-    }, 20);
+    // Restore scroll position with delay to ensure page is rendered, except for "meal"
+    if (event.state.page !== "meal") {
+      setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
+        if (savedScrollPosition) {
+          window.scrollTo(0, parseInt(savedScrollPosition));
+        } else {
+          window.scrollTo(0, 0);
+        }
+      }, 20);
+    } else {
+      window.scrollTo(0, 0); // Always start "meal" page at top
+    }
   } else {
     // Default to home page if no state
     switchPage("food");
