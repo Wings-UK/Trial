@@ -1578,6 +1578,13 @@ function showDetail(postId) {
         setupDetailScrollListener();
         window.scrollTo(0, 0); // Ensure scroll is at top after initialization
     }, 30);
+    
+    
+       
+        
+  
+   
+
 }
 
 function goBack() {
