@@ -6,10 +6,14 @@ window.addEventListener("DOMContentLoaded", function () {
     if (pageId) {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
         if (savedScrollPosition) {
-            window.scrollTo(0, parseInt(savedScrollPosition));
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+            }, 100);
         }
     }
 });
+
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then((registration) => {
@@ -17,7 +21,6 @@ if ('serviceWorker' in navigator) {
             const newWorker = registration.installing;
             newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Show update message
                     let updateBanner = document.createElement('div');
                     updateBanner.innerHTML = `
                         <div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -35,7 +38,6 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
-
 
 const users = [
     {
@@ -85,7 +87,9 @@ const users = [
 ];
 
 const posts = [
+
     {
+
       id: 1,
       userId: 4,  // Refers to user with id 1 (@reddcinema)
       timestamp: "13 mins ago",
@@ -193,30 +197,25 @@ const posts = [
   
 ];
 
-
 const loggedInUser = {
     id: 4,
     username: "@jeremyx",
-    name: "Redd Cinemam",
+    name: "Jeremy X",
     cover: "pics/memo6.jpg",
     avatar: "pics/mypics.jpg",
-    bio: "I just vibe on here sometimes.. I'm a girl of course.🎬✨",
+    bio: "Just vibing out here 🎬✨",
     followers: 124,
     following: 30,
     location: "Minna, NR"
 };
 localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
 
-// Keep track of which posts have been loaded to avoid duplicates
-// Flag to prevent multiple simultaneous loads
-
 let loadedPostIds = new Set();
 let isLoading = false;
 let postsPerLoad = 5;
+let contentObserver = null;
+let loadMoreObserver = null;
 
-
-
-// Function to create a post element with lazy loading
 function createSkeletonPost(postId) {
   const skeleton = document.createElement('div');
   skeleton.className = 'poster skeleton';
@@ -243,26 +242,23 @@ function createSkeletonPost(postId) {
 
 function createPostElement(post) {
   const user = users.find(u => u.id === post.userId);
-  if (!user) return null; // Skip if no user found
+  if (!user) return null;
 
   const textLimit = (post.image || post.video) ? 250 : 500;
   const hasVideo = post.video ? true : false;
   const hasImage = post.image ? true : false;
 
-  // Create the post container
   const posterElement = document.createElement('div');
   posterElement.className = 'poster';
   posterElement.setAttribute('data-post-id', post.id);
 
-  // Construct the post HTML with lazy loading for images
   posterElement.innerHTML = `
     <div class="cust-name"> 
         <div class="heading">
             <div class="small-photo1">
                 <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                    <!-- Profile picture with lazy loading -->
                     <div class="placeholder small-photo" data-large="${user.avatar}">  
-                      <img src="pics/tt.jpg.jpg" class="img-small small-photo">  
+                      <img src="pics/tt.jpg" class="img-small small-photo">  
                       <div style="padding-bottom: 100%;"></div>  
                     </div>
                 </a>
@@ -302,7 +298,6 @@ function createPostElement(post) {
     
     ${hasImage ? `
     <div class="laptop1" onclick="showDetail(${post.id})">
-        <!-- Content image with lazy loading -->
         <div class="placeholder" data-large="${post.image}">  
           <img src="pics/tt_2.png" class="laptop img-small">  
           <div style="padding-bottom: 100%;"></div>  
@@ -338,7 +333,6 @@ function createPostElement(post) {
         <div class="reaction-container">
         <div class="call">
         <div class="mee">
-            
             <div class="comment-btn" data-post-id="${post.id}">
                 <img class="feeling" src="pics/comment.svg" alt="Comment">
                 <span>${post.commentCount || 0}</span>
@@ -357,7 +351,6 @@ function createPostElement(post) {
             <div class="mee">
             <div class="donate-btn">
                 <img class="feeling" src="pics/bookmark.svg" alt="Donate">
-                
             </div>
             <div class="donate-btn">
                 <img class="feeling" src="pics/share.svg">
@@ -422,9 +415,6 @@ function addSkeletonStyles() {
   document.head.appendChild(styleElement);
 }
 
-
-
-// Function to initialize lazy loading for all placeholders in an element
 function initializeLazyLoading(element) {
   const placeholders = element.querySelectorAll('.placeholder');
   
@@ -432,14 +422,12 @@ function initializeLazyLoading(element) {
     const small = placeholder.querySelector('.img-small');
     if (!small) return;
     
-    // 1: load small image and show it
     const img = new Image();
     img.src = small.src;
     img.onload = function () {
       small.classList.add('loaded');
     };
     
-    // 2: load large image
     const imgLarge = new Image();
     imgLarge.src = placeholder.dataset.large;
     imgLarge.classList.add('loaded');
@@ -449,7 +437,6 @@ function initializeLazyLoading(element) {
   });
 }
 
-// Modify the loadMorePosts function to include lazy loading initialization
 function loadMorePosts() {
   if (isLoading) return;
   isLoading = true;
@@ -462,7 +449,6 @@ function loadMorePosts() {
     if (!loadedPostIds.has(posts[i].id)) {
       loadedPostIds.add(posts[i].id);
       
-      // Create and append the post element
       const postElement = createPostElement(posts[i]);
       if (postElement) {
         postContainer.appendChild(postElement);
@@ -471,7 +457,6 @@ function loadMorePosts() {
     }
   }
 
-  // Initialize video players AFTER posts are added to DOM
   setTimeout(() => {
     initializeVideoPlayers();
     initializeHeartReactions();
@@ -484,128 +469,143 @@ function loadMorePosts() {
   isLoading = false;
 }
 
-// Initialize lazy loading on page load for any existing posts
 function initializeLazyLoadingOnLoad() {
   document.querySelectorAll('.poster').forEach(poster => {
     initializeLazyLoading(poster);
   });
 }
 
-// Add event listener to initialize lazy loading when window loads
 window.addEventListener('load', initializeLazyLoadingOnLoad);
 
-// Initial load of posts
+function cleanupVirtualization() {
+    if (contentObserver) {
+        contentObserver.disconnect();
+        contentObserver = null;
+    }
+    if (loadMoreObserver) {
+        loadMoreObserver.disconnect();
+        loadMoreObserver = null;
+    }
+    
+    // Remove scroll handler to prevent memory leaks
+    window.removeEventListener('scroll', handleVirtualizedScroll);
+    window.removeEventListener('scroll', scrollHandler);
+}
+
 function initializeHomepage() {
-  const postContainer = document.getElementById("flyer");
-  if (!postContainer) return;
-  
-  // Clear any existing content
-  postContainer.innerHTML = '';
-  loadedPostIds.clear();
-  
-  // Add skeleton styles
-  addSkeletonStyles();
-  
-  // Create and add initial skeleton posts
-  const initialCount = Math.min(postsPerLoad, posts.length);
-  for (let i = 0; i < initialCount; i++) {
-    const skeleton = createSkeletonPost(posts[i].id);
-    postContainer.appendChild(skeleton);
-  }
-  
-  // Set up intersection observer for skeleton replacement
-  setupVirtualizedScrolling();
-  
-  // Also set up a backup scroll listener for additional loading
-  window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
+    const postContainer = document.getElementById("flyer");
+    if (!postContainer) return;
+
+    // Clear any existing observers
+    cleanupVirtualization();
+    
+    // Reset state variables
+    loadedPostIds.clear();
+    isLoading = false;
+    
+    // Add skeleton styles
+    addSkeletonStyles();
+
+    // Create and add initial skeleton posts
+    postContainer.innerHTML = ''; // Ensure container is empty
+    const initialCount = Math.min(postsPerLoad, posts.length);
+    for (let i = 0; i < initialCount; i++) {
+        const skeleton = createSkeletonPost(posts[i].id);
+        postContainer.appendChild(skeleton);
+    }
+
+    // Set up virtualization after a short delay
+    setTimeout(() => {
+        setupVirtualizedScrolling();
+        
+        // Add scroll listener with passive flag for performance
+        window.addEventListener('scroll', handleVirtualizedScroll, { passive: true });
+        
+        // Initialize other components
+        initializeHeartReactions();
+        initializeVideoPlayers();
+    }, 30);
 }
 
 function setupVirtualizedScrolling() {
-  // Main observer to replace skeletons with real content
-  const contentObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      
-      const element = entry.target;
-      
-      // Only process skeleton elements
-      if (element.getAttribute('data-skeleton') !== 'true') {
-        contentObserver.unobserve(element);
-        return;
-      }
-      
-      const postId = parseInt(element.getAttribute('data-post-id'));
-      if (isNaN(postId) || loadedPostIds.has(postId)) {
-        contentObserver.unobserve(element);
-        return;
-      }
-      
-      // Find the post data
-      const post = posts.find(p => p.id === postId);
-      if (!post) {
-        contentObserver.unobserve(element);
-        return;
-      }
-      
-      // Create the real post element
-      const realPostElement = createPostElement(post);
-      if (!realPostElement) {
-        contentObserver.unobserve(element);
-        return;
-      }
-      
-      // Replace the skeleton with the real post
-      element.parentNode.replaceChild(realPostElement, element);
-      
-      // Initialize lazy loading and other features for the new post
-      initializeLazyLoading(realPostElement);
-      
-      // Mark this post as loaded
-      loadedPostIds.add(postId);
-      
-      // Unobserve the replaced element
-      contentObserver.unobserve(element);
-      
-      // Initialize heart reactions for the new post
-      initializeHeartReactions();
-      
-      // Initialize video players if needed
-      if (post.video) {
-        initializeVideoPlayers();
-      }
+    // Create a fresh set of observers
+    contentObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            
+            const element = entry.target;
+            if (element.getAttribute('data-skeleton') !== 'true') {
+                contentObserver.unobserve(element);
+                return;
+            }
+            
+            const postId = parseInt(element.getAttribute('data-post-id'));
+            if (isNaN(postId) || loadedPostIds.has(postId)) {
+                contentObserver.unobserve(element);
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (!post) {
+                contentObserver.unobserve(element);
+                return;
+            }
+            
+            // Create real post element
+            const realPostElement = createPostElement(post);
+            if (!realPostElement) {
+                contentObserver.unobserve(element);
+                return;
+            }
+            
+            // Track that we've processed this skeleton
+            contentObserver.unobserve(element);
+            loadedPostIds.add(postId);
+            
+            // Replace skeleton with real content
+            if (element.parentNode) {
+                element.parentNode.replaceChild(realPostElement, element);
+                
+                // Initialize content for the new element
+                initializeLazyLoading(realPostElement);
+                if (post.video) {
+                    setTimeout(() => initializeVideoPlayers(), 10);
+                }
+                
+                // Initialize heart reactions with slight delay
+                setTimeout(() => initializeHeartReactions(), 10);
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '200px 0px',
+        threshold: 0.1
     });
-  }, {
-    root: null,
-    rootMargin: '200px 0px',
-    threshold: 0.1
-  });
-  
-  // Observer for loading more content when reaching the bottom
-  const loadMoreObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !isLoading) {
-        loadMoreVirtualPosts();
-      }
+    
+    loadMoreObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isLoading) {
+                loadMoreVirtualPosts();
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '300px 0px',
+        threshold: 0.1
     });
-  }, {
-    root: null,
-    rootMargin: '300px 0px',
-    threshold: 0.1
-  });
-  
-  // Observe all current skeleton posts
-  document.querySelectorAll('.poster.skeleton').forEach(skeleton => {
-    contentObserver.observe(skeleton);
-  });
-  
-  // Observe the last element to trigger loading more
-  const lastElement = document.querySelector('.poster:last-child');
-  if (lastElement) {
-    loadMoreObserver.observe(lastElement);
-  }
-  
-  return { contentObserver, loadMoreObserver };
+    
+    // Observe all skeletons
+    document.querySelectorAll('.poster.skeleton').forEach(skeleton => {
+        contentObserver.observe(skeleton);
+    });
+    
+    // Observe last element for loading more
+    const lastElement = document.querySelector('.poster:last-child');
+    if (lastElement) {
+        loadMoreObserver.observe(lastElement);
+    }
 }
+
 
 function handleVirtualizedScroll() {
   if (isLoading) return;
@@ -613,7 +613,6 @@ function handleVirtualizedScroll() {
   const scrollPosition = window.scrollY + window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
   
-  // If we're near the bottom and not currently loading, load more posts
   if (scrollPosition >= documentHeight - 400) {
     loadMoreVirtualPosts();
   }
@@ -621,14 +620,10 @@ function handleVirtualizedScroll() {
 
 function loadMoreVirtualPosts() {
   const postContainer = document.getElementById("flyer");
-  if (!postContainer) return;
-  
-  // Don't load if already loading or if we've loaded all posts
-  if (isLoading || loadedPostIds.size >= posts.length) return;
+  if (!postContainer || isLoading || loadedPostIds.size >= posts.length) return;
   
   isLoading = true;
   
-  // Determine which posts to load next
   const nextPostsToLoad = [];
   let loaded = 0;
   
@@ -636,18 +631,15 @@ function loadMoreVirtualPosts() {
     if (!loadedPostIds.has(post.id) && !document.querySelector(`.poster[data-post-id="${post.id}"]`)) {
       nextPostsToLoad.push(post);
       loaded++;
-      
       if (loaded >= postsPerLoad) break;
     }
   }
   
-  // If no more posts to load, exit
   if (nextPostsToLoad.length === 0) {
     isLoading = false;
     return;
   }
   
-  // Create and append skeleton posts
   const newSkeletons = [];
   nextPostsToLoad.forEach(post => {
     const skeleton = createSkeletonPost(post.id);
@@ -655,15 +647,10 @@ function loadMoreVirtualPosts() {
     newSkeletons.push(skeleton);
   });
   
-  // Set up observers for the new skeletons
-  const { contentObserver, loadMoreObserver } = setupVirtualizedScrolling();
-  
-  // Observe each new skeleton
   newSkeletons.forEach(skeleton => {
     contentObserver.observe(skeleton);
   });
   
-  // Observe the last skeleton for loading more
   if (newSkeletons.length > 0) {
     loadMoreObserver.observe(newSkeletons[newSkeletons.length - 1]);
   }
@@ -671,258 +658,154 @@ function loadMoreVirtualPosts() {
   isLoading = false;
 }
 
-
-
-// Scroll event handler
 function scrollHandler() {
   if (isLoading) return;
   
   const scrollPosition = window.innerHeight + window.scrollY;
   const documentHeight = document.documentElement.scrollHeight;
 
-  // If the user is near the bottom, load more posts
   if (scrollPosition >= documentHeight - 250) {
     loadMorePosts();
   }
 }
 
-// Initialize scroll event listener
-window.addEventListener("scroll", scrollHandler);
-
-// Helper function to shorten text
-
-
-// Call this function when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-  initializeHomepage();
+    // Initialize the active page
+    const activePage = document.querySelector(".page.active");
+    if (activePage) {
+        const pageId = activePage.id;
+        history.replaceState({ page: pageId }, "", `#${pageId}`);
+        
+        if (pageId === "food") {
+            initializeHomepage();
+        }
+    }
+    
+    // Initialize UI components
+    initializeAccountIcon();
+    
+    // Add global event listeners
+    window.addEventListener('pagehide', function() {
+        // Save all scroll positions before page is unloaded
+        document.querySelectorAll('.page').forEach(page => {
+            if (page.classList.contains('active')) {
+                sessionStorage.setItem(`scrollPosition_${page.id}`, window.scrollY);
+            }
+        });
+    });
 });
 
 
-// Add the following CSS to your stylesheet
 const heartStyle = `
 .heart-ai {
-width: 55px;
-gap: 5px;
-  display: flex;
-  align-items: center;
+    width: 55px;
+    gap: 5px;
+    display: flex;
+    align-items: center;
 }
 .heart-clickable {
-    cursor: pointer; /* Only the heart and count are clickable */
+    cursor: pointer;
 }
 .mee {
-display: flex;
-gap: 20px;
+    display: flex;
+    gap: 20px;
 }
-
 .call {
-width: 100%;
-display: flex;
-justify-content: space-between;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
 }
 .feeling {
-  width: 22px;
+    width: 22px;
 }
-
 .like-count {
-  font-size: 14px;
-  font-family: ibm plex sans, roboto;
+    font-size: 14px;
+    font-family: ibm plex sans, roboto;
 } 
-
 .like-count.liked {
-  font-weight: 500;
-  color: rgb(244, 7, 82);
+    font-weight: 500;
+    color: rgb(244, 7, 82);
 }
-
 .like-count:empty {
-  display: none;
+    display: none;
 }
-
 .heart-icon {
-  transition: all 0.3s ease;
+    transition: all 0.3s ease;
 }
-
 .heart-icon .heart-path {
-  stroke: rgb(0, 0, 0);
-  fill: none;
-  transition: all 0.3s ease;
+    stroke: rgb(0, 0, 0);
+    fill: none;
+    transition: all 0.3s ease;
 }
-
 .heart-icon.liked {
-  transform: scale(1);
-}
-
-.heart-icon.liked .heart-path {
-  fill: rgb(244, 7, 82);
-  stroke: rgb(244, 7, 82);
-}
-
-@keyframes heartBeat {
-  0% {
-    transform: scale(0.5);
-  }
-  50% {
-    transform: scale(1.7);
-  }
-  100% {
     transform: scale(1);
-  }
 }
-
+.heart-icon.liked .heart-path {
+    fill: rgb(244, 7, 82);
+    stroke: rgb(244, 7, 82);
+}
+@keyframes heartBeat {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.7); }
+    100% { transform: scale(1); }
+}
 .heart-animation {
-  animation: heartBeat 0.7s ease-in-out;
+    animation: heartBeat 0.7s ease-in-out;
 }
-
 .heart-icon {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
-
 .heart-animation {
-  animation: pop 0.3s ease forwards;
+    animation: pop 0.3s ease forwards;
 }
-
 .unfill-animation {
-  animation: shrinkFade 0.3s ease forwards;
+    animation: shrinkFade 0.3s ease forwards;
 }
-
 @keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.5); }
-  100% { transform: scale(1); }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
 }
-
 @keyframes shrinkFade {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.5); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
 }
-
 .reaction-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 20px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 .donate-btn {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
-
 .comment-btn, .repost-btn {
-  display: flex; 
-  width: 55px;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  font-size: 15px;
-  font-family: ibm plex sans, roboto;
+    display: flex; 
+    width: 55px;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: ibm plex sans, roboto;
 }
 `;
 
-// Create a style element and add it to the head
 function addHeartStyles() {
   const styleElement = document.createElement('style');
   styleElement.textContent = heartStyle;
   document.head.appendChild(styleElement);
 }
 
-// Initialize heart reactions
 function initializeHeartReactions() {
-  // Add heart styles if they don't exist
   if (!document.getElementById('heart-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'heart-styles';
-    styleElement.textContent = `
-      .heart-ai {
-        width: 55px;
-        gap: 5px;
-        display: flex;
-        align-items: center;
-      }
-      .heart-clickable {
-        cursor: pointer;
-      }
-      .mee {
-        display: flex;
-        gap: 20px;
-      }
-      .call {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-      }
-      .feeling {
-        width: 22px;
-      }
-      .like-count {
-        font-size: 14px;
-        font-family: ibm plex sans, roboto;
-      } 
-      .like-count.liked {
-        font-weight: 500;
-        color: rgb(244, 7, 82);
-      }
-      .like-count:empty {
-        display: none;
-      }
-      .heart-icon {
-        transition: all 0.3s ease;
-      }
-      .heart-icon .heart-path {
-        stroke: rgb(0, 0, 0);
-        fill: none;
-        transition: all 0.3s ease;
-      }
-      .heart-icon.liked {
-        transform: scale(1);
-      }
-      .heart-icon.liked .heart-path {
-        fill: rgb(244, 7, 82);
-        stroke: rgb(244, 7, 82);
-      }
-      .heart-animation {
-        animation: pop 0.3s ease forwards;
-      }
-      .unfill-animation {
-        animation: shrinkFade 0.3s ease forwards;
-      }
-      @keyframes pop {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.5); }
-        100% { transform: scale(1); }
-      }
-      @keyframes shrinkFade {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(0.5); opacity: 0.5; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      .reaction-container {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-      .donate-btn {
-        display: flex;
-        align-items: center;
-      }
-      .comment-btn, .repost-btn {
-        display: flex; 
-        width: 55px;
-        align-items: center;
-        gap: 5px;
-        cursor: pointer;
-        font-size: 15px;
-        font-family: ibm plex sans, roboto;
-      }
-    `;
-    document.head.appendChild(styleElement);
+    addHeartStyles();
   }
   
-  // Find all heart containers that haven't been initialized
   const heartContainers = document.querySelectorAll('.heart-ai:not([data-initialized])');
   
   heartContainers.forEach(container => {
-    // Mark this container as initialized
     container.setAttribute('data-initialized', 'true');
     
     const heartIcon = container.querySelector('.heart-icon');
@@ -931,14 +814,11 @@ function initializeHeartReactions() {
     const postId = parseInt(container.getAttribute('data-post-id'));
     let isLiked = container.getAttribute('data-liked') === 'true';
     
-    // Find the post data
     const post = posts.find(p => p.id === postId);
     if (!post) return;
     
-    // Get initial count
     let count = parseInt(post.likeCount) || 0;
     
-    // Set initial display state
     if (count < 1) {
       likeCount.style.display = 'none';
     } else {
@@ -946,13 +826,11 @@ function initializeHeartReactions() {
       likeCount.textContent = count;
     }
     
-    // Apply initial liked state if needed
     if (isLiked) {
       heartIcon.classList.add('liked');
       likeCount.classList.add('liked');
     }
     
-    // Attach click event listeners
     clickableElements.forEach(element => {
       element.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -963,12 +841,8 @@ function initializeHeartReactions() {
           heartIcon.classList.add('heart-animation', 'liked');
           likeCount.classList.add('liked');
           count++;
-          
-          // Show count
           likeCount.style.display = 'inline';
           likeCount.textContent = count;
-          
-          // Remove animation class after it completes
           setTimeout(() => {
             heartIcon.classList.remove('heart-animation');
           }, 400);
@@ -977,24 +851,18 @@ function initializeHeartReactions() {
           heartIcon.classList.remove('liked');
           likeCount.classList.remove('liked');
           count = Math.max(0, count - 1);
-          
-          // Update count display
           if (count < 1) {
             likeCount.style.display = 'none';
           } else {
             likeCount.style.display = 'inline';
             likeCount.textContent = count;
           }
-          
           setTimeout(() => {
             heartIcon.classList.remove('unfill-animation');
           }, 400);
         }
         
-        // Update the data attributes
         container.setAttribute('data-liked', isLiked.toString());
-        
-        // Update the post data
         if (post) {
           post.likeCount = count;
         }
@@ -1003,23 +871,10 @@ function initializeHeartReactions() {
   });
 }
 
-// Call this function when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-  // Your existing initialization code
-  
-  // Initialize heart reactions
-  initializeHeartReactions();
-});
-
-
-
-// Function to initialize vide
 function initializeVideoPlayers() {
-  // Find all video containers that haven't been initialized
   const videoContainers = document.querySelectorAll('.video-container:not([data-initialized])');
   
   videoContainers.forEach(container => {
-    // Mark as initialized to prevent duplicate handlers
     container.setAttribute('data-initialized', 'true');
     
     const thumbnailVideo = container.querySelector('.video-thumbnail');
@@ -1027,20 +882,16 @@ function initializeVideoPlayers() {
     
     if (!thumbnailVideo) return;
     
-    // Set up video metadata loading for duration display
     if (durationBadge && thumbnailVideo.readyState >= 1) {
-      // If metadata is already loaded
       const duration = formatTime(thumbnailVideo.duration);
       durationBadge.textContent = duration;
     } else if (durationBadge) {
-      // Wait for metadata to load
       thumbnailVideo.addEventListener('loadedmetadata', () => {
         const duration = formatTime(thumbnailVideo.duration);
         durationBadge.textContent = duration;
       });
     }
     
-    // Important: Add click handler directly to the container
     container.addEventListener('click', function(e) {
       e.stopPropagation();
       
@@ -1053,10 +904,7 @@ function initializeVideoPlayers() {
       const post = posts.find(p => p.id === postId);
       if (!post) return;
       
-      // Create the video modal if it doesn't exist yet
       ensureVideoModalExists();
-      
-      // Open the video modal
       openVideoModal(post);
     });
   });
@@ -1145,71 +993,51 @@ function ensureVideoModalExists() {
     `;
     document.body.appendChild(videoModal);
     
-    // Set up modal close functionality
     const backButton = videoModal.querySelector('.back-button');
     backButton.addEventListener('click', closeVideoModal);
   }
 }
 
-// Function to open video modal
 function openVideoModal(post) {
-  // Make sure modal exists
   ensureVideoModalExists();
 
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   const user = users.find(u => u.id === post.userId);
   
-  if (!user) return; // Exit if no user found
+  if (!user) return;
   
-  // Set the source of the video
   const videoSource = videoPlayer.querySelector('source');
   videoSource.src = post.video;
   videoPlayer.load();
   
-  // Update user details in the modal
   modal.querySelector('.user-avatar img').src = user.avatar;
   modal.querySelector('.username span').textContent = user.username;
   modal.querySelector('.timestamp').textContent = post.timestamp || post.date || '';
   modal.querySelector('.modal-post-text').textContent = post.content || '';
   
-  // Update action counts
   modal.querySelector('.action-button:nth-child(1) span').textContent = post.likeCount || 0;
   modal.querySelector('.action-button:nth-child(2) span').textContent = post.commentCount || 0;
   modal.querySelector('.action-button:nth-child(3) span').textContent = post.repostCount || 0;
   modal.querySelector('.action-button:nth-child(4) span').textContent = post.diveCount || 0;
   
-  // Show the modal
   modal.classList.add('active');
-  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  document.body.style.overflow = 'hidden';
   
-  // Set up video controls
   setupVideoControls(videoPlayer);
   
-  // Adjust the video player size based on orientation
   videoPlayer.addEventListener('loadedmetadata', () => {
     adjustVideoPlayer(videoPlayer);
   });
   
-  // Store scroll position for restoration later
   sessionStorage.setItem("scrollPosition", window.scrollY);
-  
-  // Update history state
   history.pushState({ modalOpen: true }, '', '#video-modal');
   
-  // Try to play the video
   videoPlayer.play().catch(error => {
     console.log('Auto-play prevented:', error);
-    // Add a play button overlay that users can click
     const playOverlay = document.createElement('div');
     playOverlay.className = 'play-overlay';
-    playOverlay.innerHTML = `
-      <div class="big-play-button">
-        <svg width="64" height="64" viewBox="0 0 24 24">
-          <path d="M8 5v14l11-7z" fill="white"/>
-        </svg>
-      </div>
-    `;
+    playOverlay.innerHTML = ``;
     modal.querySelector('.video-player-container').appendChild(playOverlay);
     
     playOverlay.addEventListener('click', () => {
@@ -1219,142 +1047,113 @@ function openVideoModal(post) {
   });
 }
 
-
-
-// Function to close video modal
 function closeVideoModal() {
   const modal = document.querySelector('.video-modal');
   const videoPlayer = modal.querySelector('.fullscreen-player');
   
-  // Pause the video
   videoPlayer.pause();
   
   const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-    if (savedScrollPosition) {
-        setTimeout(() => {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        }, 0);
-    }
+  if (savedScrollPosition) {
+    setTimeout(() => {
+      window.scrollTo(0, parseInt(savedScrollPosition));
+    }, 0);
+  }
   
-  // Hide the modal
   modal.classList.remove('active');
-  document.body.style.overflow = ''; // Restore scrolling
+  document.body.style.overflow = '';
   
   if (history.state && history.state.page === "meal") {
-    switchPage("meal"); // Stay in post detail
+    switchPage("meal");
   } else {
-      history.back(); // Only go back if it wasn't post detail
+    history.back();
   }
 }
 
-// Function to setup video control
-// This function initializes video controls for all videos on the page
 function setupVideoControls(videoPlayer) {
-    const modal = videoPlayer.closest('.video-modal');
-    const progressBar = modal.querySelector('.progress-bar');
-    const progressFilled = modal.querySelector('.progress-filled');
-    const timeDisplay = modal.querySelector('.time-display');
-    const playPauseBtn = modal.querySelector('.play-pause-btn');
-    const playIcon = playPauseBtn.querySelector('.play-icon');
-    const pauseIcon = playPauseBtn.querySelector('.pause-icon');
+  const modal = videoPlayer.closest('.video-modal');
+  const progressBar = modal.querySelector('.progress-bar');
+  const progressFilled = modal.querySelector('.progress-filled');
+  const timeDisplay = modal.querySelector('.time-display');
+  const playPauseBtn = modal.querySelector('.play-pause-btn');
+  const playIcon = playPauseBtn.querySelector('.play-icon');
+  const pauseIcon = playPauseBtn.querySelector('.pause-icon');
 
-    // Update progress bar as video plays
-    videoPlayer.addEventListener('timeupdate', () => {
-        if (videoPlayer.duration) {
-            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-            progressFilled.style.width = `${percent}%`;
-            timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
-        }
-    });
-
-    // Click on progress bar to seek
-    progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        const percent = offsetX / progressBar.offsetWidth;
-        videoPlayer.currentTime = percent * videoPlayer.duration;
-    });
-
-    // Play/Pause button handler
-    const newPlayPauseBtn = playPauseBtn.cloneNode(true);
-    playPauseBtn.parentNode.replaceChild(newPlayPauseBtn, playPauseBtn);
-
-    // Update icon references to point to the new button's icons
-    const newPlayIcon = newPlayPauseBtn.querySelector('.play-icon');
-    const newPauseIcon = newPlayPauseBtn.querySelector('.pause-icon');
-
-    newPlayPauseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleVideoPlayback();
-    });
-
-    // Ensure icons switch properly when the video plays/pauses
-    videoPlayer.addEventListener('play', updatePlayPauseIcon);
-    videoPlayer.addEventListener('pause', updatePlayPauseIcon);
-
-    function updatePlayPauseIcon() {
-        if (videoPlayer.paused) {
-            newPlayIcon.style.display = 'block';
-            newPauseIcon.style.display = 'none';
-        } else {
-            newPlayIcon.style.display = 'none';
-            newPauseIcon.style.display = 'block';
-        }
+  videoPlayer.addEventListener('timeupdate', () => {
+    if (videoPlayer.duration) {
+      const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+      progressFilled.style.width = `${percent}%`;
+      timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
     }
-    
-    // Function to toggle video playback
-    function toggleVideoPlayback() {
-        if (videoPlayer.paused) {
-            videoPlayer.play().then(() => {
-                updatePlayPauseIcon();
-            }).catch(error => {
-                console.error('Error attempting to play video:', error);
-            });
-        } else {
-            videoPlayer.pause();
-            updatePlayPauseIcon();
-        }
+  });
+
+  progressBar.addEventListener('click', (e) => {
+    const rect = progressBar.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const percent = offsetX / progressBar.offsetWidth;
+    videoPlayer.currentTime = percent * videoPlayer.duration;
+  });
+
+  const newPlayPauseBtn = playPauseBtn.cloneNode(true);
+  playPauseBtn.parentNode.replaceChild(newPlayPauseBtn, playPauseBtn);
+
+  const newPlayIcon = newPlayPauseBtn.querySelector('.play-icon');
+  const newPauseIcon = newPlayPauseBtn.querySelector('.pause-icon');
+
+  newPlayPauseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleVideoPlayback();
+  });
+
+  videoPlayer.addEventListener('play', updatePlayPauseIcon);
+  videoPlayer.addEventListener('pause', updatePlayPauseIcon);
+
+  function updatePlayPauseIcon() {
+    if (videoPlayer.paused) {
+      newPlayIcon.style.display = 'block';
+      newPauseIcon.style.display = 'none';
+    } else {
+      newPlayIcon.style.display = 'none';
+      newPauseIcon.style.display = 'block';
     }
-
-    // Video click handler to toggle playback
-    videoPlayer.addEventListener('click', (e) => {
-        toggleVideoPlayback();
-    });
-
-    // Format time function
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-
-    // Hide controls when inactive
-    let controlsTimeout;
-    function showControls() {
-        clearTimeout(controlsTimeout);
-        modal.querySelector('.video-controls').style.opacity = '1';
-        controlsTimeout = setTimeout(() => {
-            if (!videoPlayer.paused) {
-                modal.querySelector('.video-controls').style.opacity = '0';
-            }
-        }, 3000);
-    }
-
-    // Show controls on mouse move
-    videoPlayer.addEventListener('mousemove', showControls);
-    modal.querySelector('.video-controls').addEventListener('mousemove', showControls);
-
-    // Show controls initially
-    showControls();
-
-    // Video end handling
-    videoPlayer.addEventListener('ended', () => {
+  }
+  
+  function toggleVideoPlayback() {
+    if (videoPlayer.paused) {
+      videoPlayer.play().then(() => {
         updatePlayPauseIcon();
-        modal.querySelector('.video-controls').style.opacity = '1';
-    });
+      }).catch(error => {
+        console.error('Error attempting to play video:', error);
+      });
+    } else {
+      videoPlayer.pause();
+      updatePlayPauseIcon();
+    }
+  }
 
-    // Return the video player element
-    return videoPlayer;
+  videoPlayer.addEventListener('click', (e) => {
+    toggleVideoPlayback();
+  });
+
+  function showControls() {
+    clearTimeout(controlsTimeout);
+    modal.querySelector('.video-controls').style.opacity = '1';
+    controlsTimeout = setTimeout(() => {
+      if (!videoPlayer.paused) {
+        modal.querySelector('.video-controls').style.opacity = '0';
+      }
+    }, 3000);
+  }
+
+  let controlsTimeout;
+  videoPlayer.addEventListener('mousemove', showControls);
+  modal.querySelector('.video-controls').addEventListener('mousemove', showControls);
+  showControls();
+
+  videoPlayer.addEventListener('ended', () => {
+    updatePlayPauseIcon();
+    modal.querySelector('.video-controls').style.opacity = '1';
+  });
 }
 
 function shortenText(text, limit, showSeeMore = true) {
@@ -1374,17 +1173,13 @@ function shortenText(text, limit, showSeeMore = true) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize the homepage with virtualized scrolling
   initializeHomepage();
-  
-  // Initialize any existing heart reactions
-  initializeHeartReactions();
-  
-  // Initialize any existing video players
-  initializeVideoPlayers();
+  setTimeout(() => {
+    initializeHeartReactions();
+    initializeVideoPlayers();
+  }, 100);
 });
 
-// Helper function to format time (converts seconds to MM:SS format)
 function formatTime(seconds) {
   if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
   
@@ -1393,9 +1188,7 @@ function formatTime(seconds) {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-// Function to add to the renderHomepage function
 function renderPostWithNewVideoPlayer(post, user) {
-  // Create video thumbnail section
   let videoHTML = '';
   
   if (post.video) {
@@ -1422,19 +1215,212 @@ function renderPostWithNewVideoPlayer(post, user) {
 
 
 
-function showDetail(postId) {
-  const originalShowDetail = showDetail;
+document.addEventListener('DOMContentLoaded', function() {
+  ensureVideoModalExists();
+  initializeHomepage();
+  setTimeout(() => {
+    initializeHeartReactions();
+    initializeVideoPlayers();
+  }, 100);
+});
 
-showDetail = function(postId) {
-    // Call the original showDetail function to render the post details
-    originalShowDetail(postId);
+function adjustVideoPlayer(videoElement) {
+  const videoAspect = videoElement.videoWidth / videoElement.videoHeight;
+  const container = videoElement.closest('.video-player-container');
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
+  
+  videoElement.style.width = '';
+  videoElement.style.height = '';
+  videoElement.style.top = '';
+  videoElement.style.left = '';
+  videoElement.style.transform = '';
+  
+  if (videoAspect < 1) {
+    const availableHeight = containerHeight - 57;
+    videoElement.style.height = availableHeight + 'px';
+    videoElement.style.width = '100%';
+    videoElement.style.top = '57px';
+    
+    const newWidth = availableHeight * videoAspect;
+    if (newWidth < containerWidth) {
+      videoElement.style.left = '50%';
+      videoElement.style.transform = 'translateX(-50%)';
+    }
+  } else {
+    const newHeight = containerWidth / videoAspect;
+    if (newHeight <= containerHeight) {
+      videoElement.style.width = '100%';
+      videoElement.style.height = 'auto';
+      videoElement.style.top = '40%';
+      videoElement.style.transform = 'translateY(-50%)';
+    } else {
+      videoElement.style.height = '100%';
+      videoElement.style.width = 'auto';
+      videoElement.style.left = '50%'; 
+      videoElement.style.transform = 'translateX(-50%)';
+    }
+  }
+}
 
-    // Delay comment system initialization slightly to ensure the DOM is updated
+function renderUserProfile(user) {
+    const profileIreti = document.getElementById("ireti");
+    if (!profileIreti) return;
+    
+    // Your existing profile HTML
+    // ...
+    profileIreti.innerHTML = `
+    <img class="frin" src="${user.cover}">
+    <div>
+      <img class="kor" src="${user.avatar}">
+    </div>
+    <div class="klr">
+      <div class="drun">
+        <div>
+          <p class="spe">${user.username}</p>
+        </div>
+        <div>
+          <img class="verify" src="pics/very.svg">
+        </div>
+      </div>
+      <div class="druu">
+        <div>
+          <p class="rkl">${user.location}</p>
+        </div>
+        <div class="drum">
+          <p class="swe">4</p>
+          <img class="kiy" src="pics/kiddo.png">
+        </div>
+      </div>
+      <div class="nin">
+        <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
+      </div>
+      <div class="cha">
+        <p>${user.bio}</p>
+      </div>
+      <div class="man">
+        <div class="vre">
+          <button class="aasw">Follow</button>
+        </div>
+        <div class="vre">
+          <button class="aasw">1 : 1</button>
+        </div>
+      </div>
+    </div>
+    <div class="ewe">
+      <div class="yeb">
+        <img class="dee" src="pics/apps.png">
+      </div>
+      <div class="yeb">
+        <a href="Retail-Desktop-MyAccount-Storefront.html">
+          <img class="dee" src="pics/browser.png">
+        </a>
+      </div>
+      <div class="yeb">
+        <img class="dee" src="pics/bren.png">
+      </div>
+    </div>
+    <div class="mansonro">
+      <div class="masonri">
+        <div class="column left-column"></div>
+        <div class="column right-column"></div>
+      </div>
+    </div>
+  `;
+    
+    const wingDiv = document.querySelector(".wing");
+    if (wingDiv) {
+        wingDiv.style.display = "none";
+    }
+}
+
+function showUserProfile(userId) {
+    // Save current position before showing profile
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+    
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    
+    // Update state before DOM changes
+    switchPage("profile");
+    history.replaceState({ 
+        page: "profile", 
+        userId: userId,
+        profileTab: "posts",
+        timestamp: Date.now()
+    }, "", `#profile/${userId}`);
+    
+    // Update profile content with delay
     setTimeout(() => {
-        setupCommentSystem(); // Set up the comment system
-        renderExistingComments(postId); // Load existing comments for this post
-    }, 100);
-}; 
+        updateHeaderHTML(userId);
+        renderUserProfile(user);
+        renderUserPosts(userId);
+    }, 30);
+}
+
+function renderUserPosts(userId) {
+  const userPosts = posts.filter(post => post.userId === userId);
+  const leftColumn = document.querySelector(".left-column");
+  const rightColumn = document.querySelector(".right-column");
+  
+  if (!leftColumn || !rightColumn) return;
+  if (userPosts.length === 0) {
+    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
+    return;
+  }
+
+  userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  userPosts.forEach((post, index) => {
+    const textLimit = post.video ? 80 : (post.image ? 40 : 200);
+    const postHTML = `
+      <div class="masonry" onclick="showDetail(${post.id})">
+        ${post.image ? `
+          <img src="${post.image}">
+        ` : ''}
+        ${post.video ? `
+          <div class="video-container power" data-post-id="${post.id}">
+            <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
+              <source src="${post.video}" type="video/mp4">
+            </video>
+            <div class="video-overlay power">
+              <div class="play-button power">
+                <svg width="30" height="30" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
+                  <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        <div class="contentma">
+          <p class="partner">${shortenText(post.content, textLimit, false)}</p>
+          <div class="bioi">
+            <div class="fred">
+              <img class="brekca" src="pics/chat-pic.jpg">
+              <p class="goo">@babygirl</p>
+            </div>
+            <div class="fred">
+              <img class="pen" src="pics/lovv.png">
+              <p class="goo">2.9K</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (index % 2 === 0) {
+      leftColumn.innerHTML += postHTML;
+    } else {
+      rightColumn.innerHTML += postHTML;
+    }
+  });
+}
+
+function showDetail(postId) {
+    // Save current scroll position before showing detail
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+    
     const postDetail = document.getElementById("meal");
     const postContent = document.getElementById("nuba");
 
@@ -1449,482 +1435,172 @@ showDetail = function(postId) {
         commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
 
+    // Build post detail HTML (your existing code)
+    // ...
     const hasVideo = post.video ? true : false;
-    const hasImage = post.image ? true : false;
+const hasImage = post.image ? true : false;
 
-    // Create video modal if it doesn't exist
-    if (!document.querySelector('.video-modal')) {
-        const videoModal = document.createElement('div');
-        videoModal.className = 'video-modal';
-        videoModal.innerHTML = `
-          <div class="modal-header">
-            <div class="back-button">
-              <img src="pics/backa.png" alt="Back">
-            </div>
-            <div class="modal-user-info">
-              <div class="user-avatar">
-                <img src="" alt="">
-              </div>
-              <div class="user-details">
-                <div class="username">
-                  <span></span>
-                  <img class="verify-badge" src="pics/verifi1.png">
-                </div>
-                <div class="timestamp"></div>
-              </div>
-            </div>
-            <div class="detail-follow">Follow</div>
-          </div>
-          
-          <div class="video-player-container">
-            <video class="fullscreen-player">
-              <source src="" type="video/mp4">
-            </video>
-            
-            <div class="video-controls">
-              <div class="progress-container">
-                <div class="progress-bar">
-                  <div class="progress-filled"></div>
-                  <div class="progress-handle"></div>
-                </div>
-                <div class="time-display">0:00 / 0:00</div>
-              </div>
-              
-              <div class="control-buttons">
-                <div class="play-pause-btn">
-                  <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" fill="white"/>
-                  </svg>
-                  <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/>
-                  </svg>
-                </div>
-                <div class="volume-control">
-                  <svg width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="white"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal-content">
-            <p class="modal-post-text"></p>
-          </div>
-          
-          <div class="modal-actions">
-            <div class="action-buttons">
-              <div class="action-button">
-                <img src="pics/lovv.png" alt="Like">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/chat.png" alt="Comment">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/repost.png" alt="Repost">
-                <span>0</span>
-              </div>
-              <div class="action-button">
-                <img src="pics/naira.png" alt="Donate">
-                <span>0</span>
-              </div>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(videoModal);
-    }
+ensureVideoModalExists();
 
-    postContent.innerHTML = `
-         <div class="cust-name" data-post-id="${post.id}"> 
-            <div class="heading">
-                <div class="small-photo1">
-                    <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                        <img class="small-photo" src="${user.avatar}">
-                    </a>
-                </div>
-                <div class="pos">
-                    <div>
-                        <div class="link-wrapper">
-                            <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
-                                <div class="post1">
-                                    <div class="jerr">
-                                        <p class="jerry">${user.username}</p>
-                                    </div>
-                                    <div>
-                                        <img class="verif" src="pics/very.svg">
-                                    </div>
+postContent.innerHTML = `
+    <div class="cust-name" data-post-id="${post.id}"> 
+        <div class="heading">
+            <div class="small-photo1">
+                <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                    <img class="small-photo" src="${user.avatar}">
+                </a>
+            </div>
+            <div class="pos">
+                <div>
+                    <div class="link-wrapper">
+                        <a class="home-click" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
+                            <div class="post1">
+                                <div class="jerr">
+                                    <p class="jerry">${user.username}</p>
                                 </div>
-                            </a>
-                        </div> 
-                    </div>     
-                    <div class="comp1">
-                        <div class="cll">
-                            <p class="time">${post.date || post.timestamp}</p>
-                        </div>
+                                <div>
+                                    <img class="verif" src="pics/very.svg">
+                                </div>
+                            </div>
+                        </a>
+                    </div> 
+                </div>     
+                <div class="comp1">
+                    <div class="cll">
+                        <p class="time">${post.date || post.timestamp}</p>
                     </div>
-                </div> 
+                </div>
+            </div> 
+        </div>
+        <div>
+            <button class="detail-follow foni" onclick="
+              const foniElem = document.querySelector('.foni');
+              if (foniElem.innerHTML === 'Follow') {
+                foniElem.innerHTML = 'Following';
+                foniElem.classList.add('follow')
+              } else {
+                foniElem.innerHTML = 'Follow';
+                foniElem.classList.remove('follow')
+              }
+            ">Follow</button>
+        </div>
+        <div class="dots">
+            <img class="dot" src="pics/dots.svg">
+            <div class="tool">
+                <p>More</p>
+            </div> 
+        </div>      
+    </div>
+    <div class="tir">
+        <p class="tiri">${post.content}<br></p>
+    </div>
+    ${hasImage ? `
+    <div class="swet">
+        <div class="laptop1">
+            <img class="lapto" src="${post.image}">
+        </div>
+    </div>
+    ` : ''}
+    
+    ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
+    
+    <div class="lefto">
+        <div class="dick">
+            <div>
+                <p class="viewe"><span class="werey">615</span> reactions</p>
             </div>
             <div>
-                <button class="detail-follow foni" onclick="
-                  const foniElem = document.querySelector('.foni');
-                  
-                  if (foniElem.innerHTML === 'Follow') {
-                    foniElem.innerHTML = 'Following';
-                    foniElem.classList.add('follow')
-                  } else {
-                    foniElem.innerHTML = 'Follow';
-                    foniElem.classList.remove('follow')
-                  }
-                ">Follow</button>
-            </div>
-            <div class="dots">
-                <img class="dot" src="pics/dots.svg">
-                <div class="tool">
-                    <p>More</p>
-                </div> 
-            </div>      
-        </div>
-        <div class="tir">
-            <p class="tiri">${post.content}<br></p>
-        </div>
-        ${hasImage ? `
-        <div class="swet">
-            <div class="laptop1">
-                <img class="lapto" src="${post.image}">
+                <p class="viewe"><span class="werey">9</span> echoes</p>
             </div>
         </div>
-        ` : ''}
-        
-        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
-        
-        <div class="lefto">
-            <div class="dick">
-                <div>
-                    <p class="viewe"><span class="werey">615</span> reactions</p>
-                </div>
-                <div>
-                    <p class="viewe"><span class="werey">9</span> echoes</p>
-                </div>
+        <div class="twits">
+            <div>
+                <img class="lefti" src="pics/stats.svg">
             </div>
-            <div class="twits">
-                <div>
-                    <img class="lefti" src="pics/stats.svg">
-                </div>
-                <div>
-                    <p class="viewe">96.8K views</p>
-                </div>
+            <div>
+                <p class="viewe">96.8K views</p>
             </div>
         </div>
-        <div class="reaction">
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-            
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/2.gif">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/3.gif">
-                </div>
-            </div>   
-        </div>
-    `;
-    updateDetailForPost(user);
-    
-    // Set up scroll listener after content is loaded
-    setupDetailScrollListener();
-
+    </div>
+    <div class="reaction">
+        <div class="small-photo1">
+            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
+            <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+            </div>
+        </div>   
+        <div class="small-photo1">
+            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
+            <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+            </div>
+        </div>   
+        <div class="small-photo1">
+            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
+            <div class="vrea">
+                <img class="luve" src="pics/2.gif">
+            </div>
+        </div>   
+        <div class="small-photo1">
+            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
+            <div class="vrea">
+                <img class="luve" src="pics/lovv.png">
+            </div>
+        </div>   
+        <div class="small-photo1">
+            <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
+            <div class="vrea">
+                <img class="luve" src="pics/3.gif">
+            </div>
+        </div>   
+    </div>
+  `;
+    // Switch to detail page with proper history state
     switchPage("meal");
+    history.replaceState({ 
+        page: "meal", 
+        postId: postId,
+        fromPage: "food",
+        timestamp: Date.now()
+    }, "", `#meal/${postId}`);
     
-    // Initialize video players AFTER the content is added to the DOM
-    initializeVideoPlayers();
-    
-    // Add direct click handler to the video container in the detail view
-    const detailVideoContainer = postContent.querySelector('.video-container');
-    if (detailVideoContainer) {
-        detailVideoContainer.addEventListener('click', () => {
-            openVideoModal(post);
-        });
-    }
-    
-    // Also set up modal close functionality
-    const backButtons = document.querySelectorAll('.back-button');
-    backButtons.forEach(button => {
-        button.addEventListener('click', closeVideoModal);
-    });
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Make sure the video modal exists
-  ensureVideoModalExists();
-  
-  // Initialize the homepage with virtualized scrolling
-  initializeHomepage();
-  
-  // Initialize heart reactions and video players
-  setTimeout(() => {
-    initializeHeartReactions();
-    initializeVideoPlayers();
-  }, 100);
-});
-
-function adjustVideoPlayer(videoElement) {
-  // Get video's natural aspect ratio
-  const videoAspect = videoElement.videoWidth / videoElement.videoHeight;
-  
-  // Get container dimensions
-  const container = videoElement.closest('.video-player-container');
-  const containerWidth = container.clientWidth;
-  const containerHeight = container.clientHeight;
-  
-  // Reset any previous styles
-  videoElement.style.width = '';
-  videoElement.style.height = '';
-  videoElement.style.top = '';
-  videoElement.style.left = '';
-  videoElement.style.transform = '';
-  
-  if (videoAspect < 1) {
-    // Portrait video - fill height with 70px space at top
-    const availableHeight = containerHeight - 57;
-    videoElement.style.height = availableHeight + 'px';
-    videoElement.style.width = '100%';
-    videoElement.style.top = '57px'; // Position below the header
-    
-    // Center horizontally
-    const newWidth = availableHeight * videoAspect;
-    if (newWidth < containerWidth) {
-      videoElement.style.left = '50%';
-      videoElement.style.transform = 'translateX(-50%)';
-    }
-  } else {
-    // Landscape video - keep original behavior (unchanged)
-    const newHeight = containerWidth / videoAspect;
-    if (newHeight <= containerHeight) {
-      // Can fit full width without overflow
-      videoElement.style.width = '100%';
-      videoElement.style.height = 'auto';
-      // Center vertically
-      videoElement.style.top = '40%';
-      videoElement.style.transform = 'translateY(-50%)';
-    } else {
-      // Can't fit width, use full height
-      videoElement.style.height = '100%';
-      videoElement.style.width = 'auto';
-      // Center horizontally
-      videoElement.style.left = '50%'; 
-      videoElement.style.transform = 'translateX(-50%)';
-    }
-  }
-}
-
-// Variable to track scroll position
-
-
-
-
-
-
-// Function to initialize header elements
-
-
-
-function showUserProfile(userId) {
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-    switchPage("profile");
+    // Initialize components with delay to ensure DOM is ready
     setTimeout(() => {
-        updateHeaderHTML(userId);
-    }, 50);
-    
-    const profileContainer = document.getElementById("profile");
-    const profileIreti = document.getElementById("ireti");
-    
-    profileIreti.innerHTML = `
-         <img class="frin" src="${user.cover}">
-            <div>
-              <img class="kor" src="${user.avatar}">
-            </div>
-            <div class="klr">
-              <div class="drun">
-                <div>
-                  <p class="spe">${user.username}</p>
-                </div>
-                <div>
-                  <img class="verify" src="pics/very.svg">
-                </div>
-              </div>
-              <div class="druu">
-                <div>
-                  <p class="rkl">${user.location}</p>
-                </div>
-                <div class="drum">
-                  <p class="swe">4</p>
-                  <img class="kiy" src="pics/kiddo.png">
-                </div>
-              </div>
-              <div class="nin">
-                <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
-              </div>
-              <div class="cha">
-                <p>${user.bio}</p>
-              </div>
-              <div class="man">
-                <div class="vre">
-                  <button class="aasw">Follow</button>
-                </div>
-                <div class="vre">
-                  <button class="aasw">1 : 1</button>
-                </div>
-              </div>
-            </div>
-            <div class="ewe">
-              <div class="yeb">
-                <img class="dee" src="pics/apps.png">
-              </div>
-              <div class="yeb">
-               <a href="Retail-Desktop-MyAccount-Storefront.html">
-                <img class="dee" src="pics/browser.png">
-               </a>
-
-              </div>
-              <div class="yeb">
-                <img class="dee" src="pics/bren.png">
-              </div>
-
-            </div>
-            
-            <div class="mansonro">
-            <div class="masonri">
-              <!-- Left Column -->
-              <div class="column left-column">
-            
-              </div>
-  
-              <div class="column right-column">
-                
-              </div>
-            </div>
-          </div>
-    `;
-    
-    
-    // **Force hide the wing div when visiting other profiles**
-    const wingDiv = document.querySelector(".wing");
-    if (wingDiv) {
-        wingDiv.style.display = "none";
-    }
-    renderUserPosts(userId);
+        initializeVideoPlayers();
+        updateDetailForPost(user);
+        setupDetailScrollListener();
+    }, 30);
 }
-
-function renderUserPosts(userId) {
-    const userPosts = posts.filter(post => post.userId === userId);
-    const leftColumn = document.querySelector(".left-column");
-    const rightColumn = document.querySelector(".right-column");
-    
-
-    if (!leftColumn || !rightColumn) return;
-    if (userPosts.length === 0) {
-    // Handle empty state
-    leftColumn.innerHTML = '<div class="empty-posts-message"><p>No posts yet</p></div>';
-    return;
-     }
-
-    userPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    userPosts.forEach((post, index) => {
-      const textLimit = post.video ? 80 : (post.image ? 40 : 200);
-        const postHTML = `
-            <div class="masonry" onclick="showDetail(${post.id})">
-                  ${post.image ? `
-                  <img src="${post.image}">
-                  ` : ''}
-                  ${post.video ? `
-                <div class="video-container power" data-post-id="${post.id}">
-                    <video class="video-thumbnail" preload="metadata" poster="${post.videoPoster || ''}">
-                      <source src="${post.video}" type="video/mp4">
-                    </video>
-                    <div class="video-overlay power">
-                      <div class="play-button power">
-                       <svg width="30" height="30" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="24" cy="24" r="22" fill="rgba(244, 7, 82, 0.5)" stroke="white" stroke-width="3"/>
-                          <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                      </svg>
-                      </div>
-                    </div>
-                </div>
-                  ` : ''}
-                  <div class="contentma">
-                    <p class="partner">${shortenText(post.content, textLimit, false)}</p>
-                    <div class="bioi">
-                      <div class="fred">
-                        <img class="brekca" src="pics/chat-pic.jpg">
-                        <p class="goo">@babygirl</p>
-                      </div>
-                      <div class="fred">
-                        <img class="pen" src="pics/lovv.png">
-                        <p class="goo">2.9K</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-        `;
-
-        if (index % 2 === 0) {
-            leftColumn.innerHTML += postHTML;
-        } else {
-            rightColumn.innerHTML += postHTML;
-        }
-    });
-}
-
 
 function goBack() {
-    switchPage("food");
- 
-    setTimeout (() => {
-     const savedScrollPosition = sessionStorage.getItem("scrollPosition");
- 
-     if (savedScrollPosition) {
-         window.scrollTo(0, parseInt(savedScrollPosition));
-     }
-    }, 50);
- }
- 
- 
- function switchPage(pageId) {
+    const fromPage = history.state?.fromPage || "food";
+    switchPage(fromPage);
+    
+    setTimeout(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${fromPage}`);
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+        } else {
+            window.scrollTo(0, 0);
+        }
+    }, 20);
+}
+
+function switchPage(pageId) {
     const currentPage = document.querySelector(".page.active");
+    
+    // Save scroll position of current page before switching
     if (currentPage) {
-        sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+        const currentScrollPosition = window.scrollY;
+        sessionStorage.setItem(`scrollPosition_${currentPage.id}`, currentScrollPosition);
+        
+        // Properly clean up before switching
+        if (currentPage.id === "food") {
+            cleanupVirtualization();
+        }
     }
 
-    // Hide all pages
+    // Hide all pages first
     const pages = document.querySelectorAll(".page");
     pages.forEach(page => page.classList.remove("active"));
 
@@ -1932,82 +1608,105 @@ function goBack() {
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    // Ensure homepage is the first entry in history (only if it's a fresh visit)
+    // Update history state with appropriate context
     if (!history.state) {
-        history.replaceState({ page: "food" }, "", "#food");
+        history.replaceState({ page: pageId, fromPage: "initial" }, "", `#${pageId}`);
+    } else if (history.state.page !== pageId) {
+        history.pushState({ 
+            page: pageId, 
+            fromPage: currentPage ? currentPage.id : "initial",
+            timestamp: Date.now() // Add timestamp to make states unique
+        }, "", `#${pageId}`);
     }
 
-    // Push new state only if it's different from the last one
-    if (!history.state || history.state.page !== pageId) {
-        history.pushState({ page: pageId }, "", `#${pageId}`);
-    }
-
-    // Restore scroll position for the new page
-    requestAnimationFrame(() => {
+    // Handle specific page initializations
+    if (pageId === "food") {
+        // Set scroll position immediately to avoid jump
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
-    });
-}
-
-function shortenText(text, limit, showSeeMore = true) {
-    if (text.length <= limit) return text; // No need to shorten
-
-    let shortened = text.slice(0, limit); // Cut at the limit
-    let lastSpace = shortened.lastIndexOf(" "); // Find last space
-
-    if (lastSpace > 0) {
-        shortened = shortened.slice(0, lastSpace); // Cut at last whole word
-    }
-
-    return showSeeMore ? shortened + `...<br><span class="reer">see more</span>` : shortened + "..."; 
-}
- 
- window.onpopstate = function (event) {
-    const modal = document.querySelector('.video-modal');
-
-    // Check if modal is open, if yes, close it instead of switching pages
-  
-
-    if (event.state && event.state.page) {
-        switchPage(event.state.page);
-    } else {
-        switchPage("food");  // Default back to homepage only if no history
-    }
-
-    if (modal && modal.classList.contains('active')) {
-        closeVideoModal();
-        return; // Stop further execution
-    }
-    
-    setTimeout(() => {
-        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition));
+        } else {
+            window.scrollTo(0, 0);
         }
-    }, 50);
+        
+        // Initialize homepage with slight delay to ensure smooth transition
+        setTimeout(() => {
+            initializeHomepage();
+        }, 20);
+    } else if (pageId === "meal") {
+        // For post detail page
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
+        if (savedScrollPosition) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+            }, 20);
+        } else {
+            window.scrollTo(0, 0);
+        }
+        
+        // Initialize any post-specific components
+        setTimeout(() => {
+            initializeVideoPlayers();
+            initializeHeartReactions();
+        }, 20);
+    } else if (pageId === "profile") {
+        // For profile page
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
+        if (savedScrollPosition) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+            }, 20);
+        } else {
+            window.scrollTo(0, 0);
+        }
+    }
+}
+
+window.onpopstate = function(event) {
+  const modal = document.querySelector('.video-modal');
+  
+  // Handle modal closure first
+  if (modal && modal.classList.contains('active')) {
+    closeVideoModal();
+    return;
+  }
+  
+  // Navigate to appropriate page based on history state
+  if (event.state && event.state.page) {
+    // Save current scroll position before navigation
+    const currentPage = document.querySelector(".page.active");
+    if (currentPage) {
+      sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+    }
+    
+    // Switch to the page from history
+    switchPage(event.state.page);
+    
+    // Restore scroll position with delay to ensure page is rendered
+    setTimeout(() => {
+      const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
+      if (savedScrollPosition) {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }, 20);
+  } else {
+    // Default to home page if no state
+    switchPage("food");
+  }
 };
- 
 
-
-
-
-
-
-// 1. First, let's create a function to store and retrieve the logged-in user
-
-// This function would typically be called after user logs in
 function setLoggedInUser(userData) {
   localStorage.setItem('loggedInUser', JSON.stringify(userData));
 }
 
-// Function to get the logged-in user data
 function getLoggedInUser() {
   const userData = localStorage.getItem('loggedInUser');
   if (userData) {
     return JSON.parse(userData);
   }
   
-  // If no user data exists, return a default user (for testing purposes)
   return {
     id: 999,
     username: "CurrentUser",
@@ -2021,44 +1720,21 @@ function getLoggedInUser() {
   };
 }
 
-// 2. Function to show the logged-in user's profile
 function showLoggedInUserProfile() {
   const user = getLoggedInUser();
-  
-  // Use the existing showUserProfile function, but pass the logged-in user's ID
   showUserProfile(user.id);
-  
-  // If the showUserProfile function requires the user to exist in the users array,
-  // we might need to temporarily add the logged-in user to that array if not already there
-  if (!users.some(u => u.id === user.id)) {
-    // Store the original users array
-    const originalUsers = [...users];
-    
-    // Add logged-in user temporarily
-    users.push(user);
-    
-    // Call the function to show profile
-    showUserProfile(user.id);
-    
-    // Restore original users array
-    users = originalUsers;
-  }
 }
 
-// 3. Function to initialize the account icon click event
 function initializeAccountIcon() {
-  // Find the account icon - adjust the selector based on your actual HTML
   const accountIcon = document.querySelector('.account-icon');
-  
   if (accountIcon) {
     accountIcon.addEventListener('click', function(event) {
       event.preventDefault();
-      showLoggedInUserProfile();
+      showMyProfile();
     });
   }
 }
 
-// 4. Alternative approach - direct method to show logged-in user profile
 function showMyProfile() {
   const user = getLoggedInUser();
   
@@ -2068,73 +1744,65 @@ function showMyProfile() {
     updateHeaderHTML(user.id);
   }, 50);
   
-  const profileContainer = document.getElementById("profile");
   const profileIreti = document.getElementById("ireti");
   
   profileIreti.innerHTML = `
-     <img class="frin" src="${user.cover}">
+    <img class="frin" src="${user.cover}">
+    <div>
+      <img class="kor" src="${user.avatar}">
+    </div>
+    <div class="klr">
+      <div class="drun">
         <div>
-          <img class="kor" src="${user.avatar}">
+          <p class="spe">${user.username}</p>
         </div>
-        <div class="klr">
-          <div class="drun">
-            <div>
-              <p class="spe">${user.username}</p>
-            </div>
-            <div>
-              <img class="verify" src="pics/verifi1.png">
-            </div>
-          </div>
-          <div class="druu">
-            <div>
-              <p class="rkl">${user.location}</p>
-            </div>
-            <div class="drum">
-              <p class="swe">4</p>
-              <img class="kiy" src="pics/kiddo.png">
-            </div>
-          </div>
-          <div class="nin">
-            <p class="rkl"><span class="bld">${user.following}</span> following &#183; <span class="bld">${user.followers}</span> followers</p>
-          </div>
-          <div class="cha">
-            <p>${user.bio}</p>
-          </div>
-          <div class="man">
-            <div class="vre">
-              <button class="aasw edit-profile-btn">Edit Profile</button>
-            </div>
-            <div class="vre">
-              <button class="aasw">Settings</button>
-            </div>
-          </div>
-        </div>
-        <div class="ewe">
-          <div class="yeb">
-            <img class="dee" src="pics/bren1.png">
-          </div>
-          <div class="yeb">
-           <a href="javascript:void(0);">
-            <img class="dee" src="pics/browser.png">
-           </a>
-          </div>
-          <div class="yeb">
-            <img class="dee" src="pics/bren.png">
-          </div>
-        </div>
-        
-        <div class="mansonro">
-        <div class="masonri">
-          <!-- Left Column -->
-          <div class="column left-column">
-        
-          </div>
-
-          <div class="column right-column">
-            
-          </div>
+        <div>
+          <img class="verify" src="pics/verifi1.png">
         </div>
       </div>
+      <div class="druu">
+        <div>
+          <p class="rkl">${user.location}</p>
+        </div>
+        <div class="drum">
+          <p class="swe">4</p>
+          <img class="kiy" src="pics/kiddo.png">
+        </div>
+      </div>
+      <div class="nin">
+        <p class="rkl"><span class="bld">${user.following}</span> following &#183; <span class="bld">${user.followers}</span> followers</p>
+      </div>
+      <div class="cha">
+        <p>${user.bio}</p>
+      </div>
+      <div class="man">
+        <div class="vre">
+          <button class="aasw edit-profile-btn">Edit Profile</button>
+        </div>
+        <div class="vre">
+          <button class="aasw">Settings</button>
+        </div>
+      </div>
+    </div>
+    <div class="ewe">
+      <div class="yeb">
+        <img class="dee" src="pics/bren1.png">
+      </div>
+      <div class="yeb">
+        <a href="javascript:void(0);">
+          <img class="dee" src="pics/browser.png">
+        </a>
+      </div>
+      <div class="yeb">
+        <img class="dee" src="pics/bren.png">
+      </div>
+    </div>
+    <div class="mansonro">
+      <div class="masonri">
+        <div class="column left-column"></div>
+        <div class="column right-column"></div>
+      </div>
+    </div>
   `;
   
   const wingDiv = document.querySelector(".wing");
@@ -2142,31 +1810,26 @@ function showMyProfile() {
     wingDiv.style.display = "block";
   }
   
-  // Render user posts
   renderUserPosts(user.id);
   
-  // Add event listener for edit profile button
   const editProfileBtn = document.querySelector('.edit-profile-btn');
   if (editProfileBtn) {
     editProfileBtn.addEventListener('click', openEditProfileModal);
   }
   
-  // Update history with tab information
   history.replaceState({ page: "profile", profileTab: "posts" }, "", "#profile");
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (loggedInUser && loggedInUser.avatar) {
-        document.getElementById("usero").src = loggedInUser.avatar;
-    }
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.avatar) {
+    document.getElementById("usero").src = loggedInUser.avatar;
+  }
 });
 
-// 5. Create a modal for editing the profile
 function openEditProfileModal() {
   const user = getLoggedInUser();
   
-  // Create modal if it doesn't exist
   if (!document.querySelector('.edit-profile-modal')) {
     const modal = document.createElement('div');
     modal.className = 'edit-profile-modal';
@@ -2212,7 +1875,6 @@ function openEditProfileModal() {
     
     document.body.appendChild(modal);
     
-    // Add event listeners for the modal
     const closeBtn = document.querySelector('.close-modal');
     closeBtn.addEventListener('click', closeEditProfileModal);
     
@@ -2220,7 +1882,6 @@ function openEditProfileModal() {
     saveBtn.addEventListener('click', saveProfileChanges);
   }
   
-  // Display the modal
   document.querySelector('.edit-profile-modal').style.display = 'block';
 }
 
@@ -2229,37 +1890,22 @@ function closeEditProfileModal() {
 }
 
 function saveProfileChanges() {
-  // Get the updated values
   const username = document.getElementById('edit-username').value;
   const location = document.getElementById('edit-location').value;
   const bio = document.getElementById('edit-bio').value;
   
-  // Get the current user data
   const user = getLoggedInUser();
   
-  // Update the values
   user.username = username;
   user.location = location;
   user.bio = bio;
   
-  // Handle file uploads (in a real app you'd upload to a server)
-  // For this example, we'll just update the localStorage
-  
-  // Save the updated user data
   setLoggedInUser(user);
-  
-  // Close the modal
   closeEditProfileModal();
-  
-  // Refresh the profile display
   showMyProfile();
 }
 
-
-
-// 6. Initialize everything when the document is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Check if we have styles for the edit profile modal, if not, add them
   if (!document.getElementById('edit-profile-styles')) {
     const styles = document.createElement('style');
     styles.id = 'edit-profile-styles';
@@ -2274,7 +1920,6 @@ document.addEventListener('DOMContentLoaded', function() {
         height: 100%;
         background-color: rgba(0,0,0,0.7);
       }
-      
       .modal-content1 {
         background-color: #fff;
         margin: 10% auto;
@@ -2283,46 +1928,38 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 80%;
         max-width: 500px;
       }
-      
       .modal-header1 {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
       }
-      
       .close-modal {
         font-size: 24px;
         cursor: pointer;
       }
-      
       .form-group {
         margin-bottom: 15px;
       }
-      
       .form-group label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
       }
-      
       .form-group input, .form-group textarea {
         width: 100%;
         padding: 8px;
         border: 1px solid #ddd;
         border-radius: 4px;
       }
-      
       .form-group textarea {
         height: 100px;
       }
-      
       .upload-btn-wrapper {
         position: relative;
         overflow: hidden;
         display: inline-block;
       }
-      
       .btn {
         border: 1px solid #ccc;
         color: #555;
@@ -2331,7 +1968,6 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 4px;
         font-weight: bold;
       }
-      
       .upload-btn-wrapper input[type=file] {
         font-size: 100px;
         position: absolute;
@@ -2340,7 +1976,6 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 0;
         cursor: pointer;
       }
-      
       .save-btn {
         background-color: #4CAF50;
         color: white;
@@ -2352,7 +1987,6 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 4px;
         cursor: pointer;
       }
-      
       .empty-posts-message {
         text-align: center;
         padding: 20px;
@@ -2364,9 +1998,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(styles);
   }
   
-  // Find the account icon
   const accountIcons = document.querySelectorAll('.account-icon, .profile-icon, .me-icon');
-  
   accountIcons.forEach(icon => {
     if (icon) {
       icon.addEventListener('click', function(event) {
@@ -2376,9 +2008,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-
-
-  // For testing - create a default user if none exists
   if (!localStorage.getItem('loggedInUser')) {
     setLoggedInUser({
       id: 999,
@@ -2393,7 +2022,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
 
 function createPostHTML(post) {
   const hasVideo = post.video ? true : false;
@@ -2431,27 +2059,10 @@ function createPostHTML(post) {
       </div>
     </div>
   `;
-} 
+}
 
-// Make sure to call this function when the page loads
-
-document.addEventListener('DOMContentLoaded', function() {
-
-  // Initialize header if needed
-  updateHeaderHTML();
-  
-  // Initialize lastScrollPos
-  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-  
-  // Attach scroll event listener
-  window.addEventListener('scroll', handleScroll);
-});
-
-
-// Variable to track scroll position
 let lastScrollPos = 0;
 
-// Function to add necessary elements to the header
 function updateHeaderHTML(userId) {
   const user = users.find(u => u.id === userId);
   if (!user) return;
@@ -2460,7 +2071,6 @@ function updateHeaderHTML(userId) {
   let headerProfilePic = document.querySelector('.header-profile-pic');
   let headerFollowBtn = document.querySelector('.header-follow-btn');
 
-  // If elements do not exist, create them
   if (!headerProfilePic) {
     headerProfilePic = document.createElement('div');
     headerProfilePic.className = 'header-profile-pic';
@@ -2473,20 +2083,14 @@ function updateHeaderHTML(userId) {
     header.appendChild(headerFollowBtn);
   }
 
-  // **Update the elements with the new profile data**
   headerProfilePic.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
   headerFollowBtn.innerHTML = `<button class="header-follow">Follow</button>`;
 
-  // Ensure elements are hidden by default (but ready to be shown when scrolling)
   headerProfilePic.style.display = 'none';
   headerFollowBtn.style.display = 'none';
 }
 
-// Function to handle scroll events
-
 function handleScroll() {
-
-  // Get references to the elements
   const profilePic = document.querySelector('.kor');
   const followBtn = document.querySelector('.aasw');
   const headerProfilePic = document.querySelector('.header-profile-pic');
@@ -2494,102 +2098,79 @@ function handleScroll() {
   
   if (!profilePic || !followBtn || !headerProfilePic || !headerFollowBtn) return;
   
-  // Get positions
   const profilePicRect = profilePic.getBoundingClientRect();
   const followBtnRect = followBtn.getBoundingClientRect();
   
-  // Set the avatar image source (only needs to be done once)
   if (headerProfilePic.querySelector('img').src === '') {
     headerProfilePic.querySelector('img').src = profilePic.src;
   }
   
-  // Track scroll direction
   const currentScrollPos = window.pageYOffset || document.documentElement.scrollTop;
   const scrollingDown = currentScrollPos > lastScrollPos;
   lastScrollPos = currentScrollPos;
   
-  // Check if profile pic is out of view (scrolled up)
-  if (profilePicRect.bottom < 60 && profilePicRect.top < 0) { // Ensure it's actually scrolled out of view
+  if (profilePicRect.bottom < 60 && profilePicRect.top < 0) {
     headerProfilePic.style.display = 'block';
-    // Slight delay to allow display to take effect before adding visible class
     setTimeout(() => {
       headerProfilePic.classList.add('visible');
     }, 10);
   } else {
     headerProfilePic.classList.remove('visible');
-    // Hide after transition completes
     setTimeout(() => {
       if (!headerProfilePic.classList.contains('visible')) {
         headerProfilePic.style.display = 'none';
       }
-    }, 300); // Match transition duration
+    }, 300);
   }
   
-  // Check if follow button is out of view (scrolled up)
-  if (followBtnRect.bottom < 60 && followBtnRect.top < 0) { // Ensure it's actually scrolled out of view
+  if (followBtnRect.bottom < 60 && followBtnRect.top < 0) {
     headerFollowBtn.style.display = 'block';
-    // Slight delay to allow display to take effect before adding visible class
     setTimeout(() => {
       headerFollowBtn.classList.add('visible');
     }, 10);
   } else {
     headerFollowBtn.classList.remove('visible');
-    // Hide after transition completes
     setTimeout(() => {
       if (!headerFollowBtn.classList.contains('visible')) {
         headerFollowBtn.style.display = 'none';
       }
-    }, 300); // Match transition duration
+    }, 300);
   }
-} 
+}
 
-
-// Function to update the header detail with post user information
 function updateDetailForPost(user) {
-    const detailProfilePic = document.querySelector('.detail-profile-pic');
-    const detailUsername = document.querySelector('.detail-username');
-    const detailFollowBtn = document.querySelector('.detail-follow');
+  const detailProfilePic = document.querySelector('.detail-profile-pic');
+  const detailUsername = document.querySelector('.detail-username');
+  const detailFollowBtn = document.querySelector('.detail-follow');
 
-    if (!detailProfilePic || !detailUsername || !detailFollowBtn) return;
+  if (!detailProfilePic || !detailUsername || !detailFollowBtn) return;
 
-    // Set the user's avatar in the profile pic div
-    detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
-    
-    // Set the username
-    detailUsername.textContent = user.username;
-    
-    // Set follow button text
-    detailFollowBtn.textContent = "Follow";
+  detailProfilePic.innerHTML = `<img src="${user.avatar}" alt="Profile">`;
+  detailUsername.textContent = user.username;
+  detailFollowBtn.textContent = "Follow";
 }
 
-// Function to handle scroll and show/hide detail elements
 function setupDetailScrollListener() {
-    window.addEventListener("scroll", function () {
-        // Get the elements we need to track
-        const profilePic = document.querySelector(".small-photo");
-        const followBtn = document.querySelector(".foni"); // Using the class from your HTML
-        const detailContent = document.querySelector(".detail-content");
+  window.addEventListener("scroll", function () {
+    const profilePic = document.querySelector(".small-photo");
+    const followBtn = document.querySelector(".foni");
+    const detailContent = document.querySelector(".detail-content");
 
-        if (!profilePic || !followBtn || !detailContent) return;
+    if (!profilePic || !followBtn || !detailContent) return;
 
-        // Get the position data of elements we're tracking
-        const profilePicRect = profilePic.getBoundingClientRect();
-        const followBtnRect = followBtn.getBoundingClientRect();
+    const profilePicRect = profilePic.getBoundingClientRect();
+    const followBtnRect = followBtn.getBoundingClientRect();
 
-        // If either element is scrolled out of view (top is less than 60px from top of viewport)
-        if (profilePicRect.top < 0 || followBtnRect.top < 0) {
-            detailContent.classList.add("visible"); 
-        } else {
-            detailContent.classList.remove("visible");
-        }
-    });
+    if (profilePicRect.top < 0 || followBtnRect.top < 0) {
+      detailContent.classList.add("visible");
+    } else {
+      detailContent.classList.remove("visible");
+    }
+  });
 }
 
-
-
-
-
-
-
- 
- renderHomepage();
+document.addEventListener('DOMContentLoaded', function() {
+  updateHeaderHTML();
+  lastScrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  window.addEventListener('scroll', handleScroll);
+});
