@@ -1041,8 +1041,9 @@ function openVideoModal(post) {
         adjustVideoPlayer(videoPlayer);
     });
     
+    const currentPage = history.state && history.state.page ? history.state.page : "food";
     sessionStorage.setItem("scrollPosition", window.scrollY);
-    history.pushState({ modalOpen: true }, '', '#video-modal');
+    history.pushState({ modalOpen: true, fromPage: currentPage }, '', '#video-modal');
     
     videoPlayer.play().catch(error => {
         console.log('Auto-play prevented:', error);
