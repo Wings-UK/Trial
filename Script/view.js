@@ -899,13 +899,17 @@ function initializeVideoPlayers() {
       });
     }
     
-    container.addEventListener('click', function(e) {
+    // Remove existing listeners to prevent duplicates
+    container.removeEventListener('click', handleVideoClick);
+    container.addEventListener('click', handleVideoClick);
+    
+    function handleVideoClick(e) {
       e.stopPropagation();
       
-      const postElement = container.closest('.poster');
+      const postElement = container.closest('.poster') || container.closest('.swet');
       if (!postElement) return;
       
-      const postId = parseInt(postElement.getAttribute('data-post-id'));
+      const postId = parseInt(container.getAttribute('data-post-id') || postElement.parentElement.getAttribute('data-post-id'));
       if (isNaN(postId)) return;
       
       const post = posts.find(p => p.id === postId);
@@ -913,7 +917,7 @@ function initializeVideoPlayers() {
       
       ensureVideoModalExists();
       openVideoModal(post);
-    });
+    }
   });
 }
 
@@ -1006,52 +1010,52 @@ function ensureVideoModalExists() {
 }
 
 function openVideoModal(post) {
-  ensureVideoModalExists();
+    ensureVideoModalExists();
 
-  const modal = document.querySelector('.video-modal');
-  const videoPlayer = modal.querySelector('.fullscreen-player');
-  const user = users.find(u => u.id === post.userId);
-  
-  if (!user) return;
-  
-  const videoSource = videoPlayer.querySelector('source');
-  videoSource.src = post.video;
-  videoPlayer.load();
-  
-  modal.querySelector('.user-avatar img').src = user.avatar;
-  modal.querySelector('.username span').textContent = user.username;
-  modal.querySelector('.timestamp').textContent = post.timestamp || post.date || '';
-  modal.querySelector('.modal-post-text').textContent = post.content || '';
-  
-  modal.querySelector('.action-button:nth-child(1) span').textContent = post.likeCount || 0;
-  modal.querySelector('.action-button:nth-child(2) span').textContent = post.commentCount || 0;
-  modal.querySelector('.action-button:nth-child(3) span').textContent = post.repostCount || 0;
-  modal.querySelector('.action-button:nth-child(4) span').textContent = post.diveCount || 0;
-  
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  
-  setupVideoControls(videoPlayer);
-  
-  videoPlayer.addEventListener('loadedmetadata', () => {
-    adjustVideoPlayer(videoPlayer);
-  });
-  
-  sessionStorage.setItem("scrollPosition", window.scrollY);
-  history.pushState({ modalOpen: true }, '', '#video-modal');
-  
-  videoPlayer.play().catch(error => {
-    console.log('Auto-play prevented:', error);
-    const playOverlay = document.createElement('div');
-    playOverlay.className = 'play-overlay';
-    playOverlay.innerHTML = ``;
-    modal.querySelector('.video-player-container').appendChild(playOverlay);
+    const modal = document.querySelector('.video-modal');
+    const videoPlayer = modal.querySelector('.fullscreen-player');
+    const user = users.find(u => u.id === post.userId);
     
-    playOverlay.addEventListener('click', () => {
-      videoPlayer.play();
-      playOverlay.remove();
+    if (!user) return;
+    
+    const videoSource = videoPlayer.querySelector('source');
+    videoSource.src = post.video;
+    videoPlayer.load();
+    
+    modal.querySelector('.user-avatar img').src = user.avatar;
+    modal.querySelector('.username span').textContent = user.username;
+    modal.querySelector('.timestamp').textContent = post.timestamp || post.date || '';
+    modal.querySelector('.modal-post-text').textContent = post.content || '';
+    
+    modal.querySelector('.action-button:nth-child(1) span').textContent = post.likeCount || 0;
+    modal.querySelector('.action-button:nth-child(2) span').textContent = post.commentCount || 0;
+    modal.querySelector('.action-button:nth-child(3) span').textContent = post.repostCount || 0;
+    modal.querySelector('.action-button:nth-child(4) span').textContent = post.diveCount || 0;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    setupVideoControls(videoPlayer);
+    
+    videoPlayer.addEventListener('loadedmetadata', () => {
+        adjustVideoPlayer(videoPlayer);
     });
-  });
+    
+    sessionStorage.setItem("scrollPosition", window.scrollY);
+    history.pushState({ modalOpen: true }, '', '#video-modal');
+    
+    videoPlayer.play().catch(error => {
+        console.log('Auto-play prevented:', error);
+        const playOverlay = document.createElement('div');
+        playOverlay.className = 'play-overlay';
+        playOverlay.innerHTML = `<svg width="48" height="48" viewBox="0 0 48 48"><path d="M34 24L18 34V14L34 24Z" fill="white"/></svg>`;
+        modal.querySelector('.video-player-container').appendChild(playOverlay);
+        
+        playOverlay.addEventListener('click', () => {
+            videoPlayer.play();
+            playOverlay.remove();
+        });
+    });
 }
 
 function closeVideoModal() {
@@ -1085,7 +1089,7 @@ function setupVideoControls(videoPlayer) {
   const playPauseBtn = modal.querySelector('.play-pause-btn');
   const playIcon = playPauseBtn.querySelector('.play-icon');
   const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-
+  
   videoPlayer.addEventListener('timeupdate', () => {
     if (videoPlayer.duration) {
       const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
@@ -1093,28 +1097,29 @@ function setupVideoControls(videoPlayer) {
       timeDisplay.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
     }
   });
-
+  
   progressBar.addEventListener('click', (e) => {
     const rect = progressBar.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const percent = offsetX / progressBar.offsetWidth;
     videoPlayer.currentTime = percent * videoPlayer.duration;
   });
-
+  
+  // Replace play/pause button to avoid duplicate listeners
   const newPlayPauseBtn = playPauseBtn.cloneNode(true);
   playPauseBtn.parentNode.replaceChild(newPlayPauseBtn, playPauseBtn);
-
+  
   const newPlayIcon = newPlayPauseBtn.querySelector('.play-icon');
   const newPauseIcon = newPlayPauseBtn.querySelector('.pause-icon');
-
+  
   newPlayPauseBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleVideoPlayback();
   });
-
+  
   videoPlayer.addEventListener('play', updatePlayPauseIcon);
   videoPlayer.addEventListener('pause', updatePlayPauseIcon);
-
+  
   function updatePlayPauseIcon() {
     if (videoPlayer.paused) {
       newPlayIcon.style.display = 'block';
@@ -1137,11 +1142,9 @@ function setupVideoControls(videoPlayer) {
       updatePlayPauseIcon();
     }
   }
-
-  videoPlayer.addEventListener('click', (e) => {
-    toggleVideoPlayback();
-  });
-
+  
+  // Removed: videoPlayer.addEventListener('click', (e) => { toggleVideoPlayback(); });
+  
   function showControls() {
     clearTimeout(controlsTimeout);
     modal.querySelector('.video-controls').style.opacity = '1';
@@ -1151,12 +1154,12 @@ function setupVideoControls(videoPlayer) {
       }
     }, 3000);
   }
-
+  
   let controlsTimeout;
   videoPlayer.addEventListener('mousemove', showControls);
   modal.querySelector('.video-controls').addEventListener('mousemove', showControls);
   showControls();
-
+  
   videoPlayer.addEventListener('ended', () => {
     updatePlayPauseIcon();
     modal.querySelector('.video-controls').style.opacity = '1';
@@ -1425,30 +1428,28 @@ function renderUserPosts(userId) {
 }
 
 function showDetail(postId) {
-    // Save current scroll position before showing detail
-    sessionStorage.setItem("scrollPosition", window.scrollY);
-    
-    const postDetail = document.getElementById("meal");
-    const postContent = document.getElementById("nuba");
-
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-
-    const user = users.find(u => u.id === post.userId);
-    if (!user) return;
-
-    const commentTextarea = document.querySelector('.comment-textarea');
-    if (commentTextarea) {
-        commentTextarea.placeholder = `Reply to ${user.username}...`;
-    }
-
-    // Build post detail HTML
-    const hasVideo = post.video ? true : false;
-    const hasImage = post.image ? true : false;
-
-    ensureVideoModalExists();
-
-    postContent.innerHTML = `
+  sessionStorage.setItem("scrollPosition", window.scrollY);
+  
+  const postDetail = document.getElementById("meal");
+  const postContent = document.getElementById("nuba");
+  
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  
+  const user = users.find(u => u.id === post.userId);
+  if (!user) return;
+  
+  const commentTextarea = document.querySelector('.comment-textarea');
+  if (commentTextarea) {
+    commentTextarea.placeholder = `Reply to ${user.username}...`;
+  }
+  
+  const hasVideo = post.video ? true : false;
+  const hasImage = post.image ? true : false;
+  
+  ensureVideoModalExists();
+  
+  postContent.innerHTML = `
         <div class="cust-name" data-post-id="${post.id}"> 
             <div class="heading">
                 <div class="small-photo1">
@@ -1507,9 +1508,11 @@ function showDetail(postId) {
             </div>
         </div>
         ` : ''}
-        
-        ${hasVideo ? renderPostWithNewVideoPlayer(post, user) : ''}
-        
+        ${hasVideo ? `
+        <div class="swet">
+            ${renderPostWithNewVideoPlayer(post, user)}
+        </div>
+        ` : ''}
         <div class="lefto">
             <div class="dick">
                 <div>
@@ -1535,50 +1538,28 @@ function showDetail(postId) {
                     <img class="luve" src="pics/lovv.png">
                 </div>
             </div>   
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/17.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/19.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/2.gif">
-                </div>
-            </div>   
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/20.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
-            </div>   
-            <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/mypics.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/3.gif">
-                </div>
-            </div>   
+            <!-- Other reaction photos -->
         </div>
     `;
-
-    // Switch to detail page with proper history state
-    switchPage("meal");
-    history.replaceState({ 
-        page: "meal", 
-        postId: postId,
-        fromPage: "food",
-        timestamp: Date.now()
-    }, "", `#meal/${postId}`);
-    
-    // Initialize components with delay to ensure DOM is ready
-    setTimeout(() => {
-        initializeVideoPlayers(); // This is critical - makes sure video players are initialized
-        updateDetailForPost(user);
-        setupDetailScrollListener();
-        window.scrollTo(0, 0); // Ensure scroll is at top after initialization
-    }, 30);
+  
+  switchPage("meal");
+  history.replaceState({
+    page: "meal",
+    postId: postId,
+    fromPage: "food",
+    timestamp: Date.now()
+  }, "", `#meal/${postId}`);
+  
+  // Use requestAnimationFrame to ensure DOM is ready
+  requestAnimationFrame(() => {
+    initializeVideoPlayers();
+    updateDetailForPost(user);
+    setupDetailScrollListener();
+    window.scrollTo(0, 0);
+  });
 }
+
+
 
 
 function goBack() {
