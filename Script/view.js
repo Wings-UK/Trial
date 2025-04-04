@@ -1425,7 +1425,7 @@ function renderUserPosts(userId) {
 }
 
 function showDetail(postId) {
-    // Save current scroll position before showing detail (only for the originating page)
+    // Save current scroll position before showing detail
     sessionStorage.setItem("scrollPosition", window.scrollY);
     
     const postDetail = document.getElementById("meal");
@@ -1442,7 +1442,7 @@ function showDetail(postId) {
         commentTextarea.placeholder = `Reply to ${user.username}...`;
     }
 
-    // Build post detail HTML (unchanged)
+    // Build post detail HTML
     const hasVideo = post.video ? true : false;
     const hasImage = post.image ? true : false;
 
@@ -1573,19 +1573,13 @@ function showDetail(postId) {
     
     // Initialize components with delay to ensure DOM is ready
     setTimeout(() => {
-        initializeVideoPlayers();
+        initializeVideoPlayers(); // This is critical - makes sure video players are initialized
         updateDetailForPost(user);
         setupDetailScrollListener();
         window.scrollTo(0, 0); // Ensure scroll is at top after initialization
     }, 30);
-    
-    
-       
-        
-  
-   
-
 }
+
 
 function goBack() {
     const fromPage = history.state?.fromPage || "food";
