@@ -1056,6 +1056,7 @@
 .small-photo, .hui {
   width: 45px;
   object-fit: cover;
+  object-position: middle;
   border-radius: 10px;
   transition: filter 0.15s;
 }
@@ -2637,6 +2638,11 @@
   height: 100%;
  transition: opacity 1s linear;
  }
+ 
+  .placeholder1 {
+   object-position: middle !important;
+ }
+ 
  
  .placeholder img.loaded {
  opacity: 1;

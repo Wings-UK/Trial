@@ -258,7 +258,7 @@ function createPostElement(post) {
             <div class="small-photo1">
                 <a class="lino" onclick="${user.id === loggedInUser.id ? 'showMyProfile()' : `showUserProfile(${user.id})`}">
                     <div class="placeholder small-photo" data-large="${user.avatar}">  
-                      <img src="pics/tt.jpg" class="img-small small-photo">  
+                      <img src="pics/tt.jpg.jpg" class="img-small">  
                       <div style="padding-bottom: 100%;"></div>  
                     </div>
                 </a>
@@ -298,8 +298,8 @@ function createPostElement(post) {
     
     ${hasImage ? `
     <div class="laptop1" onclick="showDetail(${post.id})">
-        <div class="placeholder" data-large="${post.image}">  
-          <img src="pics/tt_2.png" class="laptop img-small">  
+        <div class="placeholder placeholder1" data-large="${post.image}">  
+          <img src="pics/tt_2.png" class="laptop img-small placeholder1">  
           <div style="padding-bottom: 100%;"></div>  
         </div>
     </div>
