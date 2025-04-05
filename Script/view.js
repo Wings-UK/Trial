@@ -1060,26 +1060,24 @@ function openVideoModal(post) {
 }
 
 function closeVideoModal() {
-  const modal = document.querySelector('.video-modal');
-  const videoPlayer = modal.querySelector('.fullscreen-player');
-  
-  videoPlayer.pause();
-  
-  const savedScrollPosition = sessionStorage.getItem("scrollPosition");
-  if (savedScrollPosition) {
+    const modal = document.querySelector('.video-modal');
+    const videoPlayer = modal.querySelector('.fullscreen-player');
+    
+    videoPlayer.pause();
+    
+    const savedScrollPosition = sessionStorage.getItem("scrollPosition");
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    const fromPage = history.state && history.state.fromPage ? history.state.fromPage : "food";
+    switchPage(fromPage);
+    
+    // Update history state to reflect the page we're returning to
+    history.replaceState({ page: fromPage, timestamp: Date.now() }, '', `#${fromPage}`);
+    
     setTimeout(() => {
-      window.scrollTo(0, parseInt(savedScrollPosition));
-    }, 0);
-  }
-  
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
-  
-  if (history.state && history.state.page === "meal") {
-    switchPage("meal");
-  } else {
-    history.back();
-  }
+        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+    }, 20);
 }
 
 function setupVideoControls(videoPlayer) {
@@ -1560,131 +1558,84 @@ function showDetail(postId) {
   });
 }
 
-
-
-
 function goBack() {
-    const fromPage = history.state?.fromPage || "food";
+    const fromPage = history.state && history.state.fromPage ? history.state.fromPage : "food";
     switchPage(fromPage);
     
     setTimeout(() => {
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${fromPage}`);
-        if (savedScrollPosition) {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        } else {
-            window.scrollTo(0, 0);
-        }
+        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
     }, 20);
+    
+    // Update history state to reflect the new page
+    history.replaceState({ page: fromPage, timestamp: Date.now() }, '', `#${fromPage}`);
 }
 
 function switchPage(pageId) {
     const currentPage = document.querySelector(".page.active");
     
-    // Save scroll position of current page before switching
     if (currentPage) {
         const currentScrollPosition = window.scrollY;
         sessionStorage.setItem(`scrollPosition_${currentPage.id}`, currentScrollPosition);
-        
-        // Properly clean up before switching
         if (currentPage.id === "food") {
             cleanupVirtualization();
         }
     }
 
-    // Hide all pages first
     const pages = document.querySelectorAll(".page");
     pages.forEach(page => page.classList.remove("active"));
 
-    // Show new page
     const newPage = document.getElementById(pageId);
     newPage.classList.add("active");
 
-    // Update history state with appropriate context
-    if (!history.state) {
-        history.replaceState({ page: pageId, fromPage: "initial" }, "", `#${pageId}`);
-    } else if (history.state.page !== pageId) {
+    if (!history.state || history.state.page !== pageId) {
         history.pushState({ 
             page: pageId, 
             fromPage: currentPage ? currentPage.id : "initial",
-            timestamp: Date.now() // Add timestamp to make states unique
+            timestamp: Date.now()
         }, "", `#${pageId}`);
     }
 
-    // Handle specific page initializations
     if (pageId === "food") {
-        // Set scroll position immediately to avoid jump
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        if (savedScrollPosition) {
-            window.scrollTo(0, parseInt(savedScrollPosition));
-        } else {
-            window.scrollTo(0, 0);
-        }
-        
-        // Initialize homepage with slight delay to ensure smooth transition
+        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
         setTimeout(() => {
             initializeHomepage();
         }, 20);
     } else if (pageId === "meal") {
-        // For post detail page
-        
-            window.scrollTo(0, 0);
-       
-        
-        // Initialize any post-specific components
+        window.scrollTo(0, 0);
         setTimeout(() => {
             initializeVideoPlayers();
             initializeHeartReactions();
         }, 20);
     } else if (pageId === "profile") {
-        // For profile page
         const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${pageId}`);
-        if (savedScrollPosition) {
-            setTimeout(() => {
-                window.scrollTo(0, parseInt(savedScrollPosition));
-            }, 20);
-        } else {
-            window.scrollTo(0, 0);
-        }
+        setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+        }, 20);
     }
 }
 
 window.onpopstate = function(event) {
-  const modal = document.querySelector('.video-modal');
-  
-  // Handle modal closure first
-  if (modal && modal.classList.contains('active')) {
-    closeVideoModal();
-    return;
-  }
-  
-  // Navigate to appropriate page based on history state
-  if (event.state && event.state.page) {
-    // Save current scroll position before navigation (except for "meal")
-    const currentPage = document.querySelector(".page.active");
-    if (currentPage && event.state.page !== "meal") {
-      sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+    const modal = document.querySelector('.video-modal');
+    
+    if (modal && modal.classList.contains('active')) {
+        closeVideoModal();
+        return;
     }
     
-    // Switch to the page from history
-    switchPage(event.state.page);
-    
-    // Restore scroll position with delay to ensure page is rendered, except for "meal"
-    if (event.state.page !== "meal") {
-      setTimeout(() => {
-        const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
-        if (savedScrollPosition) {
-          window.scrollTo(0, parseInt(savedScrollPosition));
-        } else {
-          window.scrollTo(0, 0);
-        }
-      }, 20);
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+        setTimeout(() => {
+            const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
+            window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+        }, 20);
     } else {
-      window.scrollTo(0, 0); // Always start "meal" page at top
+        switchPage("food"); // Default to homepage if no state
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 20);
     }
-  } else {
-    // Default to home page if no state
-    switchPage("food");
-  }
 };
 
 function setLoggedInUser(userData) {
