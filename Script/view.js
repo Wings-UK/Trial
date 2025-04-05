@@ -1041,9 +1041,14 @@ function openVideoModal(post) {
         adjustVideoPlayer(videoPlayer);
     });
     
-    const currentPage = history.state && history.state.page ? history.state.page : "food";
+    const currentPage = document.querySelector('.page.active')?.id || "food";
     sessionStorage.setItem("scrollPosition", window.scrollY);
-    history.pushState({ modalOpen: true, fromPage: currentPage }, '', '#video-modal');
+    history.pushState({ 
+        modalOpen: true, 
+        fromPage: currentPage,
+        postId: currentPage === "meal" ? post.id : null,
+        timestamp: Date.now()
+    }, '', '#video-modal');
     
     videoPlayer.play().catch(error => {
         console.log('Auto-play prevented:', error);
@@ -1069,15 +1074,35 @@ function closeVideoModal() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
     
-    const fromPage = history.state && history.state.fromPage ? history.state.fromPage : "food";
-    switchPage(fromPage);
-    
-    // Update history state to reflect the page we're returning to
-    history.replaceState({ page: fromPage, timestamp: Date.now() }, '', `#${fromPage}`);
-    
-    setTimeout(() => {
-        window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
-    }, 20);
+    const currentState = history.state || {};
+    const fromPage = currentState.fromPage || "food";
+    const postId = currentState.postId || null;
+
+    // Restore scroll position immediately
+    window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+
+    // Update history state without forcing a page switch
+    if (fromPage === "meal" && postId) {
+        history.replaceState({
+            page: "meal",
+            postId: postId,
+            fromPage: currentState.fromPage,
+            timestamp: Date.now()
+        }, "", `#meal/${postId}`);
+        
+        // Reinitialize post detail elements
+        setTimeout(() => {
+            initializeVideoPlayers();
+            initializeHeartReactions();
+        }, 20);
+    } else {
+        // For homepage or other pages, switch back
+        switchPage(fromPage);
+        history.replaceState({
+            page: fromPage,
+            timestamp: Date.now()
+        }, "", `#${fromPage}`);
+    }
 }
 
 function setupVideoControls(videoPlayer) {
@@ -1246,10 +1271,10 @@ function adjustVideoPlayer(videoElement) {
   videoElement.style.transform = '';
   
   if (videoAspect < 1) {
-    const availableHeight = containerHeight - 57;
+    const availableHeight = containerHeight - 52;
     videoElement.style.height = availableHeight + 'px';
     videoElement.style.width = '100%';
-    videoElement.style.top = '57px';
+    videoElement.style.top = '52px';
     
     const newWidth = availableHeight * videoAspect;
     if (newWidth < containerWidth) {
@@ -1621,9 +1646,10 @@ window.onpopstate = function(event) {
     
     if (modal && modal.classList.contains('active')) {
         closeVideoModal();
-        return;
+        return; // Stop further processing after closing modal
     }
     
+    // Handle regular page navigation
     if (event.state && event.state.page) {
         switchPage(event.state.page);
         setTimeout(() => {
@@ -1631,7 +1657,7 @@ window.onpopstate = function(event) {
             window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
         }, 20);
     } else {
-        switchPage("food"); // Default to homepage if no state
+        switchPage("food"); // Default to homepage
         setTimeout(() => {
             window.scrollTo(0, 0);
         }, 20);
