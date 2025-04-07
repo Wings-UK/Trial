@@ -4233,20 +4233,23 @@ button {
     justify-content: space-between;
   }
   .homepage1 .wing {
+    display: flex;
+    justify-content: center;
+    align-self: bottom;
     position: fixed;
     background-color:rgb(244, 7, 82);
-    padding-left: 18px;
-    padding-right: 18px;
-    padding-top: 11px;
-    padding-bottom: 11px;
+    padding-left: 13px;
+    padding-right: 13px;
+    padding-top: 14px;
+    padding-bottom: 7px;
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.6);
     border-radius: 50px;
     z-index: 100;
-    bottom: 5vh;
-    right: 5vh;
+    bottom: 8vh;
+    right: 4vh;
   }
   .wing .wingo {
-    width: 18px;
+    width: 35px;
   }
   .bottom .home1, .bottom .search1, .bottom .inbox1, .bottom .note1, .bottom .account1 {
     padding: 0px;

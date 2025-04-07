@@ -201,7 +201,7 @@ const loggedInUser = {
     id: 4,
     username: "@jeremyx",
     name: "Jeremy X",
-    cover: "pics/memo6.jpg",
+    cover: "pics/vu.jpg",
     avatar: "pics/mypics.jpg",
     bio: "Just vibing out here 🎬✨",
     followers: 124,
@@ -1716,7 +1716,9 @@ function showMyProfile() {
   profileIreti.innerHTML = `
     <img class="frin" src="${user.cover}">
     <div>
+  
       <img class="kor" src="${user.avatar}">
+    
     </div>
     <div class="klr">
       <div class="drun">
@@ -1724,16 +1726,15 @@ function showMyProfile() {
           <p class="spe">${user.username}</p>
         </div>
         <div>
-          <img class="verify" src="pics/verifi1.png">
+          <img class="verify" src="pics/very.svg">
         </div>
       </div>
       <div class="druu">
         <div>
           <p class="rkl">${user.location}</p>
         </div>
-        <div class="drum">
-          <p class="swe">4</p>
-          <img class="kiy" src="pics/kiddo.png">
+        <div class="drum"> 
+          <img class="kiy" src="pics/qr.svg">
         </div>
       </div>
       <div class="nin">
@@ -1747,21 +1748,21 @@ function showMyProfile() {
           <button class="aasw edit-profile-btn">Edit Profile</button>
         </div>
         <div class="vre">
-          <button class="aasw">Settings</button>
+          <button class="aas"><img class="offi" src="pics/setting.svg"></button>
         </div>
       </div>
     </div>
     <div class="ewe">
       <div class="yeb">
-        <img class="dee" src="pics/bren1.png">
+        <img class="dee" src="pics/apps.svg">
       </div>
       <div class="yeb">
         <a href="javascript:void(0);">
-          <img class="dee" src="pics/browser.png">
+          <img class="dee" src="pics/newspaper.svg">
         </a>
       </div>
       <div class="yeb">
-        <img class="dee" src="pics/bren.png">
+        <img class="dee" src="pics/store.svg">
       </div>
     </div>
     <div class="mansonro">
