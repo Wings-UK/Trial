@@ -1640,28 +1640,6 @@ function switchPage(pageId) {
     }
 }
 
-window.onpopstate = function(event) {
-    const modal = document.querySelector('.video-modal');
-    
-    if (modal && modal.classList.contains('active')) {
-        closeVideoModal();
-        return; // Stop further processing after closing modal
-    }
-    
-    // Handle regular page navigation
-    if (event.state && event.state.page) {
-        switchPage(event.state.page);
-        setTimeout(() => {
-            const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
-            window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
-        }, 20);
-    } else {
-        switchPage("food"); // Default to homepage
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-        }, 20);
-    }
-};
 
 function setLoggedInUser(userData) {
   localStorage.setItem('loggedInUser', JSON.stringify(userData));
@@ -1701,6 +1679,441 @@ function initializeAccountIcon() {
   }
 }
 
+function showSettings() {
+  const currentPage = document.querySelector(".page.active");
+  if (currentPage) {
+    sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
+  }
+  // Save current scroll position
+  
+  
+  // Create or get the settings page
+  let settingsPage = document.getElementById("settings");
+  if (!settingsPage) {
+    settingsPage = document.createElement("div");
+    settingsPage.id = "settings";
+    settingsPage.className = "page";
+    document.body.appendChild(settingsPage);
+  }
+  
+  // Render settings content
+  settingsPage.innerHTML = `
+    <div class="settings-container">
+      <div class="settings-header">
+        <div class="back-button" onclick="goBackFromSettings()">
+          <img src="pics/backa.png" alt="Back">
+        </div>
+        <h1>Settings</h1>
+      </div>
+      
+      <div class="settings-menu">
+        <div class="settings-item" onclick="showGeneralSettings()">
+          <div class="settings-icon">
+            <img src="pics/general.svg" alt="General">
+          </div>
+          <div class="settings-text">
+            <h3>General</h3>
+            <p>Dark mode, language, and more</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/security.svg" alt="Security">
+          </div>
+          <div class="settings-text">
+            <h3>Account Security</h3>
+            <p>Password, two-factor authentication</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/privacy.svg" alt="Privacy">
+          </div>
+          <div class="settings-text">
+            <h3>Privacy</h3>
+            <p>Who can see your content</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/preferences.svg" alt="Preferences">
+          </div>
+          <div class="settings-text">
+            <h3>Content Preferences</h3>
+            <p>Customize your feed</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/about.svg" alt="About">
+          </div>
+          <div class="settings-text">
+            <h3>About Wings</h3>
+            <p>Terms, privacy policy, and licenses</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item logout" onclick="handleLogout()">
+          <div class="settings-icon">
+            <img src="pics/logout.svg" alt="Logout">
+          </div>
+          <div class="settings-text">
+            <h3>Log out / Switch Account</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add CSS for settings page if not already added
+  if (!document.getElementById('settings-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'settings-styles';
+    styleElement.textContent = `
+      .settings-container {
+        padding: 15px;
+        background-color: #fff;
+        min-height: 100vh;
+      }
+      .settings-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+      }
+      .settings-header h1 {
+        margin: 0;
+        font-size: 20px;
+        margin-left: 15px;
+      }
+      .back-button {
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .back-button img {
+        width: 24px;
+      }
+      .settings-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .settings-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .settings-item:hover {
+        background-color: #f0f0f0;
+      }
+      .settings-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+      }
+      .settings-icon img {
+        width: 24px;
+      }
+      .settings-text {
+        flex: 1;
+      }
+      .settings-text h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+      .settings-text p {
+        margin: 5px 0 0;
+        font-size: 13px;
+        color: #666;
+      }
+      .settings-arrow {
+        width: 24px;
+      }
+      .settings-arrow img {
+        width: 16px;
+      }
+      .logout .settings-text h3 {
+        color: #f40752;
+      }
+      .dark-mode {
+        background-color: #121212;
+        color: #fff;
+      }
+      .dark-mode .settings-container {
+        background-color: #121212;
+      }
+      .dark-mode .settings-header {
+        border-bottom-color: #333;
+      }
+      .dark-mode .settings-item {
+        background-color: #1e1e1e;
+      }
+      .dark-mode .settings-item:hover {
+        background-color: #2a2a2a;
+      }
+      .dark-mode .settings-text p {
+        color: #aaa;
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #f40752;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+    `;
+    document.head.appendChild(styleElement);
+  }
+  
+  // Switch to settings page
+  switchPage("settings");
+  window.scrollTo(0, 0);
+  
+  // Update history
+  history.replaceState({
+    page: "settings",
+    fromPage: "profile",
+    timestamp: Date.now()
+  }, "", `#settings`);
+}
+
+function goBackFromSettings() {
+  const currentState = history.state || {};
+  const fromPage = currentState.fromPage || "profile";
+  
+  // If we're in a sub-settings page, go back to main settings
+  if (currentState.settingsSubPage) {
+    showSettings();
+    return;
+  }
+  
+  // Otherwise go back to the previous page
+  switchPage(fromPage);
+  
+  // Restore scroll position
+  setTimeout(() => {
+    const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${fromPage}`);
+    window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+  }, 20);
+  
+  // Update history
+  history.replaceState({ 
+    page: fromPage, 
+    timestamp: Date.now() 
+  }, "", `#${fromPage}`);
+}
+
+function showGeneralSettings() {
+  // Create a general settings page
+  if (!document.getElementById("general-settings")) {
+    const generalSettingsPage = document.createElement("div");
+    generalSettingsPage.id = "general-settings";
+    generalSettingsPage.className = "page";
+    document.body.appendChild(generalSettingsPage);
+  }
+  
+  const generalSettingsPage = document.getElementById("general-settings");
+  
+  // Save current settings page state
+  sessionStorage.setItem("settingsPage", document.getElementById("settings").innerHTML);
+  
+  // Check if dark mode is enabled
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  
+  // Render general settings content
+  generalSettingsPage.innerHTML = `
+    <div class="settings-container">
+      <div class="settings-header">
+        <div class="back-button" onclick="goBackToMainSettings()">
+          <img src="pics/backa.png" alt="Back">
+        </div>
+        <h1>General</h1>
+      </div>
+      
+      <div class="settings-menu">
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/darkmode.svg" alt="Dark Mode">
+          </div>
+          <div class="settings-text">
+            <h3>Dark Mode</h3>
+            <p>Change the appearance of Wings</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="darkModeToggle" ${isDarkMode ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/language.svg" alt="Language">
+          </div>
+          <div class="settings-text">
+            <h3>Language</h3>
+            <p>English (US)</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/notifications.svg" alt="Notifications">
+          </div>
+          <div class="settings-text">
+            <h3>Notifications</h3>
+            <p>Push, email, and in-app</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/data.svg" alt="Data Usage">
+          </div>
+          <div class="settings-text">
+            <h3>Data Usage</h3>
+            <p>Optimize media and content loading</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/arrow.svg" alt="Arrow">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Switch to general settings page
+  document.getElementById("settings").classList.remove("active");
+  generalSettingsPage.classList.add("active");
+  
+  // Set up dark mode toggle
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener("change", toggleDarkMode);
+  }
+  
+  // Update history state
+  history.pushState({ 
+    page: "general-settings",
+    fromPage: "settings",
+    settingsSubPage: true,
+    timestamp: Date.now()
+  }, "", `#general-settings`);
+}
+
+function goBackToMainSettings() {
+  // Restore main settings page
+  const settingsPage = document.getElementById("settings");
+  const generalSettingsPage = document.getElementById("general-settings");
+  
+  // Restore the saved settings HTML if available
+  if (sessionStorage.getItem("settingsPage")) {
+    settingsPage.innerHTML = sessionStorage.getItem("settingsPage");
+  }
+  
+  // Switch back to settings page
+  generalSettingsPage.classList.remove("active");
+  settingsPage.classList.add("active");
+  
+  // Update history state
+  history.pushState({ 
+    page: "settings",
+    fromPage: "profile",
+    timestamp: Date.now()
+  }, "", `#settings`);
+}
+
+function toggleDarkMode() {
+  // Toggle dark mode class on body
+  document.body.classList.toggle('dark-mode');
+  
+  // Save preference to localStorage
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDarkMode);
+}
+
+function handleLogout() {
+  // This would typically handle the logout process
+  // For now, just redirect to login page
+  alert("Logging out...");
+  window.location.href = "index.html";
+}
+
+// Modify showMyProfile to include settings button functionality
 function showMyProfile() {
   const user = getLoggedInUser();
   
@@ -1715,9 +2128,7 @@ function showMyProfile() {
   profileIreti.innerHTML = `
     <img class="frin" src="${user.cover}">
     <div>
-  
       <img class="kor" src="${user.avatar}">
-    
     </div>
     <div class="klr">
       <div class="drun">
@@ -1747,7 +2158,7 @@ function showMyProfile() {
           <button class="aasw edit-profile-btn">Edit Profile</button>
         </div>
         <div class="vre">
-          <button class="aas"><img class="offi" src="pics/setting.svg"></button>
+          <button class="aas settings-btn" onclick="showSettings()"><img class="offi" src="pics/setting.svg"></button>
         </div>
       </div>
     </div>
@@ -1784,8 +2195,50 @@ function showMyProfile() {
     editProfileBtn.addEventListener('click', openEditProfileModal);
   }
   
+  // Update history state
   history.replaceState({ page: "profile", profileTab: "posts" }, "", "#profile");
 }
+
+// Update navigation handler to support settings pages
+window.onpopstate = function(event) {
+    const modal = document.querySelector('.video-modal');
+    
+    if (modal && modal.classList.contains('active')) {
+        closeVideoModal();
+        return; // Stop further processing after closing modal
+    }
+    
+    // Handle settings sub-pages
+    if (event.state && event.state.settingsSubPage) {
+        goBackToMainSettings();
+        return;
+    }
+    
+    // Handle regular page navigation
+    if (event.state && event.state.page) {
+        switchPage(event.state.page);
+        setTimeout(() => {
+            const savedScrollPosition = sessionStorage.getItem(`scrollPosition_${event.state.page}`);
+            window.scrollTo(0, savedScrollPosition ? parseInt(savedScrollPosition) : 0);
+        }, 20);
+    } else {
+        switchPage("food"); // Default to homepage
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 20);
+    }
+};
+
+// Initialize dark mode if previously enabled
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for saved dark mode preference
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    }
+});
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));

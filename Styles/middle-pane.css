@@ -821,10 +821,11 @@
   color: rgb(75, 75, 75);
 }
 .masonry .brekca {
-  border-radius: 15px;
+  border-radius: 5px;
   object-fit: cover;
   object-position: top;
-  width: 23px;
+  width: 20px;
+  height: 20px;
 }
 .masonry .pen {
   width: 20px;
