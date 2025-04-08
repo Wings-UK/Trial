@@ -817,7 +817,7 @@
 .fred {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   color: rgb(75, 75, 75);
 }
 .masonry .brekca {

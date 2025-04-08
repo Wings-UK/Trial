@@ -1321,10 +1321,7 @@ function renderUserProfile(user) {
         <div>
           <p class="rkl">${user.location}</p>
         </div>
-        <div class="drum">
-          <p class="swe">4</p>
-          <img class="kiy" src="pics/kiddo.png">
-        </div>
+        
       </div>
       <div class="nin">
         <p class="rkl"><span class="bld">${user.following}</span>following &#183; <span class="bld">${user.followers}</span>followers</p>
@@ -1343,15 +1340,15 @@ function renderUserProfile(user) {
     </div>
     <div class="ewe">
       <div class="yeb">
-        <img class="dee" src="pics/apps.png">
+        <img class="dee" src="pics/apps.svg">
       </div>
       <div class="yeb">
         <a href="Retail-Desktop-MyAccount-Storefront.html">
-          <img class="dee" src="pics/browser.png">
+          <img class="dee" src="pics/newspaper.svg">
         </a>
       </div>
       <div class="yeb">
-        <img class="dee" src="pics/bren.png">
+        <img class="dee" src="pics/store.svg">
       </div>
     </div>
     <div class="mansonro">
@@ -1435,8 +1432,10 @@ function renderUserPosts(userId) {
               <p class="goo">@babygirl</p>
             </div>
             <div class="fred">
-              <img class="pen" src="pics/lovv.png">
-              <p class="goo">2.9K</p>
+             <svg class="heart-icon heart-clickable" width="18" height="18" viewBox="0 0 24 24">
+                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              <p class="goo">1.4K</p>
             </div>
           </div>
         </div>
