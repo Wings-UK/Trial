@@ -1684,8 +1684,9 @@ function showSettings() {
   if (currentPage) {
     sessionStorage.setItem(`scrollPosition_${currentPage.id}`, window.scrollY);
   }
-  // Save current scroll position
   
+  // First, reset scroll position
+  window.scrollTo(0, 0);
   
   // Create or get the settings page
   let settingsPage = document.getElementById("settings");
@@ -1696,100 +1697,26 @@ function showSettings() {
     document.body.appendChild(settingsPage);
   }
   
-  // Render settings content
-  settingsPage.innerHTML = `
-    <div class="settings-container">
-      <div class="settings-header">
-        <div class="back-button" onclick="goBackFromSettings()">
-          <img src="pics/backa.png" alt="Back">
-        </div>
-        <h1>Settings</h1>
-      </div>
-      
-      <div class="settings-menu">
-        <div class="settings-item" onclick="showGeneralSettings()">
-          <div class="settings-icon">
-            <img src="pics/general.svg" alt="General">
-          </div>
-          <div class="settings-text">
-            <h3>General</h3>
-            <p>Dark mode, language, and more</p>
-          </div>
-          <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
-          </div>
-        </div>
-        
-        <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/security.svg" alt="Security">
-          </div>
-          <div class="settings-text">
-            <h3>Account Security</h3>
-            <p>Password, two-factor authentication</p>
-          </div>
-          <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
-          </div>
-        </div>
-        
-        <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/privacy.svg" alt="Privacy">
-          </div>
-          <div class="settings-text">
-            <h3>Privacy</h3>
-            <p>Who can see your content</p>
-          </div>
-          <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
-          </div>
-        </div>
-        
-        <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/preferences.svg" alt="Preferences">
-          </div>
-          <div class="settings-text">
-            <h3>Content Preferences</h3>
-            <p>Customize your feed</p>
-          </div>
-          <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
-          </div>
-        </div>
-        
-        <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/about.svg" alt="About">
-          </div>
-          <div class="settings-text">
-            <h3>About Wings</h3>
-            <p>Terms, privacy policy, and licenses</p>
-          </div>
-          <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
-          </div>
-        </div>
-        
-        <div class="settings-item logout" onclick="handleLogout()">
-          <div class="settings-icon">
-            <img src="pics/logout.svg" alt="Logout">
-          </div>
-          <div class="settings-text">
-            <h3>Log out / Switch Account</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Add CSS for settings page if not already added
-  if (!document.getElementById('settings-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'settings-styles';
-    styleElement.textContent = `
-      .settings-container {
+  // Update CSS to handle the content positioning issue
+  if (!document.getElementById('fixed-settings-styles')) {
+    const fixedStyles = document.createElement('style');
+    fixedStyles.id = 'fixed-settings-styles';
+    fixedStyles.textContent = `
+      #settings, #general-settings {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        min-height: 100vh;
+        background-color: #fff;
+        overflow-y: auto;
+        z-index: 100;
+      }
+      .dark-mode #settings {
+        background-color: #121212;
+      }
+        .settings-container {
+        font-family: Noto Sans JP;
         padding: 15px;
         background-color: #fff;
         min-height: 100vh;
@@ -1861,7 +1788,11 @@ function showSettings() {
         width: 24px;
       }
       .settings-arrow img {
-        width: 16px;
+        width: 30px;
+      }
+      .logout {
+        display: flex;
+        justify-content: center;
       }
       .logout .settings-text h3 {
         color: #f40752;
@@ -1931,11 +1862,99 @@ function showSettings() {
         display: block;
       }
     `;
-    document.head.appendChild(styleElement);
+    document.head.appendChild(fixedStyles);
   }
+  
+  // Render settings content
+  settingsPage.innerHTML = `
+      <div class="settings-container">
+      <div class="settings-header">
+        <div class="back-button" onclick="goBackFromSettings()">
+          <img src="pics/angle.svg" alt="Back">
+        </div>
+        <h1>Settings</h1>
+      </div>
+      
+      <div class="settings-menu">
+        <div class="settings-item" onclick="showGeneralSettings()">
+          <div class="settings-icon">
+            <img src="pics/seet.svg" alt="General">
+          </div>
+          <div class="settings-text">
+            <h3>General</h3>
+            <p>Dark mode, language, and more</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/set.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/admin.svg" alt="Security">
+          </div>
+          <div class="settings-text">
+            <h3>Account Security</h3>
+            <p>Password, two-factor authentication</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/set.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/pad.svg" alt="Privacy">
+          </div>
+          <div class="settings-text">
+            <h3>Privacy</h3>
+            <p>Who can see your content</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/set.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/paper.svg" alt="Preferences">
+          </div>
+          <div class="settings-text">
+            <h3>Content Preferences</h3>
+            <p>Customize your feed</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/set.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">
+            <img src="pics/about.svg" alt="About">
+          </div>
+          <div class="settings-text">
+            <h3>About Wings</h3>
+            <p>Terms, privacy policy, and licenses</p>
+          </div>
+          <div class="settings-arrow">
+            <img src="pics/set.svg" alt="Arrow">
+          </div>
+        </div>
+        
+        <div class="settings-item logout" onclick="handleLogout()">
+          
+          <div class="settings-text logout">
+            <h3>Log out / Switch Account</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
   
   // Switch to settings page
   switchPage("settings");
+  
+  // Ensure scroll is at top
   window.scrollTo(0, 0);
   
   // Update history
@@ -1945,6 +1964,7 @@ function showSettings() {
     timestamp: Date.now()
   }, "", `#settings`);
 }
+
 
 function goBackFromSettings() {
   const currentState = history.state || {};
