@@ -1816,6 +1816,10 @@ function showSettings() {
       .dark-mode .settings-container {
         background-color: #121212;
       }
+      .dark-mode .ewe {
+        background-color: #121212;
+        border-color: rgb(50, 50, 50);
+      }
       .dark-mode .settings-header {
         border-bottom-color: #333;
       }
@@ -1827,6 +1831,22 @@ function showSettings() {
       }
       .dark-mode .settings-text p {
         color: #aaa;
+      }
+      .dark-mode .bld {
+        color: white;
+      }
+      .dark-mode .rkl,
+      .dark-mode .goo {
+        color: rgb(200, 200, 200);
+      }
+      .dark-mode .aasw, 
+      .dark-mode .aas {
+        background-color: white;
+        color: black;
+      }
+      .dark-mode .masonry,
+      .dark-mode .drum{
+        background-color: rgb(50, 50, 50);
       }
       .switch {
         position: relative;
@@ -1872,6 +1892,27 @@ function showSettings() {
       }
       .page.active {
         display: block;
+      }
+      .dark-mode .settings-icon img,
+      .dark-mode .settings-arrow img,
+      .dark-mode .back-button img,
+      .dark-mode .heart-icon,
+      .dark-mode .dee,
+      .dark-mode .kiy,
+      .dark-mode .flat{
+        filter: invert(1); /* Inverts black to white */
+      }
+      .dark-mode .offi {
+        filter: invert(1);
+      }
+      .dark-mode .kor {
+        border-color: black;
+        box-shadow: 0px 0px 9px rgba(255, 255, 255, 0.5);
+      }
+      .dark-mode .heado {
+        background-color: rgb(20, 20, 20);
+        border-bottom-color: rgba(50, 50, 50, 0.8);
+        backdrop-filter: blur(10px);
       }
     `;
     document.head.appendChild(fixedStyles);
@@ -2026,19 +2067,15 @@ function showGeneralSettings() {
     <div class="settings-container">
       <div class="settings-header">
         <div class="back-button" onclick="goBackToMainSettings()">
-          <img src="pics/backa.png" alt="Back">
+          <img src="pics/angle.svg" alt="Back">
         </div>
         <h1>General</h1>
       </div>
       
       <div class="settings-menu">
         <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/darkmode.svg" alt="Dark Mode">
-          </div>
           <div class="settings-text">
             <h3>Dark Mode</h3>
-            <p>Change the appearance of Wings</p>
           </div>
           <label class="switch">
             <input type="checkbox" id="darkModeToggle" ${isDarkMode ? 'checked' : ''}>
@@ -2047,41 +2084,30 @@ function showGeneralSettings() {
         </div>
         
         <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/language.svg" alt="Language">
-          </div>
           <div class="settings-text">
             <h3>Language</h3>
             <p>English (US)</p>
           </div>
           <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
+            <img src="pics/set.svg" alt="Arrow">
           </div>
         </div>
         
         <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/notifications.svg" alt="Notifications">
-          </div>
           <div class="settings-text">
             <h3>Notifications</h3>
-            <p>Push, email, and in-app</p>
           </div>
           <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
+            <img src="pics/set.svg" alt="Arrow">
           </div>
         </div>
         
         <div class="settings-item">
-          <div class="settings-icon">
-            <img src="pics/data.svg" alt="Data Usage">
-          </div>
           <div class="settings-text">
             <h3>Data Usage</h3>
-            <p>Optimize media and content loading</p>
           </div>
           <div class="settings-arrow">
-            <img src="pics/arrow.svg" alt="Arrow">
+            <img src="pics/set.svg" alt="Arrow">
           </div>
         </div>
       </div>
