@@ -1840,7 +1840,8 @@ function showSettings() {
         color: rgb(200, 200, 200);
       }
       .dark-mode .aasw, 
-      .dark-mode .aas {
+      .dark-mode .aas,
+      .dark-mode .header-follow {
         background-color: white;
         color: black;
       }
@@ -1899,7 +1900,8 @@ function showSettings() {
       .dark-mode .heart-icon,
       .dark-mode .dee,
       .dark-mode .kiy,
-      .dark-mode .flat{
+      .dark-mode .flat,
+      .dark-mode .logs1 {
         filter: invert(1); /* Inverts black to white */
       }
       .dark-mode .offi {
@@ -1910,8 +1912,8 @@ function showSettings() {
         box-shadow: 0px 0px 9px rgba(255, 255, 255, 0.5);
       }
       .dark-mode .heado {
-        background-color: rgb(20, 20, 20);
-        border-bottom-color: rgba(50, 50, 50, 0.8);
+        background-color: rgba(0, 0, 0, 0.8);
+        border-bottom-color: rgb(50, 50, 50);
         backdrop-filter: blur(10px);
       }
     `;
