@@ -1271,10 +1271,10 @@ function adjustVideoPlayer(videoElement) {
   videoElement.style.transform = '';
   
   if (videoAspect < 1) {
-    const availableHeight = containerHeight - 52;
+    const availableHeight = containerHeight - 57;
     videoElement.style.height = availableHeight + 'px';
     videoElement.style.width = '100%';
-    videoElement.style.top = '52px';
+    videoElement.style.top = '57px';
     
     const newWidth = availableHeight * videoAspect;
     if (newWidth < containerWidth) {
@@ -1841,13 +1841,17 @@ function showSettings() {
       }
       .dark-mode .aasw, 
       .dark-mode .aas,
-      .dark-mode .header-follow {
+      .dark-mode .header-follow,
+      .dark-mode .foni {
         background-color: white;
         color: black;
       }
       .dark-mode .masonry,
       .dark-mode .drum{
-        background-color: rgb(50, 50, 50);
+        background-color: rgb(30, 30, 30);
+      }
+      .dark-mode .time {
+        color: rgb(200, 200, 200);
       }
       .switch {
         position: relative;
@@ -1901,7 +1905,11 @@ function showSettings() {
       .dark-mode .dee,
       .dark-mode .kiy,
       .dark-mode .flat,
-      .dark-mode .logs1 {
+      .dark-mode .logs1,
+      .dark-mode .feeling,
+      .dark-mode .lefti,
+      .dark-mode .leti,
+      .dark-mode .dot {
         filter: invert(1); /* Inverts black to white */
       }
       .dark-mode .offi {
@@ -1915,6 +1923,17 @@ function showSettings() {
         background-color: rgba(0, 0, 0, 0.8);
         border-bottom-color: rgb(50, 50, 50);
         backdrop-filter: blur(10px);
+      }
+      .dark-mode .header-avatar {
+        border-color: black;
+      }
+      .dark-mode .poster,
+      .dark-mode .tir,
+      .dark-mode .lefto {
+        border-color: rgb(50, 50, 50);
+      }
+      .dark-mode .poster:hover {
+        background-color: rgb(10, 10, 10);
       }
     `;
     document.head.appendChild(fixedStyles);
@@ -2564,7 +2583,8 @@ function updateHeaderHTML(userId) {
   }
 
   headerProfilePic.innerHTML = `<img class="header-avatar" src="${user.avatar}" alt="Profile">`;
-  headerFollowBtn.innerHTML = `<button class="header-follow">Follow</button>`;
+  headerFollowBtn.innerHTML = `<button class="header-follow settings-btn" onclick="showSettings()"><img class="offi" src="pics/setting.svg"></button>
+    `;
 
   headerProfilePic.style.display = 'none';
   headerFollowBtn.style.display = 'none';
