@@ -1842,9 +1842,13 @@ function showSettings() {
       .dark-mode .aasw, 
       .dark-mode .aas,
       .dark-mode .header-follow,
-      .dark-mode .foni {
+      .dark-mode .detail-follow {
         background-color: white;
         color: black;
+      }
+      .dark-mode .follow {
+        background-color: black; 
+        color: white;
       }
       .dark-mode .masonry,
       .dark-mode .drum{
@@ -1929,7 +1933,8 @@ function showSettings() {
       }
       .dark-mode .poster,
       .dark-mode .tir,
-      .dark-mode .lefto {
+      .dark-mode .lefto,
+      .dark-mode .comments-section {
         border-color: rgb(50, 50, 50);
       }
       .dark-mode .poster:hover {
