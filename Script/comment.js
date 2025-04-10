@@ -7,7 +7,7 @@ const comments = {};
 // Setup comment functionality
 function setupCommentSystem() {
   const commentTextarea = document.querySelector('.comment-textarea');
-  const sendButton = document.querySelector('.actions .caun[src="pics/arrow.png"]');
+  const sendButton = document.querySelector('.actions .caun[src="pics/up.svg"]');
   const commentContainer = document.querySelector('.comment-container');
   
   if (!commentTextarea || !sendButton) return;

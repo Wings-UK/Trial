@@ -1850,11 +1850,15 @@ function showSettings() {
         background-color: black; 
         color: white;
       }
+      .dark-mode .comment-textarea {
+        color: white;
+      }
       .dark-mode .masonry,
       .dark-mode .drum{
         background-color: rgb(30, 30, 30);
       }
-      .dark-mode .time {
+      .dark-mode .time,
+      .dark-mode .comment-textarea::placeholder {
         color: rgb(200, 200, 200);
       }
       .switch {
@@ -1905,7 +1909,6 @@ function showSettings() {
       .dark-mode .settings-icon img,
       .dark-mode .settings-arrow img,
       .dark-mode .back-button img,
-      .dark-mode .heart-icon,
       .dark-mode .dee,
       .dark-mode .kiy,
       .dark-mode .flat,
@@ -1915,6 +1918,9 @@ function showSettings() {
       .dark-mode .leti,
       .dark-mode .dot {
         filter: invert(1); /* Inverts black to white */
+      }
+      .dark-mode .heart-icon .heart-path {
+       stroke: white;
       }
       .dark-mode .offi {
         filter: invert(1);
@@ -1934,11 +1940,20 @@ function showSettings() {
       .dark-mode .poster,
       .dark-mode .tir,
       .dark-mode .lefto,
-      .dark-mode .comments-section {
+      .dark-mode .comment-item {
         border-color: rgb(50, 50, 50);
       }
-      .dark-mode .poster:hover {
+      .dark-mode .poster:hover,
+      .dark-mode .comment-item:hover {
         background-color: rgb(10, 10, 10);
+      }
+      .dark-mode .comment-box {
+        background-color: transparent;
+      }
+      .dark-mode .comment-container {
+        background-color: black;
+        border: 1px solid rgb(50, 50, 50);
+        color: rgb(50, 50, 50);
       }
     `;
     document.head.appendChild(fixedStyles);
