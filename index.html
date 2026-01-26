@@ -406,6 +406,17 @@
         <div class="wing">
           <img class="wingo" src="pics/psos.png"> 
         </div>
+
+<div id="auth-overlay" class="overlay" style="display: none;">
+    <div class="overlay-content">
+        <a href="#" onclick="closeAuthModal()"><p class="close-btn">&times;</p></a>
+        <h2 id="auth-title">Sign Up / Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="handleAuth()">Submit</button>
+        <p id="auth-error" style="color: red;"></p>
+    </div>
+</div>
         </section>
 
   
