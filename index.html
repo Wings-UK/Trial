@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="Styles/Retail-General.css">
     <link rel="stylesheet" href="Styles/left-pane.css">
     <link rel="stylesheet" href="Styles/middle-pane.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <link rel="stylesheet" href="Styles/right-pane.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale= 1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
     <!--This is the container of the website holding 3 columns with css grid-->
@@ -677,6 +678,77 @@
    <script src="Script/view.js"></script>
    <script src="Script/comment.js"></script>
 <script src="Script/supabase.js"></script>
+
+<!-- Simple login/signup popup -->
+<div id="auth-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999;">
+  <div style="background:white; margin:15% auto; padding:30px; width:90%; max-width:400px; border-radius:12px; position:relative;">
+    <button onclick="document.getElementById('auth-modal').style.display='none'" style="position:absolute; top:10px; right:15px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
+    
+    <h2 id="auth-title">Login or Sign Up</h2>
+    
+    <input type="email" id="email-input" placeholder="Your email" style="width:100%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:6px;">
+    <input type="password" id="password-input" placeholder="Password" style="width:100%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:6px;">
+    
+    <button onclick="handleLoginOrSignup()" style="width:100%; padding:12px; background:#f40752; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+      Submit
+    </button>
+    
+    <p id="auth-message" style="color:red; margin-top:10px;"></p>
+    
+    <p style="text-align:center; margin-top:15px;">
+      <button onclick="toggleAuthMode()" style="background:none; border:none; color:#f40752; cursor:pointer;">Switch to Sign Up / Login</button>
+    </p>
+  </div>
+</div>
+
+<script>
+  let isSignupMode = false;
+
+  function toggleAuthMode() {
+    isSignupMode = !isSignupMode;
+    document.getElementById('auth-title').textContent = isSignupMode ? 'Sign Up' : 'Login';
+  }
+
+  async function handleLoginOrSignup() {
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+    const messageEl = document.getElementById('auth-message');
+
+    messageEl.textContent = '';
+
+    if (!email || !password) {
+      messageEl.textContent = 'Please fill email and password';
+      return;
+    }
+
+    let result;
+    if (isSignupMode) {
+      result = await supabase.auth.signUp({ email, password });
+    } else {
+      result = await supabase.auth.signInWithPassword({ email, password });
+    }
+
+    const { data, error } = result;
+
+    if (error) {
+      messageEl.textContent = error.message;
+      return;
+    }
+
+    messageEl.style.color = 'green';
+    messageEl.textContent = isSignupMode ? 'Sign up successful! Check your email.' : 'Logged in!';
+
+    setTimeout(() => {
+      document.getElementById('auth-modal').style.display = 'none';
+      location.reload(); // refresh to show logged-in state
+    }, 1500);
+  }
+
+  // Show login popup automatically if no user
+  if (!localStorage.getItem('supabase.auth.token')) {
+    document.getElementById('auth-modal').style.display = 'block';
+  }
+</script>
    
   </body>
 </html>
