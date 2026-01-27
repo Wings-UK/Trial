@@ -709,30 +709,54 @@
       return;
     }
 
-    let result;
-    if (isSignupMode) {
-      result = await supabase.auth.signUp({ email, password });
-    } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
-    }
+    console.log("Starting auth attempt...");
+    console.log("supabase exists?", !!window.supabase);
+    console.log("supabase object:", window.supabase);
 
-    const { data, error } = result;
-
-    if (error) {
-      messageEl.textContent = error.message;
+    if (!window.supabase) {
+      messageEl.textContent = 'Supabase not loaded yet. Refresh page.';
+      console.error("supabase is undefined");
       return;
     }
 
-    messageEl.style.color = 'green';
-    messageEl.textContent = isSignupMode ? 'Sign up successful! Check your email.' : 'Logged in!';
+    if (!window.supabase.auth) {
+      messageEl.textContent = 'Supabase auth module missing.';
+      console.error("supabase.auth is undefined");
+      return;
+    }
 
-    setTimeout(() => {
-      document.getElementById('auth-modal').style.display = 'none';
-      location.reload(); // refresh to show logged-in state
-    }, 1500);
+    let result;
+    try {
+      if (isSignupMode) {
+        console.log("Attempting signUp...");
+        result = await window.supabase.auth.signUp({ email, password });
+      } else {
+        console.log("Attempting signInWithPassword...");
+        result = await window.supabase.auth.signInWithPassword({ email, password });
+      }
+
+      const { data, error } = result;
+
+      if (error) {
+        messageEl.textContent = error.message;
+        console.error("Auth error:", error);
+        return;
+      }
+
+      messageEl.style.color = 'green';
+      messageEl.textContent = isSignupMode ? 'Sign up successful! Check email.' : 'Logged in!';
+
+      setTimeout(() => {
+        document.getElementById('auth-modal').style.display = 'none';
+        location.reload();
+      }, 1500);
+    } catch (err) {
+      messageEl.textContent = 'Unexpected error: ' + err.message;
+      console.error("Auth failed:", err);
+    }
   }
 
-  // Show login popup automatically if no user
+  // Auto-show popup if no session
   if (!localStorage.getItem('supabase.auth.token')) {
     document.getElementById('auth-modal').style.display = 'block';
   }
