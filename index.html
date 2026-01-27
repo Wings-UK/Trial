@@ -696,21 +696,18 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobWtuamx4ZGR4a2Z5YmNmZ2pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MzM4OTgsImV4cCI6MjA4NTAwOTg5OH0.dNBxXmIdYAxJT-bt1WWcO62Nobt8aDLTRdnrs5g1CCI';
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.supabase = supabase; // Make it available to your other scripts (view.js etc.)
+  window.supabase = supabase;
 
   console.log("Main app: Supabase loaded successfully");
   console.log("Has auth?", !!supabase.auth);
 
-  // ────────────────────────────────────────────────
-  // Your auth popup logic
-  let isSignupMode = false;
+  // Make these functions global so onclick can find them
+  window.toggleAuthMode = function() {
+    window.isSignupMode = !window.isSignupMode;
+    document.getElementById('auth-title').textContent = window.isSignupMode ? 'Sign Up' : 'Login';
+  };
 
-  function toggleAuthMode() {
-    isSignupMode = !isSignupMode;
-    document.getElementById('auth-title').textContent = isSignupMode ? 'Sign Up' : 'Login';
-  }
-
-  async function handleLoginOrSignup() {
+  window.handleLoginOrSignup = async function() {
     const email = document.getElementById('email-input').value.trim();
     const password = document.getElementById('password-input').value;
     const messageEl = document.getElementById('auth-message');
@@ -727,7 +724,7 @@
 
     let result;
     try {
-      if (isSignupMode) {
+      if (window.isSignupMode) {
         result = await supabase.auth.signUp({ email, password });
       } else {
         result = await supabase.auth.signInWithPassword({ email, password });
@@ -742,28 +739,28 @@
       }
 
       messageEl.style.color = 'green';
-      messageEl.textContent = isSignupMode ? 'Signed up! Check your email for confirmation.' : 'Logged in successfully!';
+      messageEl.textContent = window.isSignupMode ? 'Signed up! Check your email for confirmation.' : 'Logged in successfully!';
 
-      // Save session (optional - helps with refresh)
+      // Save session
       localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
 
       setTimeout(() => {
         document.getElementById('auth-modal').style.display = 'none';
-        location.reload(); // Refresh to show logged-in state
+        location.reload();
       }, 2000);
 
     } catch (err) {
       messageEl.textContent = 'Unexpected error: ' + err.message;
       console.error("Auth failed:", err);
     }
-  }
+  };
 
   // Auto-show popup if not logged in
   supabase.auth.getSession().then(({ data: { session } }) => {
     if (!session) {
       document.getElementById('auth-modal').style.display = 'block';
     } else {
-      console.log("Already logged in with session:", session.user.email);
+      console.log("Already logged in:", session.user.email);
     }
   }).catch(err => console.error("Session check failed:", err));
 </script>
