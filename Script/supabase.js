@@ -9,3 +9,8 @@ window.supabase = supabase; // Global for simplicity (or use import if modular)
 
 
 
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase;
+console.log("Supabase is loaded");   // ← must be here
+
+
