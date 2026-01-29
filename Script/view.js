@@ -188,7 +188,7 @@ async function loadMorePosts() {
         const adaptedPosts = fetchedPosts.map(p => ({
             id: p.id,
             userId: p.user_id || p.user?.id,
-            username: p.user?.username || '@unknown',
+            username: p.user?.name || '@unknown',
             avatar: p.user?.avatar || 'pics/default-avatar.png',
             content: p.content || '',
             image: p.image || null,
