@@ -346,7 +346,7 @@ async function loadMorePosts() {
     }
 
     try {
-        console.log("Fetching posts from Supabase (no join)...");
+        console.log("Fetching posts from Supabase (no join version)...");
 
         const { data: fetchedPosts, error } = await supabase
             .from('posts')
@@ -370,7 +370,7 @@ async function loadMorePosts() {
 
         console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
 
-        // Temporary: Use a fallback user until we fix join
+        // Use fallback user data since no join
         const fallbackUser = {
             username: '@unknown',
             avatar: 'pics/default-avatar.png',
