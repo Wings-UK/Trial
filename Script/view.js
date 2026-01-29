@@ -1,5 +1,79 @@
 // view.js - simplified version that shows posts even without matching users
 
+// Paste this exactly as-is — add at the top of view.js
+function createSkeletonPost() {
+    const skeleton = document.createElement('div');
+    skeleton.className = 'poster skeleton';
+    skeleton.innerHTML = `
+        <div class="cust-name">
+            <div class="heading">
+                <div class="small-photo1 skeleton-avatar"></div>
+                <div class="pos">
+                    <div class="skeleton-text short"></div>
+                    <div class="skeleton-text medium"></div>
+                </div>
+            </div>
+        </div>
+        <div class="tir">
+            <div class="skeleton-text long"></div>
+            <div class="skeleton-text medium"></div>
+        </div>
+        <div class="lefto skeleton-reactions"></div>
+    `;
+    return skeleton;
+}
+
+function addSkeletonStyles() {
+    if (document.getElementById('skeleton-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'skeleton-styles';
+    style.textContent = `
+        .skeleton {
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+        }
+        .skeleton-text {
+            height: 16px;
+            background: #e0e0e0;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+        .skeleton-text.short { width: 60%; }
+        .skeleton-text.medium { width: 80%; }
+        .skeleton-text.long { width: 100%; }
+        .skeleton-reactions {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Keep these important parts
 history.scrollRestoration = "manual";
 
@@ -50,6 +124,7 @@ function shortenText(text, limit, showSeeMore = true) {
 // ─────────────────────────────────────────────────────────────
 // Updated loadMorePosts() – with users table join (Option A)
 // ─────────────────────────────────────────────────────────────
+// Paste this exactly as-is — replace your current loadMorePosts function
 async function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
@@ -59,6 +134,12 @@ async function loadMorePosts() {
         console.error("Cannot find #flyer element");
         isLoading = false;
         return;
+    }
+
+    // Show skeletons immediately
+    addSkeletonStyles();
+    for (let i = 0; i < postsPerLoad; i++) {
+        postContainer.appendChild(createSkeletonPost());
     }
 
     try {
@@ -101,6 +182,9 @@ async function loadMorePosts() {
 
         console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
 
+        // Remove all skeletons before adding real posts
+        document.querySelectorAll('.skeleton').forEach(skel => skel.remove());
+
         const adaptedPosts = fetchedPosts.map(p => ({
             id: p.id,
             userId: p.user_id || p.user?.id,
@@ -126,11 +210,9 @@ async function loadMorePosts() {
             }
         });
 
-        // Re-init interactive parts (bring these back when you restore the functions)
         setTimeout(() => {
             initializeHeartReactions();
-            // initializeVideoPlayers();
-            // initializeLazyLoadingOnLoad();
+            // Add other initializations here later (lazy loading, video, etc.)
         }, 100);
 
     } catch (err) {
