@@ -46,22 +46,22 @@ if ('serviceWorker' in navigator) {
 }
 
 // Add this function to view.js
+// Add this function – formats Supabase timestamps like "3m ago", "1h ago"
 function formatTimeSince(dateStr) {
+    if (!dateStr) return 'just now';
+
     const date = new Date(dateStr);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
+    if (isNaN(date.getTime())) return 'invalid date';
+
+    const seconds = Math.floor((new Date() - date) / 1000);
 
     let interval = Math.floor(seconds / 3600);
-    if (interval >= 1) {
-        return interval + "h ago";
-    }
+    if (interval >= 1) return interval + (interval === 1 ? 'h ago' : 'h ago');
 
     interval = Math.floor(seconds / 60);
-    if (interval >= 1) {
-        return interval + "m ago";
-    }
+    if (interval >= 1) return interval + (interval === 1 ? 'm ago' : 'm ago');
 
-    return seconds + "s ago";
+    return seconds + (seconds === 1 ? 's ago' : 's ago');
 }
 
 const users = [
