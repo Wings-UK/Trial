@@ -121,11 +121,30 @@ async function loadMorePosts() {
         isLoading = false;
     }
 }
+
 // ─────────────────────────────────────────────────────────────
-// Updated createPostElement(post) – uses real user data
+// Helper function: shortenText (was missing)
+// ─────────────────────────────────────────────────────────────
+function shortenText(text, limit, showSeeMore = true) {
+    if (!text) return '';
+    if (text.length <= limit) return text;
+
+    let shortened = text.slice(0, limit);
+    const lastSpace = shortened.lastIndexOf(' ');
+
+    if (lastSpace > 0) {
+        shortened = shortened.slice(0, lastSpace);
+    }
+
+    return showSeeMore ?
+        shortened + `...<br><span class="reer">see more</span>` :
+        shortened + "...";
+}
+
+// ─────────────────────────────────────────────────────────────
+// Updated createPostElement (now uses shortenText)
 // ─────────────────────────────────────────────────────────────
 function createPostElement(post) {
-    // Use the real user data that came from Supabase join
     const user = {
         username: post.username || '@unknown',
         avatar: post.avatar || 'pics/default-avatar.png'
@@ -168,18 +187,12 @@ function createPostElement(post) {
                     <div class="comp1">
                         <div class="cll">
                             <p class="time">${post.timestamp}</p>
-                            <div class="tool">
-                                <p>${new Date(post.created_at || Date.now()).toLocaleString()}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="dots">
                 <img class="dot" src="pics/dots.svg">
-                <div class="tool">
-                    <p>More</p>
-                </div>
             </div>
         </div>
 
@@ -193,7 +206,7 @@ function createPostElement(post) {
         ` : ''}
 
         ${hasVideo ? `
-        <div class="video-container laptop1" data-post-id="${post.id}" onclick="showDetail(${post.id})">
+        <div class="video-container laptop1" data-post-id="${post.id}">
             <video class="video-thumbnail" preload="metadata">
                 <source src="${post.video}" type="video/mp4">
             </video>
@@ -248,14 +261,6 @@ function createPostElement(post) {
                                 <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
                             </svg>
                             <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-                        </div>
-                    </div>
-                    <div class="mee">
-                        <div class="donate-btn">
-                            <img class="feeling" src="pics/bookmark.svg" alt="Bookmark">
-                        </div>
-                        <div class="donate-btn">
-                            <img class="feeling" src="pics/share.svg" alt="Share">
                         </div>
                     </div>
                 </div>
