@@ -662,11 +662,38 @@
   
    
  <!--  <script src="Script/blockicondownload.js"></script>
--->
  <script src="Script/view.js"></script>
    <script src="Script/comment.js"></script>
 
 <!-- Simple login/signup popup -->
+<!-- Core scripts – keep only what we need right now -->
+<script src="Script/view.js"></script>   <!-- This must work – see step 2 -->
+
+<!-- Supabase + auth + minimal bootstrap for testing -->
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+  const SUPABASE_URL = 'https://rhmknjlxddxkfybcfgjj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobWtuamx4ZGR4a2Z5YmNmZ2pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MzM4OTgsImV4cCI6MjA4NTAwOTg5OH0.dNBxXmIdYAxJT-bt1WWcO62Nobt8aDLTRdnrs5g1CCI';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.supabase = supabase;
+
+  console.log("Supabase loaded:", !!supabase.auth);
+
+  // Auto-login check
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      console.log("Already logged in:", session.user.email);
+    } else {
+      console.log("No active session – show login popup");
+      // If you have popup logic, call it here
+    }
+  });
+</script>
+
+
+
 <div id="auth-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999;">
   <div style="background:white; margin:15% auto; padding:30px; width:90%; max-width:400px; border-radius:12px; position:relative;">
     <button onclick="document.getElementById('auth-modal').style.display='none'" style="position:absolute; top:10px; right:15px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
