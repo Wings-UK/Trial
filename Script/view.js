@@ -12,6 +12,12 @@ window.addEventListener("DOMContentLoaded", function () {
             }, 0);
         }
     }
+    
+    // Add this block
+    const activePage = document.querySelector(".page.active");
+    if (activePage && activePage.id === "food") {
+        loadMorePosts();  // Load Supabase posts when homepage is active
+    }
 });
 
 
