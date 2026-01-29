@@ -443,12 +443,10 @@ function initializeHeartReactions() {
         const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
-        // Removed the line that caused the error:
-        // const post = posts.find(p => p.id === postId);
-        // We no longer need the global 'posts' array here
-        
+        // We read the current displayed count from the DOM (no global 'posts' needed)
         let count = parseInt(likeCount.textContent.trim()) || 0;
         
+        // Set initial visual state
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
@@ -494,9 +492,7 @@ function initializeHeartReactions() {
                 
                 container.setAttribute('data-liked', isLiked.toString());
                 
-                // Optional: if you later want to save the like to Supabase,
-                // you can add an API call here using the postId
-                // Example (commented out for now):
+                // Optional future step: save to Supabase
                 // supabase.from('posts').update({ like_count: count }).eq('id', postId);
             });
         });
