@@ -2330,8 +2330,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener("DOMContentLoaded", function () {
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser && loggedInUser.avatar) {
-    document.getElementById("usero").src = loggedInUser.avatar;
+  const userImg = document.getElementById("usero");
+
+  if (loggedInUser && loggedInUser.avatar && userImg) {  // ← add check for userImg
+    userImg.src = loggedInUser.avatar;
+  } else if (userImg) {
+    userImg.src = 'pics/default-avatar.png';  // fallback if no user
+  } else {
+    console.warn("Element with id='usero' not found on page");
   }
 });
 
