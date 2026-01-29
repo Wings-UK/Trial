@@ -257,12 +257,13 @@ function createPostElement(post) {
                             <img class="feeling" src="pics/retweet.svg" alt="Repost">
                             <span>${post.repostCount || 0}</span>
                         </div>
-                        <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                            <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
-                                <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                            </svg>
-                            <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-                        </div>
+                       // Inside createPostElement — replace the entire <div class="heart-ai"> block with this:
+<div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+    <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
+        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+</div>
                     </div>
                 </div>
             </div>
@@ -425,7 +426,6 @@ function addHeartReactionStyles() {
     `;
     document.head.appendChild(style);
 }
-
 // Paste this exactly as-is — replace your current initializeHeartReactions function
 function initializeHeartReactions() {
     if (!document.getElementById('heart-reaction-styles')) {
@@ -440,27 +440,24 @@ function initializeHeartReactions() {
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
         
-        // Safety: if like-count span is missing, skip this container entirely
-        if (!likeCount) {
-            console.warn('Skipping heart container — .like-count element not found inside .heart-ai');
+        // If either critical element is missing → skip this container silently
+        if (!heartIcon || !likeCount) {
             return;
         }
         
         const clickableElements = container.querySelectorAll('.heart-clickable');
-        const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
-        // Safely read count from the DOM (fallback to 0 if empty/invalid)
+        // Read count safely
         let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
         let count = countText ? parseInt(countText, 10) : 0;
         if (isNaN(count)) count = 0;
         
-        // Apply initial visual state
+        // Initial state
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
             likeCount.style.display = 'inline';
-            likeCount.textContent = count;
         }
         
         if (isLiked) {
@@ -468,42 +465,33 @@ function initializeHeartReactions() {
             likeCount.classList.add('liked');
         }
         
-        // Only attach click listeners if we have the icon and count element
-        if (heartIcon && clickableElements.length > 0) {
-            clickableElements.forEach(element => {
-                element.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    
-                    isLiked = !isLiked;
-                    
-                    if (isLiked) {
-                        heartIcon.classList.add('heart-animation', 'liked');
-                        likeCount.classList.add('liked');
-                        count++;
-                        likeCount.style.display = 'inline';
-                        likeCount.textContent = count;
-                        setTimeout(() => {
-                            heartIcon.classList.remove('heart-animation');
-                        }, 400);
-                    } else {
-                        heartIcon.classList.add('unfill-animation');
-                        heartIcon.classList.remove('liked');
-                        likeCount.classList.remove('liked');
-                        count = Math.max(0, count - 1);
-                        if (count < 1) {
-                            likeCount.style.display = 'none';
-                        } else {
-                            likeCount.style.display = 'inline';
-                            likeCount.textContent = count;
-                        }
-                        setTimeout(() => {
-                            heartIcon.classList.remove('unfill-animation');
-                        }, 400);
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                isLiked = !isLiked;
+                
+                if (isLiked) {
+                    heartIcon.classList.add('heart-animation', 'liked');
+                    likeCount.classList.add('liked');
+                    count++;
+                    likeCount.style.display = 'inline';
+                    likeCount.textContent = count;
+                    setTimeout(() => heartIcon.classList.remove('heart-animation'), 400);
+                } else {
+                    heartIcon.classList.add('unfill-animation');
+                    heartIcon.classList.remove('liked');
+                    likeCount.classList.remove('liked');
+                    count = Math.max(0, count - 1);
+                    likeCount.textContent = count || '';
+                    if (count < 1) {
+                        likeCount.style.display = 'none';
                     }
-                    
-                    container.setAttribute('data-liked', isLiked.toString());
-                });
+                    setTimeout(() => heartIcon.classList.remove('unfill-animation'), 400);
+                }
+                
+                container.setAttribute('data-liked', isLiked ? 'true' : 'false');
             });
-        }
+        });
     });
 }
