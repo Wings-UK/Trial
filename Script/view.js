@@ -637,3 +637,45 @@ function initializeHeartReactions() {
         });
     });
 }
+
+// Paste this exactly as-is — add at the bottom of view.js
+function initializeLazyLoading() {
+    const placeholders = document.querySelectorAll('.placeholder');
+
+    placeholders.forEach(placeholder => {
+        const smallImg = placeholder.querySelector('.img-small');
+        if (!smallImg) return;
+
+        // Load small image first
+        const small = new Image();
+        small.src = smallImg.src;
+        small.onload = () => {
+            smallImg.classList.add('loaded');
+        };
+
+        // Load large image
+        const largeSrc = placeholder.getAttribute('data-large');
+        if (largeSrc) {
+            const large = new Image();
+            large.src = largeSrc;
+            large.onload = () => {
+                const largeImg = document.createElement('img');
+                largeImg.src = largeSrc;
+                largeImg.classList.add('loaded');
+                placeholder.appendChild(largeImg);
+            };
+        }
+    });
+}
+
+// Paste this exactly as-is — add at the bottom of view.js
+function updateCreatePostElementForLazy() {
+    // No need to change createPostElement — just call initializeLazyLoading after posts are added
+    // Make sure your placeholder divs in createPostElement have:
+    // class="placeholder" data-large="..." 
+    // and contain <img src="low-res.jpg" class="img-small">
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeLazyLoading();
+});
