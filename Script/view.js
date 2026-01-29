@@ -28,9 +28,109 @@ function formatTimeSince(dateStr) {
     return seconds + (seconds === 1 ? 's ago' : 's ago');
 }
 
+// ─────────────────────────────────────────────────────────────
+// Updated loadMorePosts() – with users table join (Option A)
+// ─────────────────────────────────────────────────────────────
+async function loadMorePosts() {
+    if (isLoading) return;
+    isLoading = true;
+
+    const postContainer = document.getElementById("flyer");
+    if (!postContainer) {
+        console.error("Cannot find #flyer element");
+        isLoading = false;
+        return;
+    }
+
+    try {
+        console.log("Trying to load posts from Supabase (with user join)...");
+
+        const { data: fetchedPosts, error } = await supabase
+            .from('posts')
+            .select(`
+                id,
+                content,
+                image,
+                video,
+                created_at,
+                like_count,
+                comment_count,
+                repost_count,
+                views,
+                user_id,                           // ← your foreign key column name
+                user:users (                       // ← table name = users
+                    id,
+                    username,
+                    avatar                         // ← change to avatar_url or profile_picture if needed
+                )
+            `)
+            .order('created_at', { ascending: false })
+            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
+
+        if (error) {
+            console.error("Supabase fetch error:", error.message);
+            alert("Failed to load posts: " + error.message);
+            isLoading = false;
+            return;
+        }
+
+        if (!fetchedPosts || fetchedPosts.length === 0) {
+            console.log("No more posts to load");
+            isLoading = false;
+            return;
+        }
+
+        console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
+
+        const adaptedPosts = fetchedPosts.map(p => ({
+            id: p.id,
+            userId: p.user_id || p.user?.id,
+            username: p.user?.username || '@unknown',
+            avatar: p.user?.avatar || 'pics/default-avatar.png',   // fallback if no avatar
+            content: p.content || '',
+            image: p.image || null,
+            video: p.video || null,
+            timestamp: formatTimeSince(p.created_at),
+            likeCount: p.like_count || 0,
+            commentCount: p.comment_count || 0,
+            repostCount: p.repost_count || 0,
+            views: p.views || 0
+        }));
+
+        console.log("Adapted posts:", adaptedPosts);
+
+        adaptedPosts.forEach(post => {
+            loadedPostIds.add(post.id);
+            const postElement = createPostElement(post);
+            if (postElement) {
+                postContainer.appendChild(postElement);
+            }
+        });
+
+        // Re-initialize interactive features after adding new posts
+        setTimeout(() => {
+            initializeHeartReactions();     // if you bring this back later
+            initializeVideoPlayers();       // if you bring this back later
+            initializeLazyLoadingOnLoad();  // if you bring this back later
+        }, 100);
+
+    } catch (err) {
+        console.error("Unexpected error while loading posts:", err);
+        alert("Error loading posts. Check console for details.");
+    } finally {
+        isLoading = false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Updated createPostElement(post) – uses real user data
+// ─────────────────────────────────────────────────────────────
 function createPostElement(post) {
-    // We always use fallback user so every post shows
-    const user = fallbackUser;
+    // Use the real user data that came from Supabase join
+    const user = {
+        username: post.username || '@unknown',
+        avatar: post.avatar || 'pics/default-avatar.png'
+    };
 
     const textLimit = (post.image || post.video) ? 250 : 500;
     const hasVideo = !!post.video;
@@ -44,38 +144,48 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <div class="placeholder small-photo" data-large="${user.avatar}">
-                        <img src="pics/tt.jpg.jpg" class="img-small">
-                        <div style="padding-bottom: 100%;"></div>
-                    </div>
+                    <a class="lino" onclick="showUserProfile('${post.userId}')">
+                        <div class="placeholder small-photo" data-large="${user.avatar}">
+                            <img src="pics/tt.jpg.jpg" class="img-small">
+                            <div style="padding-bottom: 100%;"></div>
+                        </div>
+                    </a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <div class="post1">
-                                <div class="jerr">
-                                    <p class="jerry">${user.username}</p>
+                            <a class="home-click" onclick="showUserProfile('${post.userId}')">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${user.username}</p>
+                                    </div>
+                                    <div>
+                                        <img class="verif" src="pics/very.svg">
+                                    </div>
                                 </div>
-                                <div>
-                                    <img class="verif" src="pics/very.svg">
-                                </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
                     <div class="comp1">
                         <div class="cll">
                             <p class="time">${post.timestamp}</p>
+                            <div class="tool">
+                                <p>${new Date(post.created_at || Date.now()).toLocaleString()}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="dots">
                 <img class="dot" src="pics/dots.svg">
+                <div class="tool">
+                    <p>More</p>
+                </div>
             </div>
         </div>
 
         ${hasImage ? `
-        <div class="laptop1">
+        <div class="laptop1" onclick="showDetail(${post.id})">
             <div class="placeholder placeholder1" data-large="${post.image}">
                 <img src="pics/tt_2.png" class="laptop img-small placeholder1">
                 <div style="padding-bottom: 100%;"></div>
@@ -84,7 +194,7 @@ function createPostElement(post) {
         ` : ''}
 
         ${hasVideo ? `
-        <div class="video-container laptop1" data-post-id="${post.id}">
+        <div class="video-container laptop1" data-post-id="${post.id}" onclick="showDetail(${post.id})">
             <video class="video-thumbnail" preload="metadata">
                 <source src="${post.video}" type="video/mp4">
             </video>
@@ -99,92 +209,62 @@ function createPostElement(post) {
         </div>
         ` : ''}
 
-        <div class="tir">
-            <p class="tired">${post.content || "(no text)"}</p>
+        <div class="tir" onclick="showDetail(${post.id})">
+            <p class="tired">${shortenText(post.content, textLimit, true)}</p>
         </div>
 
         <div class="lefto">
-            <div class="reaction">
-                <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                    <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
-                        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    <span class="like-count">${post.likeCount || ''}</span>
+            <div class="dick">
+                <div>
+                    <img class="lefti" src="pics/bounce.svg">
+                </div>
+                <div>
+                    <p class="viewe">View all ${post.commentCount || 0} discuss</p>
+                </div>
+            </div>
+            <div class="twits">
+                <div>
+                    <img class="leti" src="pics/stats.svg">
+                </div>
+                <div>
+                    <p class="viewe">${post.views || '0'} views</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="reaction">
+            <div class="reaction-container">
+                <div class="call">
+                    <div class="mee">
+                        <div class="comment-btn" data-post-id="${post.id}">
+                            <img class="feeling" src="pics/comment.svg" alt="Comment">
+                            <span>${post.commentCount || 0}</span>
+                        </div>
+                        <div class="repost-btn">
+                            <img class="feeling" src="pics/retweet.svg" alt="Repost">
+                            <span>${post.repostCount || 0}</span>
+                        </div>
+                        <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                            <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
+                                <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                        </div>
+                    </div>
+                    <div class="mee">
+                        <div class="donate-btn">
+                            <img class="feeling" src="pics/bookmark.svg" alt="Bookmark">
+                        </div>
+                        <div class="donate-btn">
+                            <img class="feeling" src="pics/share.svg" alt="Share">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
     return posterElement;
-}
-
-async function loadMorePosts() {
-    if (isLoading) return;
-    isLoading = true;
-
-    const postContainer = document.getElementById("flyer");
-    if (!postContainer) {
-        console.error("Cannot find #flyer element");
-        isLoading = false;
-        return;
-    }
-
-    try {
-        console.log("Trying to load posts from Supabase...");
-
-        const { data: fetchedPosts, error } = await supabase
-            .from('posts')
-            .select('id, content, image, video, created_at, like_count')
-            .order('created_at', { ascending: false })
-            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
-
-        if (error) {
-            console.error("Supabase error:", error);
-            alert("Could not load posts: " + error.message);
-            isLoading = false;
-            return;
-        }
-
-        if (!fetchedPosts || fetchedPosts.length === 0) {
-            console.log("No more posts found");
-            isLoading = false;
-            return;
-        }
-
-        console.log("RAW posts from Supabase:", fetchedPosts);                    // ← very important
-        console.log("Number of posts:", fetchedPosts.length);
-
-        const adaptedPosts = fetchedPosts.map(p => ({
-            id: p.id,
-            content: p.content || "(empty content)",
-            image: p.image || null,
-            video: p.video || null,
-            timestamp: formatTimeSince(p.created_at),
-            likeCount: p.like_count || 0
-        }));
-
-        console.log("Adapted posts (what we will render):", adaptedPosts);
-
-        adaptedPosts.forEach(post => {
-            loadedPostIds.add(post.id);
-            const element = createPostElement(post);
-            if (element) {
-                console.log("Appending post HTML for id", post.id);               // ← confirms DOM insert
-                console.log("HTML being added:\n", element.outerHTML.substring(0, 400) + "..."); // first part only
-                postContainer.appendChild(element);
-            } else {
-                console.warn("createPostElement returned null for post", post.id);
-            }
-        });
-
-        console.log("Posts should now be visible! Check #flyer in Elements tab.");
-
-    } catch (err) {
-        console.error("Unexpected problem:", err);
-        alert("Something went wrong while loading posts");
-    } finally {
-        isLoading = false;
-    }
 }
 
 // Start loading when homepage is shown
