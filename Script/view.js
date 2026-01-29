@@ -299,41 +299,101 @@ function addMinimalReactionStyles() {
     const style = document.createElement('style');
     style.id = 'minimal-reaction-styles';
     style.textContent = `
-        .reaction img.feeling,
-        .reaction svg.heart-icon {
-            width: 22px !important;
-            height: 22px !important;
-            object-fit: contain;
-        }
+       
+.heart-ai {
+    width: 55px;
+    gap: 5px;
+    display: flex;
+    align-items: center;
+}
+.heart-clickable {
+    cursor: pointer;
+}
+.mee {
+    display: flex;
+    gap: 20px;
+}
+.call {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.feeling {
+    width: 22px;
+}
+.like-count {
+    font-size: 14px;
+    font-family: ibm plex sans, roboto;
+} 
+.like-count.liked {
+    font-weight: 500;
+    color: rgb(244, 7, 82);
+}
+.like-count:empty {
+    display: none;
+}
+.heart-icon {
+    transition: all 0.3s ease;
+}
+.heart-icon .heart-path {
+    stroke: rgb(0, 0, 0);
+    fill: none;
+    transition: all 0.3s ease;
+}
+.heart-icon.liked {
+    transform: scale(1);
+}
+.heart-icon.liked .heart-path {
+    fill: rgb(244, 7, 82);
+    stroke: rgb(244, 7, 82);
+}
+@keyframes heartBeat {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.7); }
+    100% { transform: scale(1); }
+}
+.heart-animation {
+    animation: heartBeat 0.7s ease-in-out;
+}
+.heart-icon {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.heart-animation {
+    animation: pop 0.3s ease forwards;
+}
+.unfill-animation {
+    animation: shrinkFade 0.3s ease forwards;
+}
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+@keyframes shrinkFade {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.reaction-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.donate-btn {
+    display: flex;
+    align-items: center;
+}
+.comment-btn, .repost-btn {
+    display: flex; 
+    width: 55px;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: ibm plex sans, roboto;
+}
 
-        .heart-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-        .reaction-container .mee {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .reaction-container .mee > div {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .like-count,
-        .reaction span {
-            font-size: 13px;
-            color: #555;
-        }
-
-        .heart-icon.liked .heart-path {
-            fill: #f40752;
-            stroke: #f40752;
-        }
     `;
     document.head.appendChild(style);
 }
