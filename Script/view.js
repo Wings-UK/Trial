@@ -439,12 +439,21 @@ function initializeHeartReactions() {
         
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
+        
+        // Skip if likeCount element is missing (safety check)
+        if (!likeCount) {
+            console.warn('Like count element missing in heart container');
+            return;
+        }
+        
         const clickableElements = container.querySelectorAll('.heart-clickable');
         const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
-        // We read the current displayed count from the DOM (no global 'posts' needed)
-        let count = parseInt(likeCount.textContent.trim()) || 0;
+        // Safely read initial count from DOM (handle empty or non-numeric gracefully)
+        let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
+        let count = countText ? parseInt(countText, 10) : 0;
+        if (isNaN(count)) count = 0;
         
         // Set initial visual state
         if (count < 1) {
@@ -492,7 +501,7 @@ function initializeHeartReactions() {
                 
                 container.setAttribute('data-liked', isLiked.toString());
                 
-                // Optional future step: save to Supabase
+                // Optional: future Supabase update
                 // supabase.from('posts').update({ like_count: count }).eq('id', postId);
             });
         });
