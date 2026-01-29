@@ -440,9 +440,9 @@ function initializeHeartReactions() {
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
         
-        // Skip if likeCount element is missing (safety check)
+        // Safety: if like-count span is missing, skip this container entirely
         if (!likeCount) {
-            console.warn('Like count element missing in heart container');
+            console.warn('Skipping heart container — .like-count element not found inside .heart-ai');
             return;
         }
         
@@ -450,12 +450,12 @@ function initializeHeartReactions() {
         const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
-        // Safely read initial count from DOM (handle empty or non-numeric gracefully)
+        // Safely read count from the DOM (fallback to 0 if empty/invalid)
         let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
         let count = countText ? parseInt(countText, 10) : 0;
         if (isNaN(count)) count = 0;
         
-        // Set initial visual state
+        // Apply initial visual state
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
@@ -468,42 +468,42 @@ function initializeHeartReactions() {
             likeCount.classList.add('liked');
         }
         
-        clickableElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                isLiked = !isLiked;
-                
-                if (isLiked) {
-                    heartIcon.classList.add('heart-animation', 'liked');
-                    likeCount.classList.add('liked');
-                    count++;
-                    likeCount.style.display = 'inline';
-                    likeCount.textContent = count;
-                    setTimeout(() => {
-                        heartIcon.classList.remove('heart-animation');
-                    }, 400);
-                } else {
-                    heartIcon.classList.add('unfill-animation');
-                    heartIcon.classList.remove('liked');
-                    likeCount.classList.remove('liked');
-                    count = Math.max(0, count - 1);
-                    if (count < 1) {
-                        likeCount.style.display = 'none';
-                    } else {
+        // Only attach click listeners if we have the icon and count element
+        if (heartIcon && clickableElements.length > 0) {
+            clickableElements.forEach(element => {
+                element.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    isLiked = !isLiked;
+                    
+                    if (isLiked) {
+                        heartIcon.classList.add('heart-animation', 'liked');
+                        likeCount.classList.add('liked');
+                        count++;
                         likeCount.style.display = 'inline';
                         likeCount.textContent = count;
+                        setTimeout(() => {
+                            heartIcon.classList.remove('heart-animation');
+                        }, 400);
+                    } else {
+                        heartIcon.classList.add('unfill-animation');
+                        heartIcon.classList.remove('liked');
+                        likeCount.classList.remove('liked');
+                        count = Math.max(0, count - 1);
+                        if (count < 1) {
+                            likeCount.style.display = 'none';
+                        } else {
+                            likeCount.style.display = 'inline';
+                            likeCount.textContent = count;
+                        }
+                        setTimeout(() => {
+                            heartIcon.classList.remove('unfill-animation');
+                        }, 400);
                     }
-                    setTimeout(() => {
-                        heartIcon.classList.remove('unfill-animation');
-                    }, 400);
-                }
-                
-                container.setAttribute('data-liked', isLiked.toString());
-                
-                // Optional: future Supabase update
-                // supabase.from('posts').update({ like_count: count }).eq('id', postId);
+                    
+                    container.setAttribute('data-liked', isLiked.toString());
+                });
             });
-        });
+        }
     });
 }
