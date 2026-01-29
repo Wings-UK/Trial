@@ -12,7 +12,7 @@ const fallbackUser = {
     id: 999,                    // doesn't matter
     username: "@jeremyx",
     name: "Jeremy X",
-    avatar: "pics/mypics.jpg",  // change this path if needed
+    avatar: "pics/9.jpg",  // change this path if needed
     cover: "pics/vu.jpg"
 };
 
