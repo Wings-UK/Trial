@@ -128,7 +128,7 @@ async function loadMorePosts() {
 
         // Re-init interactive parts (bring these back when you restore the functions)
         setTimeout(() => {
-            // initializeHeartReactions();
+            initializeHeartReactions();
             // initializeVideoPlayers();
             // initializeLazyLoadingOnLoad();
         }, 100);
@@ -343,3 +343,159 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Also call it after new posts are added (inside loadMorePosts setTimeout)
+
+// Paste this exactly as-is — replace your current addHeartReactionStyles function
+function addHeartReactionStyles() {
+    if (document.getElementById('heart-reaction-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'heart-reaction-styles';
+    style.textContent = `
+        .heart-ai {
+            width: 55px;
+            gap: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .heart-clickable {
+            cursor: pointer;
+        }
+        .mee {
+            display: flex;
+            gap: 20px;
+        }
+        .call {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .feeling {
+            width: 22px;
+        }
+        .like-count {
+            font-size: 14px;
+            font-family: ibm plex sans, roboto;
+        }
+        .like-count.liked {
+            font-weight: 500;
+            color: rgb(244, 7, 82);
+        }
+        .like-count:empty {
+            display: none;
+        }
+        .heart-icon {
+            transition: all 0.3s ease;
+        }
+        .heart-icon .heart-path {
+            stroke: rgb(0, 0, 0);
+            fill: none;
+            transition: all 0.3s ease;
+        }
+        .heart-icon.liked {
+            transform: scale(1);
+        }
+        .heart-icon.liked .heart-path {
+            fill: rgb(244, 7, 82);
+            stroke: rgb(244, 7, 82);
+        }
+        @keyframes heartBeat {
+            0% { transform: scale(0.5); }
+            50% { transform: scale(1.7); }
+            100% { transform: scale(1); }
+        }
+        .heart-animation {
+            animation: heartBeat 0.7s ease-in-out;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shrinkFade {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .heart-animation {
+            animation: pop 0.3s ease forwards;
+        }
+        .unfill-animation {
+            animation: shrinkFade 0.3s ease forwards;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Paste this exactly as-is — replace your current initializeHeartReactions function
+function initializeHeartReactions() {
+    if (!document.getElementById('heart-reaction-styles')) {
+        addHeartReactionStyles();
+    }
+
+    const heartContainers = document.querySelectorAll('.heart-ai:not([data-initialized])');
+
+    heartContainers.forEach(container => {
+        container.setAttribute('data-initialized', 'true');
+        
+        const heartIcon = container.querySelector('.heart-icon');
+        const likeCount = container.querySelector('.like-count');
+        const clickableElements = container.querySelectorAll('.heart-clickable');
+        const postId = parseInt(container.getAttribute('data-post-id'));
+        let isLiked = container.getAttribute('data-liked') === 'true';
+        
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+        
+        let count = parseInt(post.likeCount) || 0;
+        
+        if (count < 1) {
+            likeCount.style.display = 'none';
+        } else {
+            likeCount.style.display = 'inline';
+            likeCount.textContent = count;
+        }
+        
+        if (isLiked) {
+            heartIcon.classList.add('liked');
+            likeCount.classList.add('liked');
+        }
+        
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                isLiked = !isLiked;
+                
+                if (isLiked) {
+                    heartIcon.classList.add('heart-animation', 'liked');
+                    likeCount.classList.add('liked');
+                    count++;
+                    likeCount.style.display = 'inline';
+                    likeCount.textContent = count;
+                    setTimeout(() => {
+                        heartIcon.classList.remove('heart-animation');
+                    }, 400);
+                } else {
+                    heartIcon.classList.add('unfill-animation');
+                    heartIcon.classList.remove('liked');
+                    likeCount.classList.remove('liked');
+                    count = Math.max(0, count - 1);
+                    if (count < 1) {
+                        likeCount.style.display = 'none';
+                    } else {
+                        likeCount.style.display = 'inline';
+                        likeCount.textContent = count;
+                    }
+                    setTimeout(() => {
+                        heartIcon.classList.remove('unfill-animation');
+                    }, 400);
+                }
+                
+                container.setAttribute('data-liked', isLiked.toString());
+                if (post) {
+                    post.likeCount = count;
+                }
+            });
+        });
+    });
+}
