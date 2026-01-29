@@ -440,13 +440,14 @@ function initializeHeartReactions() {
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
         const clickableElements = container.querySelectorAll('.heart-clickable');
-        const postId = parseInt(container.getAttribute('data-post-id'));
+        const postId = container.getAttribute('data-post-id');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
-        const post = posts.find(p => p.id === postId);
-        if (!post) return;
+        // Removed the line that caused the error:
+        // const post = posts.find(p => p.id === postId);
+        // We no longer need the global 'posts' array here
         
-        let count = parseInt(post.likeCount) || 0;
+        let count = parseInt(likeCount.textContent.trim()) || 0;
         
         if (count < 1) {
             likeCount.style.display = 'none';
@@ -492,9 +493,11 @@ function initializeHeartReactions() {
                 }
                 
                 container.setAttribute('data-liked', isLiked.toString());
-                if (post) {
-                    post.likeCount = count;
-                }
+                
+                // Optional: if you later want to save the like to Supabase,
+                // you can add an API call here using the postId
+                // Example (commented out for now):
+                // supabase.from('posts').update({ like_count: count }).eq('id', postId);
             });
         });
     });
