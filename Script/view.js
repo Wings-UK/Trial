@@ -346,7 +346,7 @@ async function loadMorePosts() {
     }
 
     try {
-        console.log("Fetching posts from Supabase (using user.id column)...");
+        console.log("Fetching posts from Supabase using column 'user.id'...");
 
         const { data: fetchedPosts, error } = await supabase
             .from('posts')
@@ -370,7 +370,6 @@ async function loadMorePosts() {
 
         console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
 
-        // Use fallback user data since no join yet
         const fallbackUser = {
             username: '@unknown',
             avatar: 'pics/default-avatar.png',
@@ -379,7 +378,7 @@ async function loadMorePosts() {
 
         const adaptedPosts = fetchedPosts.map(p => ({
             id: p.id,
-            userId: p["user.id"],           // ← use quoted key for dot in column name
+            userId: p["user.id"],              // ← bracket notation for column with dot
             username: fallbackUser.username,
             name: fallbackUser.name,
             avatar: fallbackUser.avatar,
@@ -412,7 +411,7 @@ async function loadMorePosts() {
         }, 100);
 
     } catch (err) {
-        console.error("Unexpected error in loadMorePosts:", err);
+        console.error("Unexpected error:", err);
         alert("Error loading posts. Check console.");
     } finally {
         isLoading = false;
