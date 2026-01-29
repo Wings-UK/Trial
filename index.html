@@ -763,6 +763,35 @@
       console.log("Already logged in:", session.user.email);
     }
   }).catch(err => console.error("Session check failed:", err));
+  
+
+  // Add this new logout function
+  window.handleLogout = async function() {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Logout error:", error);
+        alert("Logout failed: " + error.message);
+        return;
+      }
+
+      // Clear local storage (optional - removes any saved session)
+      localStorage.removeItem('supabase.auth.token');
+
+      console.log("User logged out successfully");
+
+      // Show success message (optional)
+      alert("Logged out successfully!");
+
+      // Reload page to show login popup again
+      location.reload();
+    } catch (err) {
+      console.error("Unexpected logout error:", err);
+      alert("Something went wrong during logout.");
+    }
+  };
+
 </script>
    
   </body>
