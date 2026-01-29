@@ -346,26 +346,13 @@ async function loadMorePosts() {
     }
 
     try {
-        console.log("Fetching posts from Supabase...");
+        console.log("Fetching posts from Supabase (no join)...");
 
-        // Fetch newest posts (paginated)
         const { data: fetchedPosts, error } = await supabase
             .from('posts')
-            .select(`
-                id,
-                user_id,
-                content,
-                image,
-                video,
-                created_at,
-                like_count,
-                comment_count,
-                repost_count,
-                views,
-                users!user_id (username, name, avatar)
-            `)
+            .select('id, user_id, content, image, video, created_at, like_count, comment_count, repost_count, views')
             .order('created_at', { ascending: false })
-            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);  // pagination using offset
+            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
 
         if (error) {
             console.error("Supabase fetch error:", error.message);
@@ -383,17 +370,23 @@ async function loadMorePosts() {
 
         console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
 
-        // Adapt Supabase data to your existing post object shape
+        // Temporary: Use a fallback user until we fix join
+        const fallbackUser = {
+            username: '@unknown',
+            avatar: 'pics/default-avatar.png',
+            name: 'Unknown User'
+        };
+
         const adaptedPosts = fetchedPosts.map(p => ({
             id: p.id,
             userId: p.user_id,
-            username: p.users?.username || '@unknown',
-            name: p.users?.name || 'Unknown User',
-            avatar: p.users?.avatar || 'pics/default-avatar.png',
+            username: fallbackUser.username,
+            name: fallbackUser.name,
+            avatar: fallbackUser.avatar,
             content: p.content || '',
             image: p.image || null,
             video: p.video || null,
-            timestamp: formatTimeSince(p.created_at),  // your existing formatter
+            timestamp: formatTimeSince(p.created_at),
             date: new Date(p.created_at).toLocaleString(),
             likeCount: p.like_count || 0,
             commentCount: p.comment_count || 0,
@@ -401,12 +394,10 @@ async function loadMorePosts() {
             views: p.views || 0
         }));
 
-        // Add to loaded IDs to avoid duplicates
         adaptedPosts.forEach(post => {
             loadedPostIds.add(post.id);
         });
 
-        // Create and append elements using your existing function
         adaptedPosts.forEach(post => {
             const postElement = createPostElement(post);
             if (postElement) {
@@ -414,7 +405,6 @@ async function loadMorePosts() {
             }
         });
 
-        // Re-initialize your UI features
         setTimeout(() => {
             initializeVideoPlayers();
             initializeHeartReactions();
