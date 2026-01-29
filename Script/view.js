@@ -287,3 +287,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// ─────────────────────────────────────────────────────────────
+// Minimal reaction styles to fix oversized icons
+// Paste this at the bottom of view.js
+// ─────────────────────────────────────────────────────────────
+function addMinimalReactionStyles() {
+    if (document.getElementById('minimal-reaction-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'minimal-reaction-styles';
+    style.textContent = `
+        .reaction img.feeling,
+        .reaction svg.heart-icon {
+            width: 22px !important;
+            height: 22px !important;
+            object-fit: contain;
+        }
+
+        .heart-icon {
+            width: 22px;
+            height: 22px;
+        }
+
+        .reaction-container .mee {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reaction-container .mee > div {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .like-count,
+        .reaction span {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .heart-icon.liked .heart-path {
+            fill: #f40752;
+            stroke: #f40752;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Call it once after the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    addMinimalReactionStyles();
+});
+
+// Also call it after new posts are added (inside loadMorePosts setTimeout)
