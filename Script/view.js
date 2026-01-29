@@ -45,6 +45,25 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Add this function to view.js
+function formatTimeSince(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+        return interval + "h ago";
+    }
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+        return interval + "m ago";
+    }
+
+    return seconds + "s ago";
+}
+
 const users = [
     {
         id: 1,
