@@ -151,26 +151,33 @@ async function loadMorePosts() {
             return;
         }
 
-        console.log("Got posts:", fetchedPosts.length);
+        console.log("RAW posts from Supabase:", fetchedPosts);                    // ← very important
+        console.log("Number of posts:", fetchedPosts.length);
 
         const adaptedPosts = fetchedPosts.map(p => ({
             id: p.id,
-            content: p.content || "",
+            content: p.content || "(empty content)",
             image: p.image || null,
             video: p.video || null,
             timestamp: formatTimeSince(p.created_at),
             likeCount: p.like_count || 0
         }));
 
+        console.log("Adapted posts (what we will render):", adaptedPosts);
+
         adaptedPosts.forEach(post => {
             loadedPostIds.add(post.id);
             const element = createPostElement(post);
             if (element) {
+                console.log("Appending post HTML for id", post.id);               // ← confirms DOM insert
+                console.log("HTML being added:\n", element.outerHTML.substring(0, 400) + "..."); // first part only
                 postContainer.appendChild(element);
+            } else {
+                console.warn("createPostElement returned null for post", post.id);
             }
         });
 
-        console.log("Posts should now be visible!");
+        console.log("Posts should now be visible! Check #flyer in Elements tab.");
 
     } catch (err) {
         console.error("Unexpected problem:", err);
