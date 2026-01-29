@@ -29,6 +29,25 @@ function formatTimeSince(dateStr) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Helper function: shortenText (was missing)
+// ─────────────────────────────────────────────────────────────
+function shortenText(text, limit, showSeeMore = true) {
+    if (!text) return '';
+    if (text.length <= limit) return text;
+
+    let shortened = text.slice(0, limit);
+    const lastSpace = shortened.lastIndexOf(' ');
+
+    if (lastSpace > 0) {
+        shortened = shortened.slice(0, lastSpace);
+    }
+
+    return showSeeMore ?
+        shortened + `...<br><span class="reer">see more</span>` :
+        shortened + "...";
+}
+
+// ─────────────────────────────────────────────────────────────
 // Updated loadMorePosts() – with users table join (Option A)
 // ─────────────────────────────────────────────────────────────
 async function loadMorePosts() {
@@ -122,24 +141,6 @@ async function loadMorePosts() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Helper function: shortenText (was missing)
-// ─────────────────────────────────────────────────────────────
-function shortenText(text, limit, showSeeMore = true) {
-    if (!text) return '';
-    if (text.length <= limit) return text;
-
-    let shortened = text.slice(0, limit);
-    const lastSpace = shortened.lastIndexOf(' ');
-
-    if (lastSpace > 0) {
-        shortened = shortened.slice(0, lastSpace);
-    }
-
-    return showSeeMore ?
-        shortened + `...<br><span class="reer">see more</span>` :
-        shortened + "...";
-}
 
 // ─────────────────────────────────────────────────────────────
 // Updated createPostElement (now uses shortenText)
