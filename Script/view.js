@@ -57,11 +57,11 @@ async function loadMorePosts() {
                 comment_count,
                 repost_count,
                 views,
-                user_id,                           // ← your foreign key column name
-                user:users (                       // ← table name = users
+                user_id,
+                user:users (
                     id,
                     username,
-                    avatar                         // ← change to avatar_url or profile_picture if needed
+                    avatar
                 )
             `)
             .order('created_at', { ascending: false })
@@ -86,7 +86,7 @@ async function loadMorePosts() {
             id: p.id,
             userId: p.user_id || p.user?.id,
             username: p.user?.username || '@unknown',
-            avatar: p.user?.avatar || 'pics/default-avatar.png',   // fallback if no avatar
+            avatar: p.user?.avatar || 'pics/default-avatar.png',
             content: p.content || '',
             image: p.image || null,
             video: p.video || null,
@@ -107,21 +107,20 @@ async function loadMorePosts() {
             }
         });
 
-        // Re-initialize interactive features after adding new posts
+        // Re-init interactive parts (bring these back when you restore the functions)
         setTimeout(() => {
-            initializeHeartReactions();     // if you bring this back later
-            initializeVideoPlayers();       // if you bring this back later
-            initializeLazyLoadingOnLoad();  // if you bring this back later
+            // initializeHeartReactions();
+            // initializeVideoPlayers();
+            // initializeLazyLoadingOnLoad();
         }, 100);
 
     } catch (err) {
         console.error("Unexpected error while loading posts:", err);
-        alert("Error loading posts. Check console for details.");
+        alert("Error loading posts. Check console.");
     } finally {
         isLoading = false;
     }
 }
-
 // ─────────────────────────────────────────────────────────────
 // Updated createPostElement(post) – uses real user data
 // ─────────────────────────────────────────────────────────────
