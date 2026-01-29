@@ -156,6 +156,27 @@ function createSkeletonPost(postId) {
   return skeleton;
 }
 
+// Add this function to view.js – formats Supabase timestamps like "2h ago"
+function formatTimeSince(dateStr) {
+    if (!dateStr) return 'just now';
+
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+        return interval + (interval === 1 ? "h ago" : "h ago");
+    }
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+        return interval + (interval === 1 ? "m ago" : "m ago");
+    }
+
+    return seconds + (seconds === 1 ? "s ago" : "s ago");
+}
+
 function createPostElement(post) {
   const user = users.find(u => u.id === post.userId);
   if (!user) return null;
