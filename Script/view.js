@@ -1,16 +1,32 @@
 // view.js - simplified version that shows posts even without matching users
 
-// Paste this exactly as-is — add near the top, after any global variables
-let currentUserId = null;
+// 1. Global logged-in user (updated from auth) — paste near top of file, after any other globals
+let loggedInUser = null;
 
-// Get logged-in user ID once when page loads
+// Initialize logged-in user from Supabase Auth
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-        currentUserId = user.id;
-        console.log('Logged-in user ID:', currentUserId);
-    } else {
-        console.log('No user logged in');
+        // Fetch profile data from your users table
+        const { data: profile } = await supabase
+            .from('users')
+            .select('id, username, avatar')
+            .eq('id', user.id)
+            .single();
+
+        loggedInUser = profile || {
+            id: user.id,
+            username: user.email?.split('@')[0] || 'User',
+            avatar: 'pics/default-avatar.png'
+        };
+
+        // Update top-right avatar
+        const avatarImg = document.getElementById('usero');
+        if (avatarImg && loggedInUser.avatar) {
+            avatarImg.src = loggedInUser.avatar;
+        }
+
+        console.log('Logged-in user loaded:', loggedInUser);
     }
 });
 
@@ -237,10 +253,7 @@ async function loadMorePosts() {
     }
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// Updated createPostElement (now uses shortenText)
-// ─────────────────────────────────────────────────────────────
+// 2. Full createPostElement — with your original click logic (post.userId === loggedInUser.id)
 function createPostElement(post) {
     const user = {
         username: post.username || '@unknown',
@@ -255,11 +268,16 @@ function createPostElement(post) {
     posterElement.className = 'poster';
     posterElement.setAttribute('data-post-id', post.id);
 
+    // Use your original condition to choose which profile function to call
+    const profileClick = post.userId === loggedInUser?.id 
+        ? 'showMyProfile()' 
+        : `showUserProfile(${post.userId})`;
+
     posterElement.innerHTML = `
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                   <a class="lino" onclick="openUserProfile('${post.userId}')">
+                    <a class="lino" onclick="${profileClick}">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
                             <img src="pics/tt.jpg.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
@@ -269,7 +287,7 @@ function createPostElement(post) {
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                           <a class="home-click" onclick="openUserProfile('${post.userId}')">
+                            <a class="home-click" onclick="${profileClick}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -293,9 +311,6 @@ function createPostElement(post) {
             </div>
             <div class="dots">
                 <img class="dot" src="pics/dots.svg">
-                <div class="tool">
-                    <p>More</p>
-                </div>
             </div>
         </div>
 
@@ -309,7 +324,7 @@ function createPostElement(post) {
         ` : ''}
 
         ${hasVideo ? `
-        <div class="video-container laptop1" data-post-id="\( {post.id}" onclick="showDetail( \){post.id})">
+        <div class="video-container laptop1" data-post-id="${post.id}" onclick="showDetail(${post.id})">
             <video class="video-thumbnail" preload="metadata">
                 <source src="${post.video}" type="video/mp4">
             </video>
@@ -737,12 +752,10 @@ async function fetchUserProfile(userId) {
     };
 }
 
-// Paste this exactly as-is — replace your current showProfile function
-async function showProfile(userId) {
-    // Save scroll position
+// Paste this exactly as-is — replace your current showMyProfile function
+async function showMyProfile() {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
-    // Switch page
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const profileSection = document.getElementById('profile');
     if (!profileSection) return;
@@ -751,13 +764,148 @@ async function showProfile(userId) {
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
 
+    ireti.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading your profile...</p>';
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        ireti.innerHTML = '<p style="text-align:center; padding:40px;">Not logged in</p>';
+        return;
+    }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('id, username, avatar, cover, bio, location, followers, following')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile) {
+        ireti.innerHTML = '<p>Profile not found</p>';
+        return;
+    }
+
+    const { data: userPosts } = await supabase
+        .from('posts')
+        .select('id, content, image, video, created_at, like_count')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+    ireti.innerHTML = `
+        <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
+        <div>
+            <img class="kor" src="${profile.avatar || 'pics/default-avatar.png'}">
+        </div>
+        <div class="klr">
+            <div class="drun">
+                <div>
+                    <p class="spe">${profile.username}</p>
+                </div>
+                <div>
+                    <img class="verify" src="pics/very.svg">
+                </div>
+            </div>
+            <div class="druu">
+                <div>
+                    <p class="rkl">${profile.location || 'No location'}</p>
+                </div>
+                <div class="drum">
+                    <img class="kiy" src="pics/qr.svg">
+                </div>
+            </div>
+            <div class="nin">
+                <p class="rkl"><span class="bld">${profile.following || 0}</span> following · <span class="bld">${profile.followers || 0}</span> followers</p>
+            </div>
+            <div class="cha">
+                <p>${profile.bio || 'No bio yet'}</p>
+            </div>
+            <div class="man">
+                <div class="vre">
+                    <button class="aasw edit-profile-btn">Edit Profile</button>
+                </div>
+                <div class="vre">
+                    <button class="aas settings-btn" onclick="showSettings()">
+                        <img class="offi" src="pics/setting.svg">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+
+        <!-- Post icon — only on own profile -->
+        <div class="wing">
+            <img class="wingo" src="pics/geat.svg" onclick="makePost()">
+        </div>
+    `;
+
+    const left = document.querySelector('.left-column');
+    const right = document.querySelector('.right-column');
+    if (left && right) {
+        left.innerHTML = '';
+        right.innerHTML = '';
+
+        if (!userPosts || userPosts.length === 0) {
+            left.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
+        } else {
+            userPosts.forEach((post, i) => {
+                const html = `
+                    <div class="masonry" onclick="showDetail(${post.id})">
+                        ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
+                        ${post.video ? `<div class="video-container power"><video preload="metadata"><source src="${post.video}" type="video/mp4"></video></div>` : ''}
+                        <div class="contentma">
+                            <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
+                        </div>
+                    </div>
+                `;
+                if (i % 2 === 0) left.innerHTML += html;
+                else right.innerHTML += html;
+            });
+        }
+    }
+
+    window.scrollTo(0, 0);
+
+    document.querySelector('.edit-profile-btn')?.addEventListener('click', openEditProfileModal);
+}
+
+// Paste this exactly as-is — replace your current showUserProfile function (or showProfile if renamed)
+async function showUserProfile(userId) {
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('profile')?.classList.add('active');
+
+    const ireti = document.getElementById('ireti');
+    if (!ireti) return;
+
     ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';
 
-    const userData = await fetchUserProfile(userId);
+    const { data: userData } = await supabase
+        .from('users')
+        .select('id, username, avatar, cover, bio, location, followers, following')
+        .eq('id', userId)
+        .single();
+
     if (!userData) {
         ireti.innerHTML = '<p>User not found</p>';
         return;
     }
+
+    const { data: userPosts } = await supabase
+        .from('posts')
+        .select('id, content, image, video, created_at, like_count')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(12);
 
     ireti.innerHTML = `
         <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">
@@ -805,53 +953,38 @@ async function showProfile(userId) {
             </div>
         </div>
 
-        <!-- No Post icon on other users' profiles -->
+        <!-- NO post icon on other users' profiles -->
     `;
 
-    // Render posts in masonry (same as your original)
-    const leftColumn = document.querySelector('.left-column');
-    const rightColumn = document.querySelector('.right-column');
-    leftColumn.innerHTML = '';
-    rightColumn.innerHTML = '';
+    const left = document.querySelector('.left-column');
+    const right = document.querySelector('.right-column');
+    if (left && right) {
+        left.innerHTML = '';
+        right.innerHTML = '';
 
-    if (!userData.posts || userData.posts.length === 0) {
-        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
-    } else {
-        userData.posts.forEach((post, index) => {
-            const postHTML = `
-                <div class="masonry" onclick="showDetail(${post.id})">
-                    ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
-                    ${post.video ? `
-                        <div class="video-container power">
-                            <video class="video-thumbnail" preload="metadata">
-                                <source src="${post.video}" type="video/mp4">
-                            </video>
-                            <div class="video-overlay power">
-                                <div class="play-button power">
-                                    <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                    </svg>
-                                </div>
-                            </div>
+        if (!userPosts || userPosts.length === 0) {
+            left.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
+        } else {
+            userPosts.forEach((post, i) => {
+                const html = `
+                    <div class="masonry" onclick="showDetail(${post.id})">
+                        ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
+                        ${post.video ? `<div class="video-container power"><video preload="metadata"><source src="${post.video}" type="video/mp4"></video></div>` : ''}
+                        <div class="contentma">
+                            <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                         </div>
-                    ` : ''}
-                    <div class="contentma">
-                        <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                     </div>
-                </div>
-            `;
-
-            if (index % 2 === 0) {
-                leftColumn.innerHTML += postHTML;
-            } else {
-                rightColumn.innerHTML += postHTML;
-            }
-        });
+                `;
+                if (i % 2 === 0) left.innerHTML += html;
+                else right.innerHTML += html;
+            });
+        }
     }
 
     window.scrollTo(0, 0);
 }
+
+
 // Paste this exactly as-is — add at the bottom
 function goBack() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
