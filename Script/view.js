@@ -850,3 +850,213 @@ function goBack() {
     document.getElementById('food').classList.add('active');
     if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
 }
+
+
+// Paste this exactly as-is — add at the bottom of view.js
+async function showMyProfile() {
+    // Save current scroll position of feed
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+
+    // Switch to profile page
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const profileSection = document.getElementById('profile');
+    if (!profileSection) {
+        console.error('Profile section (#profile) not found');
+        return;
+    }
+    profileSection.classList.add('active');
+
+    const ireti = document.getElementById('ireti');
+    if (!ireti) {
+        console.error('ireti element not found');
+        return;
+    }
+
+    // Show loading skeleton
+    ireti.innerHTML = `
+        <div class="skeleton" style="height: 400px; margin: 20px;"></div>
+        <p>Loading your profile...</p>
+    `;
+
+    // Get current logged-in user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        ireti.innerHTML = `
+            <div style="text-align:center; padding: 40px;">
+                <h3>Not logged in</h3>
+                <p>Please log in to view your profile.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const userId = user.id;
+
+    // Fetch user profile data
+    const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('id, username, avatar, cover, bio, location, followers, following')
+        .eq('id', userId)
+        .single();
+
+    if (profileError || !profile) {
+        console.error('Profile fetch error:', profileError);
+        ireti.innerHTML = `
+            <div style="text-align:center; padding: 40px;">
+                <h3>Profile not found</h3>
+                <p>Your profile data could not be loaded.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Fetch user's own posts
+    const { data: userPosts, error: postsError } = await supabase
+        .from('posts')
+        .select('id, content, image, video, created_at, like_count, comment_count, repost_count, views')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+    if (postsError) {
+        console.error('Posts fetch error:', postsError);
+    }
+
+    // Render profile using your original HTML structure
+    ireti.innerHTML = `
+        <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}" onerror="this.src='pics/default-cover.jpg'">
+        <div>
+            <img class="kor" src="${profile.avatar || 'pics/default-avatar.png'}" onerror="this.src='pics/default-avatar.png'">
+        </div>
+        <div class="klr">
+            <div class="drun">
+                <div>
+                    <p class="spe">${profile.username}</p>
+                </div>
+                <div>
+                    <img class="verify" src="pics/very.svg">
+                </div>
+            </div>
+            <div class="druu">
+                <div>
+                    <p class="rkl">${profile.location || 'No location'}</p>
+                </div>
+                <div class="drum">
+                    <img class="kiy" src="pics/qr.svg">
+                </div>
+            </div>
+            <div class="nin">
+                <p class="rkl">
+                    <span class="bld">${profile.following || 0}</span> following 
+                    · 
+                    <span class="bld">${profile.followers || 0}</span> followers
+                </p>
+            </div>
+            <div class="cha">
+                <p>${profile.bio || 'No bio yet'}</p>
+            </div>
+            <div class="man">
+                <div class="vre">
+                    <button class="aasw edit-profile-btn">Edit Profile</button>
+                </div>
+                <div class="vre">
+                    <button class="aas settings-btn" onclick="showSettings()">
+                        <img class="offi" src="pics/setting.svg">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+    `;
+
+    // Render user's posts in masonry grid
+    const leftColumn = document.querySelector('.left-column');
+    const rightColumn = document.querySelector('.right-column');
+    if (leftColumn && rightColumn) {
+        leftColumn.innerHTML = '';
+        rightColumn.innerHTML = '';
+
+        if (!userPosts || userPosts.length === 0) {
+            leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
+        } else {
+            userPosts.forEach((post, index) => {
+                const postHTML = `
+                    <div class="masonry" onclick="showDetail(${post.id})">
+                        ${post.image ? `
+                            <img src="${post.image}" loading="lazy" alt="Post image">
+                        ` : ''}
+                        ${post.video ? `
+                            <div class="video-container power">
+                                <video class="video-thumbnail" preload="metadata">
+                                    <source src="${post.video}" type="video/mp4">
+                                </video>
+                                <div class="video-overlay power">
+                                    <div class="play-button power">
+                                        <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
+                                            <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                            <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="contentma">
+                            <p class="partner">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</p>
+                        </div>
+                    </div>
+                `;
+
+                if (index % 2 === 0) {
+                    leftColumn.innerHTML += postHTML;
+                } else {
+                    rightColumn.innerHTML += postHTML;
+                }
+            });
+        }
+    }
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+
+    // Optional: make Edit Profile button work (add your edit modal logic here later)
+    document.querySelector('.edit-profile-btn')?.addEventListener('click', () => {
+        alert('Edit profile coming soon!');
+    });
+}
+
+// Paste this exactly as-is — add at the bottom
+document.addEventListener('DOMContentLoaded', () => {
+    const accountIcon = document.querySelector('.account-icon');
+    if (accountIcon) {
+        accountIcon.addEventListener('click', () => {
+            showMyProfile();
+        });
+    }
+
+    // Load logged-in user's avatar in top-right
+    supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+            supabase
+                .from('users')
+                .select('avatar')
+                .eq('id', user.id)
+                .single()
+                .then(({ data }) => {
+                    if (data?.avatar) {
+                        document.getElementById('usero').src = data.avatar;
+                    }
+                });
+        }
+    });
+});
