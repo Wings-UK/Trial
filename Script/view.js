@@ -259,7 +259,7 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="showProfile('${post.userId}')">
+                   <a class="lino" onclick="openUserProfile('${post.userId}')">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
                             <img src="pics/tt.jpg.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
@@ -269,7 +269,7 @@ function createPostElement(post) {
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="showProfile('${post.userId}')">
+                           <a class="home-click" onclick="openUserProfile('${post.userId}')">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -1043,3 +1043,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+// Paste this exactly as-is — add at the bottom of view.js
+async function openUserProfile(userId) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user && user.id === userId) {
+        // It's me → show my own profile layout (with post icon, edit, settings)
+        showMyProfile();
+    } else {
+        // It's someone else → show general profile (no post icon)
+        showProfile(userId);
+    }
+}
