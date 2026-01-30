@@ -759,9 +759,6 @@ async function showProfile(userId) {
         return;
     }
 
-    // Check if this is the logged-in user's own profile
-    const isOwnProfile = currentUserId && currentUserId === userId;
-
     ireti.innerHTML = `
         <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">
         <div>
@@ -797,15 +794,9 @@ async function showProfile(userId) {
             </div>
         </div>
         <div class="ewe">
-            <div class="yeb">
-                <img class="dee" src="pics/apps.svg">
-            </div>
-            <div class="yeb">
-                <img class="dee" src="pics/newspaper.svg">
-            </div>
-            <div class="yeb">
-                <img class="dee" src="pics/store.svg">
-            </div>
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
         </div>
         <div class="mansonro">
             <div class="masonri">
@@ -814,22 +805,17 @@ async function showProfile(userId) {
             </div>
         </div>
 
-        <!-- Post icon — only show if this is the logged-in user's own profile -->
-        ${isOwnProfile ? `
-        <div class="wing">
-            <img class="wingo" src="pics/geat.svg" onclick="makePost()">
-        </div>
-        ` : ''}
+        <!-- No Post icon on other users' profiles -->
     `;
 
-    // Render posts in masonry (same as before)
+    // Render posts in masonry (same as your original)
     const leftColumn = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
     leftColumn.innerHTML = '';
     rightColumn.innerHTML = '';
 
     if (!userData.posts || userData.posts.length === 0) {
-        leftColumn.innerHTML = '<p>No posts yet</p>';
+        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
         userData.posts.forEach((post, index) => {
             const postHTML = `
@@ -866,7 +852,6 @@ async function showProfile(userId) {
 
     window.scrollTo(0, 0);
 }
-
 // Paste this exactly as-is — add at the bottom
 function goBack() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
@@ -877,15 +862,161 @@ function goBack() {
 
 // Paste this exactly as-is — replace your current showMyProfile function
 async function showMyProfile() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        alert('Please log in first');
+    // Save current scroll position of feed
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+
+    // Switch to profile page
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const profileSection = document.getElementById('profile');
+    if (!profileSection) {
+        console.error('Profile section (#profile) not found');
         return;
     }
-    showProfile(user.id);
+    profileSection.classList.add('active');
+
+    const ireti = document.getElementById('ireti');
+    if (!ireti) return;
+
+    ireti.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading your profile...</p>';
+
+    // Get current logged-in user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        ireti.innerHTML = '<p style="text-align:center; padding:40px;">Not logged in. Please sign in.</p>';
+        return;
+    }
+
+    const userId = user.id;
+
+    // Fetch profile data
+    const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('id, username, avatar, cover, bio, location, followers, following')
+        .eq('id', userId)
+        .single();
+
+    if (profileError || !profile) {
+        console.error('Profile fetch error:', profileError);
+        ireti.innerHTML = '<p style="text-align:center; padding:40px;">Your profile could not be loaded.</p>';
+        return;
+    }
+
+    // Fetch your posts
+    const { data: userPosts } = await supabase
+        .from('posts')
+        .select('id, content, image, video, created_at, like_count')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+    // Render your original own-profile layout with Edit + Settings + Post icon
+    ireti.innerHTML = `
+        <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
+        <div>
+            <img class="kor" src="${profile.avatar || 'pics/default-avatar.png'}">
+        </div>
+        <div class="klr">
+            <div class="drun">
+                <div>
+                    <p class="spe">${profile.username}</p>
+                </div>
+                <div>
+                    <img class="verify" src="pics/very.svg">
+                </div>
+            </div>
+            <div class="druu">
+                <div>
+                    <p class="rkl">${profile.location || 'No location'}</p>
+                </div>
+                <div class="drum">
+                    <img class="kiy" src="pics/qr.svg">
+                </div>
+            </div>
+            <div class="nin">
+                <p class="rkl"><span class="bld">${profile.following || 0}</span> following · <span class="bld">${profile.followers || 0}</span> followers</p>
+            </div>
+            <div class="cha">
+                <p>${profile.bio || 'No bio yet'}</p>
+            </div>
+            <div class="man">
+                <div class="vre">
+                    <button class="aasw edit-profile-btn">Edit Profile</button>
+                </div>
+                <div class="vre">
+                    <button class="aas settings-btn" onclick="showSettings()">
+                        <img class="offi" src="pics/setting.svg">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+
+        <!-- Post icon — only on your own profile -->
+        <div class="wing">
+            <img class="wingo" src="pics/geat.svg" onclick="makePost()">
+        </div>
+    `;
+
+    // Render your posts in masonry grid
+    const leftColumn = document.querySelector('.left-column');
+    const rightColumn = document.querySelector('.right-column');
+    leftColumn.innerHTML = '';
+    rightColumn.innerHTML = '';
+
+    if (!userPosts || userPosts.length === 0) {
+        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
+    } else {
+        userPosts.forEach((post, index) => {
+            const postHTML = `
+                <div class="masonry" onclick="showDetail(${post.id})">
+                    ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
+                    ${post.video ? `
+                        <div class="video-container power">
+                            <video class="video-thumbnail" preload="metadata">
+                                <source src="${post.video}" type="video/mp4">
+                            </video>
+                            <div class="video-overlay power">
+                                <div class="play-button power">
+                                    <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
+                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="contentma">
+                        <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
+                    </div>
+                </div>
+            `;
+
+            if (index % 2 === 0) {
+                leftColumn.innerHTML += postHTML;
+            } else {
+                rightColumn.innerHTML += postHTML;
+            }
+        });
+    }
+
+    window.scrollTo(0, 0);
+
+    // Optional: attach edit profile listener
+    document.querySelector('.edit-profile-btn')?.addEventListener('click', openEditProfileModal);
 }
 
-document.querySelector('.account-icon')?.addEventListener('click', showMyProfile);
+
 
 // Paste this exactly as-is — add at the bottom
 document.addEventListener('DOMContentLoaded', () => {
