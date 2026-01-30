@@ -724,6 +724,7 @@ async function fetchUserProfile(userId) {
 }
 
 // Paste this exactly as-is — add at the bottom of view.js
+// Paste this exactly as-is — add at the bottom of view.js
 async function showProfile(userId) {
     // Save current scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
@@ -815,7 +816,7 @@ async function showProfile(userId) {
     userData.posts.forEach((post, index) => {
         const postHTML = `
             <div class="masonry" onclick="showDetail(${post.id})">
-                \( {post.image ? `<img src=" \){post.image}" loading="lazy">` : ''}
+                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
                 ${post.video ? `
                     <div class="video-container">
                         <video preload="metadata">
@@ -824,7 +825,7 @@ async function showProfile(userId) {
                     </div>
                 ` : ''}
                 <div class="contentma">
-                    <p class="partner">\( {post.content.substring(0, 80)} \){post.content.length > 80 ? '...' : ''}</p>
+                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                 </div>
             </div>
         `;
@@ -842,7 +843,6 @@ async function showProfile(userId) {
     // Optional: add back button handler if needed
     // document.querySelector('.back-btn')?.addEventListener('click', goBack);
 }
-
 // Paste this exactly as-is — add at the bottom
 function goBack() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
