@@ -255,15 +255,11 @@ function createPostElement(post) {
     posterElement.className = 'poster';
     posterElement.setAttribute('data-post-id', post.id);
 
-    // This is the fix: check if the post belongs to the logged-in user
-    const isOwnPost = currentUserId && post.userId === currentUserId;
-    const profileClickHandler = isOwnPost ? 'showMyProfile()' : `showUserProfile('${post.userId}')`;
-
     posterElement.innerHTML = `
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${profileClickHandler}">
+                    <a class="lino" onclick="showProfile('${post.userId}')">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
                             <img src="pics/tt.jpg.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
@@ -273,7 +269,7 @@ function createPostElement(post) {
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="${profileClickHandler}">
+                            <a class="home-click" onclick="showProfile('${post.userId}')">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -313,7 +309,7 @@ function createPostElement(post) {
         ` : ''}
 
         ${hasVideo ? `
-        <div class="video-container laptop1" data-post-id="${post.id}" onclick="showDetail(${post.id})">
+        <div class="video-container laptop1" data-post-id="\( {post.id}" onclick="showDetail( \){post.id})">
             <video class="video-thumbnail" preload="metadata">
                 <source src="${post.video}" type="video/mp4">
             </video>
@@ -385,6 +381,23 @@ function createPostElement(post) {
 
     return posterElement;
 }
+
+// Start loading when homepage is shown
+document.addEventListener('DOMContentLoaded', function() {
+    const activePage = document.querySelector(".page.active");
+    if (activePage && activePage.id === "food") {
+        console.log("Homepage detected → starting to load posts");
+        loadMorePosts();
+    }
+
+    // Also load more when scrolling near bottom
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+            loadMorePosts();
+        }
+    });
+});
+
 // ─────────────────────────────────────────────────────────────
 // Minimal reaction styles to fix oversized icons
 // Paste this at the bottom of view.js
@@ -725,23 +738,22 @@ async function fetchUserProfile(userId) {
 }
 
 // Paste this exactly as-is — replace your current showProfile function
-async function showUserProfile(userId) {
+async function showProfile(userId) {
+    // Save scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
+    // Switch page
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('profile')?.classList.add('active');
+    const profileSection = document.getElementById('profile');
+    if (!profileSection) return;
+    profileSection.classList.add('active');
 
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
 
-    ireti.innerHTML = '<p>Loading...</p>';
+    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';
 
-    const { data: userData } = await supabase
-        .from('users')
-        .select('username, avatar, cover, bio, location, followers, following')
-        .eq('id', userId)
-        .single();
-
+    const userData = await fetchUserProfile(userId);
     if (!userData) {
         ireti.innerHTML = '<p>User not found</p>';
         return;
@@ -754,21 +766,31 @@ async function showUserProfile(userId) {
         </div>
         <div class="klr">
             <div class="drun">
-                <p class="spe">${userData.username}</p>
-                <img class="verify" src="pics/very.svg">
+                <div>
+                    <p class="spe">${userData.username}</p>
+                </div>
+                <div>
+                    <img class="verify" src="pics/very.svg">
+                </div>
             </div>
             <div class="druu">
-                <p class="rkl">${userData.location || 'No location'}</p>
+                <div>
+                    <p class="rkl">${userData.location || 'No location'}</p>
+                </div>
             </div>
             <div class="nin">
-                <p class="rkl"><span class="bld">${userData.following || 0}</span> following · <span class="bld">${userData.followers || 0}</span> followers</p>
+                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>
             </div>
             <div class="cha">
                 <p>${userData.bio || 'No bio yet'}</p>
             </div>
             <div class="man">
-                <button class="aasw">Follow</button>
-                <button class="aasw">1 : 1</button>
+                <div class="vre">
+                    <button class="aasw">Follow</button>
+                </div>
+                <div class="vre">
+                    <button class="aasw">1 : 1</button>
+                </div>
             </div>
         </div>
         <div class="ewe">
@@ -783,7 +805,7 @@ async function showUserProfile(userId) {
             </div>
         </div>
 
-        <!-- No post icon on other profiles -->
+        <!-- No Post icon on other users' profiles -->
     `;
 
     // Render posts in masonry (same as your original)
