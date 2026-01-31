@@ -300,7 +300,6 @@ function createPostElement(post) {
             </div>
         </div>
 
-     // Replace from ${hasImage ? ... to the end of the tir div
 ${hasImage ? `
 <div class="laptop1" onclick="showDetail(${post.id})">
     <div class="placeholder placeholder1" data-large="${post.image}">
