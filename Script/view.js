@@ -1044,3 +1044,184 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+// Paste this exactly as-is — add at the bottom of view.js
+async function showDetail(postId) {
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const detailPage = document.getElementById('meal');
+    if (!detailPage) {
+        console.error('Detail page (#meal) not found');
+        return;
+    }
+    detailPage.classList.add('active');
+
+    const nuba = document.getElementById('nuba');
+    if (!nuba) {
+        console.error('nuba container not found');
+        return;
+    }
+
+    nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading post...</p>';
+
+    // Fetch the single post + author
+    const { data: postData, error } = await supabase
+        .from('posts')
+        .select(`
+            id,
+            content,
+            image,
+            video,
+            created_at,
+            like_count,
+            comment_count,
+            repost_count,
+            views,
+            user_id,
+            user:users (
+                id,
+                username,
+                avatar
+            )
+        `)
+        .eq('id', postId)
+        .single();
+
+    if (error || !postData) {
+        console.error('Post fetch error:', error);
+        nuba.innerHTML = '<p>Post not found</p>';
+        return;
+    }
+
+    const post = {
+        id: postData.id,
+        userId: postData.user_id,
+        username: postData.user?.username || '@unknown',
+        avatar: postData.user?.avatar || 'pics/default-avatar.png',
+        content: postData.content || '',
+        image: postData.image || null,
+        video: postData.video || null,
+        timestamp: formatTimeSince(postData.created_at),
+        date: new Date(postData.created_at).toLocaleString(),
+        likeCount: postData.like_count || 0,
+        commentCount: postData.comment_count || 0,
+        repostCount: postData.repost_count || 0,
+        views: postData.views || 0
+    };
+
+    const isOwnPost = currentUserId && post.userId === currentUserId;
+
+    nuba.innerHTML = `
+        <div class="cust-name" data-post-id="${post.id}">
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showUserProfile('${post.userId}')`}">
+                        <img class="small-photo" src="${post.avatar}">
+                    </a>
+                </div>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showUserProfile('${post.userId}')`}">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${post.username}</p>
+                                    </div>
+                                    <div>
+                                        <img class="verif" src="pics/very.svg">
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="comp1">
+                        <div class="cll">
+                            <p class="time">${post.date || post.timestamp}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="detail-follow foni" onclick="
+                    const foniElem = document.querySelector('.foni');
+                    if (foniElem.innerHTML === 'Follow') {
+                        foniElem.innerHTML = 'Following';
+                        foniElem.classList.add('follow');
+                    } else {
+                        foniElem.innerHTML = 'Follow';
+                        foniElem.classList.remove('follow');
+                    }
+                ">Follow</button>
+            </div>
+            <div class="dots">
+                <img class="dot" src="pics/dots.svg">
+                <div class="tool">
+                    <p>More</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tir">
+            <p class="tiri">${post.content}<br></p>
+        </div>
+
+        ${post.image ? `
+        <div class="swet">
+            <div class="laptop1">
+                <img class="lapto" src="${post.image}">
+            </div>
+        </div>
+        ` : ''}
+
+        ${post.video ? `
+        <div class="swet">
+            <div class="video-container" data-post-id="${post.id}">
+                <video class="video-thumbnail" preload="metadata">
+                    <source src="${post.video}" type="video/mp4">
+                </video>
+                <div class="video-overlay">
+                    <div class="play-button">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                            <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <div class="lefto">
+            <div class="dick">
+                <div>
+                    <p class="viewe"><span class="werey">615</span> reactions</p>
+                </div>
+                <div>
+                    <p class="viewe"><span class="werey">9</span> echoes</p>
+                </div>
+            </div>
+            <div class="twits">
+                <div>
+                    <img class="lefti" src="pics/stats.svg">
+                </div>
+                <div>
+                    <p class="viewe">${post.views || '96.8K'} views</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="reaction">
+            <div class="small-photo1">
+                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
+                <div class="vrea">
+                    <img class="luve" src="pics/lovv.png">
+                </div>
+            </div>
+            <!-- Other reaction photos -->
+        </div>
+    `;
+
+    window.scrollTo(0, 0);
+}
