@@ -310,7 +310,9 @@ ${hasImage ? `
 ` : ''}
 
 ${hasVideo ? `
-<div class="video-container laptop1" data-post-id="$$   {post.id}" onclick="showDetail(   $${post.id})">
+<div class="video-container laptop1"
+     data-post-id="${post.id}"
+     onclick="showDetail(${post.id})">
     <video class="video-thumbnail" preload="metadata">
         <source src="${post.video}" type="video/mp4">
     </video>
