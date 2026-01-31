@@ -243,8 +243,8 @@ async function loadMorePosts() {
 // ─────────────────────────────────────────────────────────────
 function createPostElement(post) {
     const user = {
-        username: user.username || '@unknown',
-        avatar: user.avatar || 'pics/default-avatar.png'
+        username: post.username || '@unknown',
+        avatar: post.avatar || 'pics/default-avatar.png'
     };
 
     const textLimit = (post.image || post.video) ? 250 : 500;
