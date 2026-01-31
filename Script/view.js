@@ -200,19 +200,20 @@ async function loadMorePosts() {
         document.querySelectorAll('.skeleton').forEach(skel => skel.remove());
 
         const adaptedPosts = fetchedPosts.map(p => ({
-            id: p.id,
-            userId: p.user_id || p.user?.id,
-            username: p.user?.name || '@unknown',
-            avatar: p.user?.avatar || 'pics/default-avatar.png',
-            content: p.content || '',
-            image: p.image || null,
-            video: p.video || null,
-            timestamp: formatTimeSince(p.created_at),
-            likeCount: p.like_count || 0,
-            commentCount: p.comment_count || 0,
-            repostCount: p.repost_count || 0,
-            views: p.views || 0
-        }));
+    id: p.id,
+    userId: p.user_id || p.user?.id,
+    // prefer username, fall back to display name if available
+    username: p.user?.username || p.user?.name || '@unknown',
+    avatar: p.user?.avatar || 'pics/default-avatar.png',
+    content: p.content || '',
+    image: p.image || null,
+    video: p.video || null,
+    timestamp: formatTimeSince(p.created_at),
+    likeCount: p.like_count || 0,
+    commentCount: p.comment_count || 0,
+    repostCount: p.repost_count || 0,
+    views: p.views || 0
+}));
 
         console.log("Adapted posts:", adaptedPosts);
 
