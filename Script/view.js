@@ -819,11 +819,8 @@ async function showProfile(userId) {
                 <div class="column right-column"></div>
             </div>
         </div>
-
-        <!-- No Post icon on other users' profiles -->
     `;
 
-    // Render posts in masonry (same as your original)
     const leftColumn = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
     leftColumn.innerHTML = '';
@@ -833,34 +830,41 @@ async function showProfile(userId) {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
         userData.posts.forEach((post, index) => {
-            const postHTML = `
-                <div class="masonry" onclick="showDetail(${post.id})">
-                    ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
-                    ${post.video ? `
-                        <div class="video-container power">
-                            <video class="video-thumbnail" preload="metadata">
-                                <source src="${post.video}" type="video/mp4">
-                            </video>
-                            <div class="video-overlay power">
-                                <div class="play-button power">
-                                    <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                    </svg>
-                                </div>
+            const masonryDiv = document.createElement('div');
+            masonryDiv.className = 'masonry';
+            masonryDiv.setAttribute('data-post-id', post.id);
+
+            masonryDiv.innerHTML = `
+                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
+                ${post.video ? `
+                    <div class="video-container power">
+                        <video class="video-thumbnail" preload="metadata">
+                            <source src="${post.video}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay power">
+                            <div class="play-button power">
+                                <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                </svg>
                             </div>
                         </div>
-                    ` : ''}
-                    <div class="contentma">
-                        <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                     </div>
+                ` : ''}
+                <div class="contentma">
+                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                 </div>
             `;
 
+            // ✅ UUID-SAFE CLICK HANDLER
+            masonryDiv.addEventListener('click', () => {
+                showDetail(post.id);
+            });
+
             if (index % 2 === 0) {
-                leftColumn.innerHTML += postHTML;
+                leftColumn.appendChild(masonryDiv);
             } else {
-                rightColumn.innerHTML += postHTML;
+                rightColumn.appendChild(masonryDiv);
             }
         });
     }
