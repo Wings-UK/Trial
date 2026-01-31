@@ -262,7 +262,7 @@ function createPostElement(post) {
                 <div class="small-photo1">
                     <a class="lino" onclick="showProfile('${post.userId}')">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
-                            <img src="pics/tt.jpg.jpg" class="img-small">
+                            <img src="pics/tt.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
                         </div>
                     </a>
@@ -300,36 +300,34 @@ function createPostElement(post) {
             </div>
         </div>
 
-${hasImage ? `
-<div class="laptop1" onclick="showDetail(${post.id})">
-    <div class="placeholder placeholder1" data-large="${post.image}">
-        <img src="pics/tt_2.png" class="laptop img-small placeholder1">
-        <div style="padding-bottom: 100%;"></div>
-    </div>
-</div>
-` : ''}
-
-${hasVideo ? `
-<div class="video-container laptop1"
-     data-post-id="${post.id}"
-     onclick="showDetail(${post.id})">
-    <video class="video-thumbnail" preload="metadata">
-        <source src="${post.video}" type="video/mp4">
-    </video>
-    <div class="video-overlay">
-        <div class="play-button">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-            </svg>
+        ${hasImage ? `
+        <div class="laptop1">
+            <div class="placeholder placeholder1" data-large="${post.image}">
+                <img src="pics/tt_2.png" class="laptop img-small placeholder1">
+                <div style="padding-bottom: 100%;"></div>
+            </div>
         </div>
-    </div>
-</div>
-` : ''}
+        ` : ''}
 
-<div class="tir" onclick="showDetail(${post.id})">
-    <p class="tired">${shortenText(post.content, textLimit, true)}</p>
-</div>
+        ${hasVideo ? `
+        <div class="video-container laptop1" data-post-id="${post.id}">
+            <video class="video-thumbnail" preload="metadata">
+                <source src="${post.video}" type="video/mp4">
+            </video>
+            <div class="video-overlay">
+                <div class="play-button">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <div class="tir">
+            <p class="tired">${shortenText(post.content, textLimit, true)}</p>
+        </div>
 
         <div class="lefto">
             <div class="dick">
@@ -381,6 +379,20 @@ ${hasVideo ? `
             </div>
         </div>
     `;
+
+    // ✅ Attach click handlers via JS — UUID safe
+    if (hasImage) {
+        const imageDiv = posterElement.querySelector(".laptop1");
+        imageDiv.addEventListener("click", () => showDetail(post.id));
+    }
+
+    if (hasVideo) {
+        const videoDiv = posterElement.querySelector(".video-container");
+        videoDiv.addEventListener("click", () => showDetail(post.id));
+    }
+
+    const textDiv = posterElement.querySelector(".tir");
+    textDiv.addEventListener("click", () => showDetail(post.id));
 
     return posterElement;
 }
