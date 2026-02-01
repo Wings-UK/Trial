@@ -180,7 +180,7 @@
 .partner {
   font-size: 16px;
   line-height: 22px;
-  word-wrap: break-word;
+  width: 100%;
   white-space: pre-wrap;
 }
 
