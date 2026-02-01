@@ -181,6 +181,8 @@
   font-size: 16px;
   line-height: 22px;
   word-wrap: break-word;
+  white-space: pre-wrap;
+}
 
 }
 .post-container {
