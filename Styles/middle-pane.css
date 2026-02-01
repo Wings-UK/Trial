@@ -180,6 +180,8 @@
 .partner {
   font-size: 16px;
   line-height: 22px;
+  word-wrap: break-word;
+
 }
 .post-container {
   width: 100%;
