@@ -1253,3 +1253,91 @@ async function showDetail(postId) {
 
     window.scrollTo(0, 0);
 }
+
+function makePost() {
+  document.getElementById('createPostModal').classList.remove('hidden');
+}
+
+function closePostModal() {
+  document.getElementById('createPostModal').classList.add('hidden');
+  document.getElementById('postContent').value = '';
+  document.getElementById('postImage').value = '';
+}
+
+async function submitPost() {
+  const content = document.getElementById('postContent').value.trim();
+  const imageFile = document.getElementById('postImage').files[0];
+
+  if (!content && !imageFile) {
+    alert('Write something or add media');
+    return;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert('You must be logged in');
+    return;
+  }
+
+  let imageUrl = null;
+
+  // OPTIONAL IMAGE UPLOAD
+  if (imageFile) {
+    const fileName = `${user.id}-${Date.now()}-${imageFile.name}`;
+
+    const { data, error } = await supabase
+      .storage
+      .from('post-images')
+      .upload(fileName, imageFile);
+
+    if (error) {
+      alert('Image upload failed');
+      return;
+    }
+
+    imageUrl = supabase
+      .storage
+      .from('post-images')
+      .getPublicUrl(fileName).data.publicUrl;
+  }
+
+  const { data: post, error } = await supabase
+    .from('posts')
+    .insert({
+      user_id: user.id,
+      content,
+      image: imageUrl
+    })
+    .select(`
+      id, content, image, created_at,
+      users ( username, avatar )
+    `)
+    .single();
+
+  if (error) {
+    alert('Post failed');
+    return;
+  }
+
+  closePostModal();
+
+  // 🔥 INSTANT UI UPDATE (homepage)
+  const newPost = {
+    id: post.id,
+    userId: user.id,
+    username: post.users.username,
+    avatar: post.users.avatar,
+    content: post.content,
+    image: post.image,
+    timestamp: 'just now',
+    likeCount: 0,
+    commentCount: 0,
+    repostCount: 0,
+    views: 0
+  };
+
+  const postElement = createPostElement(newPost);
+  document.getElementById('flyer').prepend(postElement);
+
+  initializeHeartReactions();
+}
