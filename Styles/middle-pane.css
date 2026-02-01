@@ -1268,6 +1268,8 @@
   width: 100%;
   line-height: 22px;
   font-size: 17px; 
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .line, .mid {
   color: rgb(97, 97, 97);
