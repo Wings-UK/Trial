@@ -818,5 +818,29 @@
 
 </script>
    
+   
+   <!-- CREATE POST MODAL -->
+<div id="createPostModal" class="post-modal hidden">
+  <div class="post-sheet">
+    <div class="post-header">
+      <p>Create post</p>
+      <span class="close-post" onclick="closePostModal()">×</span>
+    </div>
+
+    <textarea 
+      id="postContent"
+      placeholder="What's happening?"
+      rows="4"></textarea>
+
+    <div class="post-actions">
+      <label class="media-btn">
+        <img src="pics/gallery.svg">
+        <input type="file" id="postImage" accept="image/*" hidden>
+      </label>
+
+      <button class="post-btn" onclick="submitPost()">Post</button>
+    </div>
+  </div>
+</div>
   </body>
 </html>
