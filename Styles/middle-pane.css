@@ -1261,6 +1261,8 @@
 .tired {
   width: 100%;
   font-size: 15px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .tiri {
   width: 100%;
