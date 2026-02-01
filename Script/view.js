@@ -1315,9 +1315,10 @@ async function submitPost() {
     .single();
 
   if (error) {
-    alert('Post failed');
-    return;
-  }
+  console.error('Post error:', error);
+  alert(error.message);
+  return;
+}
 
   closePostModal();
 
