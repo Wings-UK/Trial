@@ -6,6 +6,74 @@
             /* Prevent iOS press darkness */
             -webkit-touch-callout: none;
  }
+ 
+ .post-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: flex-end;
+  z-index: 9999;
+}
+
+.post-modal.hidden {
+  display: none;
+}
+
+.post-sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 15px;
+  animation: slideUp .3s ease;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.close-post {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#postContent {
+  width: 100%;
+  border: none;
+  resize: none;
+  margin: 15px 0;
+  font-size: 15px;
+  outline: none;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.media-btn img {
+  width: 22px;
+}
+
+.post-btn {
+  background: rgb(244,7,82);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+ 
+ 
 .emoji-container {
             display: flex;
             justify-content: space-between;
