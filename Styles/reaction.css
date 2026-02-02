@@ -55,6 +55,11 @@
   white-space: nowrap;
 }
 
+.post-action-btn .label {
+  font-size: 14px;
+  display: inline-block;
+}
+
 .post-action-btn .icon {
   font-size: 15px;
   line-height: 1;
