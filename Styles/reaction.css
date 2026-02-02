@@ -43,8 +43,8 @@
 .post-action-btn {
   background: #fff;
   padding: 8px 20px;
-  border-radius: 10px;
-  font-size: 50%;
+  border-radius: 50%;
+  font-size: 15px;
   font-family: Noto Sans JP;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   border: none;
