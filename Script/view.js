@@ -393,6 +393,8 @@ function createPostElement(post) {
 
     const textDiv = posterElement.querySelector(".tir");
     textDiv.addEventListener("click", () => showDetail(post.id));
+    
+    enablePostLongPress(posterElement, post);
 
     return posterElement;
 }
@@ -1341,4 +1343,96 @@ async function submitPost() {
   document.getElementById('flyer').prepend(postElement);
 
   initializeHeartReactions();
+}
+
+
+let activeLongPressPost = null;
+
+function enablePostLongPress(posterElement, post) {
+  let pressTimer = null;
+  let longPressTriggered = false;
+
+  const isOwner = currentUserId && post.userId === currentUserId;
+
+  function closeActions() {
+    posterElement.classList.remove('long-press-active');
+    posterElement.querySelector('.post-action-bar')?.remove();
+    longPressTriggered = false;
+
+    if (activeLongPressPost === posterElement) {
+      activeLongPressPost = null;
+    }
+  }
+
+  function showActions() {
+    // Close any other open post
+    if (activeLongPressPost && activeLongPressPost !== posterElement) {
+      activeLongPressPost.classList.remove('long-press-active');
+      activeLongPressPost.querySelector('.post-action-bar')?.remove();
+    }
+
+    activeLongPressPost = posterElement;
+    longPressTriggered = true;
+
+    posterElement.classList.add('long-press-active');
+
+    const bar = document.createElement('div');
+    bar.className = 'post-action-bar';
+
+    bar.innerHTML = `
+      <button class="post-action-btn dislike">Dislike</button>
+      <button class="post-action-btn report">Report</button>
+      ${isOwner ? `<button class="post-action-btn delete">Delete</button>` : ''}
+    `;
+
+    posterElement.appendChild(bar);
+
+    // Button actions
+    bar.querySelector('.dislike')?.addEventListener('click', e => {
+      e.stopPropagation();
+      console.log('Disliked post', post.id);
+      closeActions();
+    });
+
+    bar.querySelector('.report')?.addEventListener('click', e => {
+      e.stopPropagation();
+      console.log('Reported post', post.id);
+      closeActions();
+    });
+
+    bar.querySelector('.delete')?.addEventListener('click', e => {
+      e.stopPropagation();
+      console.log('Deleted post', post.id);
+      closeActions();
+    });
+    
+    if (navigator.vibrate) navigator.vibrate(20);
+  }
+
+  // ─── LONG PRESS DETECTION ───
+  posterElement.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) return;
+
+    pressTimer = setTimeout(showActions, 500);
+  });
+
+  posterElement.addEventListener('touchmove', () => {
+    clearTimeout(pressTimer);
+  });
+
+  posterElement.addEventListener('touchend', () => {
+    clearTimeout(pressTimer);
+    // IMPORTANT: do NOT close here
+  });
+
+  // ─── TAP OUTSIDE TO CLOSE ───
+  document.addEventListener('touchstart', e => {
+    if (
+      longPressTriggered &&
+      activeLongPressPost === posterElement &&
+      !posterElement.contains(e.target)
+    ) {
+      closeActions();
+    }
+  });
 }
