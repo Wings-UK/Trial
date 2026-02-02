@@ -238,10 +238,6 @@ async function loadMorePosts() {
     }
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// Updated createPostElement (now uses shortenText)
-// ─────────────────────────────────────────────────────────────
 function createPostElement(post) {
     const user = {
         username: post.username || 'new user',
@@ -252,6 +248,9 @@ function createPostElement(post) {
     const hasVideo = !!post.video;
     const hasImage = !!post.image;
 
+    // IMPORTANT: This comparison enables "my profile" vs "other profile"
+    const isOwnPost = currentUserId && post.userId === currentUserId;
+
     const posterElement = document.createElement('div');
     posterElement.className = 'poster';
     posterElement.setAttribute('data-post-id', post.id);
@@ -260,7 +259,7 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                      <a class="lino" onclick="showProfile('${post.userId}')">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
                             <img src="pics/tt.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
@@ -270,7 +269,7 @@ function createPostElement(post) {
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="showProfile('${post.userId}')">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -380,33 +379,29 @@ function createPostElement(post) {
         </div>
     `;
 
-    // ✅ Attach click handlers via JS — UUID safe
+    // Attach click handlers for media (image/video) and text → open detail view
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
-        imageDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+        if (imageDiv) {
+            imageDiv.addEventListener("click", () => showDetail(post.id));
+        }
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
-        videoDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+        if (videoDiv) {
+            videoDiv.addEventListener("click", () => showDetail(post.id));
+        }
     }
 
     const textDiv = posterElement.querySelector(".tir");
-    textDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
-    
-    enablePostLongPress(posterElement, post);
+    if (textDiv) {
+        textDiv.addEventListener("click", () => showDetail(post.id));
+    }
 
     return posterElement;
 }
+
 
 // Start loading when homepage is shown
 document.addEventListener('DOMContentLoaded', function() {
