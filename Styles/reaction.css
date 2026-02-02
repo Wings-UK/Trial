@@ -66,6 +66,10 @@
 }
 
 .post-action-btn:active {
+  background: #f2f2f2;
+}
+
+.post-action-btn:active {
   transform: scale(0.95);
 }
 
