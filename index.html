@@ -723,15 +723,19 @@
   window.supabase = supabase;
 
   console.log("Main app: Supabase loaded successfully");
-  console.log("Has auth?", !!supabase.auth);
 
-  // Make these functions global so onclick can find them
-  window.toggleAuthMode = function() {
+  // default auth mode
+  window.isSignupMode = false;
+
+  // Toggle between Login / Signup
+  window.toggleAuthMode = function () {
     window.isSignupMode = !window.isSignupMode;
-    document.getElementById('auth-title').textContent = window.isSignupMode ? 'Sign Up' : 'Login';
+    document.getElementById('auth-title').textContent =
+      window.isSignupMode ? 'Sign Up' : 'Login';
   };
 
-  window.handleLoginOrSignup = async function() {
+  // Login or Signup handler
+  window.handleLoginOrSignup = async function () {
     const email = document.getElementById('email-input').value.trim();
     const password = document.getElementById('password-input').value;
     const messageEl = document.getElementById('auth-message');
@@ -744,78 +748,85 @@
       return;
     }
 
-    console.log("Auth attempt started...");
-
-    let result;
     try {
+      let result;
+
+      // ---------- SIGN UP ----------
       if (window.isSignupMode) {
         result = await supabase.auth.signUp({ email, password });
+
+        const { data, error } = result;
+        if (error) throw error;
+
+        // 👉 CREATE USER PROFILE ROW
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert({
+              id: data.user.id,                 // SAME UUID
+              username: 'new user',
+              avatar: 'pics/default-avatar.png',
+              bio: '',
+              location: '',
+              followers: 0,
+              following: 0
+            });
+
+          if (profileError) {
+            console.error('Profile creation failed:', profileError);
+          }
+        }
+
+        messageEl.style.color = 'green';
+        messageEl.textContent = 'Signed up! Check your email for confirmation.';
+
+      // ---------- LOGIN ----------
       } else {
         result = await supabase.auth.signInWithPassword({ email, password });
+
+        const { data, error } = result;
+        if (error) throw error;
+
+        messageEl.style.color = 'green';
+        messageEl.textContent = 'Logged in successfully!';
       }
 
-      const { data, error } = result;
-
-      if (error) {
-        messageEl.textContent = error.message;
-        console.error("Supabase auth error:", error);
-        return;
-      }
-
-      messageEl.style.color = 'green';
-      messageEl.textContent = window.isSignupMode ? 'Signed up! Check your email for confirmation.' : 'Logged in successfully!';
-
-      // Save session
-      localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-
+      // Reload app after auth
       setTimeout(() => {
         document.getElementById('auth-modal').style.display = 'none';
         location.reload();
-      }, 2000);
+      }, 1500);
 
     } catch (err) {
-      messageEl.textContent = 'Unexpected error: ' + err.message;
-      console.error("Auth failed:", err);
+      console.error('Auth error:', err);
+      messageEl.textContent = err.message || 'Authentication failed';
     }
   };
 
-  // Auto-show popup if not logged in
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      document.getElementById('auth-modal').style.display = 'block';
-    } else {
-      console.log("Already logged in:", session.user.email);
-    }
-  }).catch(err => console.error("Session check failed:", err));
-  
+  // Auto-show auth modal if not logged in
+  supabase.auth.getSession()
+    .then(({ data: { session } }) => {
+      if (!session) {
+        document.getElementById('auth-modal').style.display = 'block';
+      } else {
+        console.log('Already logged in:', session.user.email);
+      }
+    })
+    .catch(err => console.error('Session check failed:', err));
 
-  // Add this new logout function
-  window.handleLogout = async function() {
+  // Logout
+  window.handleLogout = async function () {
     try {
       const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error("Logout error:", error);
-        alert("Logout failed: " + error.message);
-        return;
-      }
+      if (error) throw error;
 
-      // Clear local storage (optional - removes any saved session)
-      localStorage.removeItem('supabase.auth.token');
-
-      console.log("User logged out successfully");
-
-      // Show success message (optional)
-      alert("Logged out successfully!");
-
-      // Reload page to show login popup again
+      alert('Logged out successfully!');
       location.reload();
     } catch (err) {
-      console.error("Unexpected logout error:", err);
-      alert("Something went wrong during logout.");
+      console.error('Logout error:', err);
+      alert('Logout failed');
     }
   };
-
 </script>
    
    
