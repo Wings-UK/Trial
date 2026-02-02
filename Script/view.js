@@ -1391,10 +1391,23 @@ function enablePostLongPress(posterElement, post) {
     bar.className = 'post-action-bar';
 
     bar.innerHTML = `
-      <button class="post-action-btn dislike">Dislike</button>
-      <button class="post-action-btn report">Report</button>
-      ${isOwner ? `<button class="post-action-btn delete">Delete</button>` : ''}
-    `;
+  <button class="post-action-btn dislike">
+    <span class="icon">👎</span>
+    <span class="label">Dislike</span>
+  </button>
+
+  <button class="post-action-btn report">
+    <span class="icon">⚠️</span>
+    <span class="label">Report</span>
+  </button>
+
+  ${isOwner ? `
+    <button class="post-action-btn delete">
+      <span class="icon">🗑️</span>
+      <span class="label">Delete</span>
+    </button>
+  ` : ''}
+`;
 
     posterElement.appendChild(bar);
 
