@@ -32,7 +32,7 @@
 /* ===== Action bar ===== */
 .post-action-bar {
   position: absolute;
-  bottom: 20px;
+  bottom: 40%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
