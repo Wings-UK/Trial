@@ -20,7 +20,7 @@
   background: linear-gradient(
     to top,
     rgba(255,255,255,0.9),
-    rgba(255,255,255,0.5),
+    rgba(255,255,255,0.8),
     rgba(255,255,255,0)
   );
   box-shadow:
@@ -42,8 +42,8 @@
 
 .post-action-btn {
   background: #fff;
-  padding: 8px 14px;
-  border-radius: 5px;
+  padding: 8px 20px;
+  border-radius: 10px;
   font-size: 14px;
   font-family: inherit;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
