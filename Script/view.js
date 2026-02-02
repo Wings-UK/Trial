@@ -379,26 +379,31 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Attach click handlers for media (image/video) and text → open detail view
+   
+     // ✅ Attach click handlers via JS — UUID safe
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
-        if (imageDiv) {
-            imageDiv.addEventListener("click", () => showDetail(post.id));
-        }
+        imageDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
-        if (videoDiv) {
-            videoDiv.addEventListener("click", () => showDetail(post.id));
-        }
+        videoDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     const textDiv = posterElement.querySelector(".tir");
-    if (textDiv) {
-        textDiv.addEventListener("click", () => showDetail(post.id));
-    }
-
+    textDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
+    
+    enablePostLongPress(posterElement, post);
     return posterElement;
 }
 
