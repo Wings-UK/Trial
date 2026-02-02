@@ -45,7 +45,7 @@
   padding: 8px 20px;
   border-radius: 10px;
   font-size: 14px;
-  font-family: inherit;
+  font-family: Noto Sans JP;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   border: none;
   cursor: pointer;
@@ -57,8 +57,8 @@
 }
 
 /* Optional color hints */
-.post-action-btn.report { color: #f40752; }
-.post-action-btn.delete { color: #d00000; 
+.post-action-btn.report { color: black; }
+.post-action-btn.delete { color: black; 
 }
  
  
