@@ -45,7 +45,7 @@
   align-items: center;
   gap: 6px;
   background: #fff;
-  padding: 8px 20px;
+  padding: 8px 10px;
   border-radius: 20px;
   font-size: 14px;
   font-family: Noto Sans JP;
@@ -57,7 +57,6 @@
 
 .post-action-btn .label {
   font-size: 14px;
-  display: inline-block;
 }
 
 .post-action-btn .icon {
@@ -65,7 +64,7 @@
   line-height: 1;
 }
 
-.post-action-btn:active {
+.post-action-btn .label {
   background: #f2f2f2;
 }
 
