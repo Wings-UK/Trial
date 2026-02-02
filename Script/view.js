@@ -383,16 +383,25 @@ function createPostElement(post) {
     // ✅ Attach click handlers via JS — UUID safe
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
-        imageDiv.addEventListener("click", () => showDetail(post.id));
+        imageDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
-        videoDiv.addEventListener("click", () => showDetail(post.id));
+        videoDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     const textDiv = posterElement.querySelector(".tir");
-    textDiv.addEventListener("click", () => showDetail(post.id));
+    textDiv.addEventListener("click", () => {
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     
     enablePostLongPress(posterElement, post);
 
@@ -1357,6 +1366,7 @@ function enablePostLongPress(posterElement, post) {
   function closeActions() {
     posterElement.classList.remove('long-press-active');
     posterElement.querySelector('.post-action-bar')?.remove();
+    posterElement.dataset.blockNavigation = 'false';
     longPressTriggered = false;
 
     if (activeLongPressPost === posterElement) {
@@ -1365,16 +1375,17 @@ function enablePostLongPress(posterElement, post) {
   }
 
   function showActions() {
-    // Close any other open post
     if (activeLongPressPost && activeLongPressPost !== posterElement) {
       activeLongPressPost.classList.remove('long-press-active');
       activeLongPressPost.querySelector('.post-action-bar')?.remove();
+      activeLongPressPost.dataset.blockNavigation = 'false';
     }
 
     activeLongPressPost = posterElement;
     longPressTriggered = true;
 
     posterElement.classList.add('long-press-active');
+    posterElement.dataset.blockNavigation = 'true';
 
     const bar = document.createElement('div');
     bar.className = 'post-action-bar';
@@ -1387,7 +1398,6 @@ function enablePostLongPress(posterElement, post) {
 
     posterElement.appendChild(bar);
 
-    // Button actions
     bar.querySelector('.dislike')?.addEventListener('click', e => {
       e.stopPropagation();
       console.log('Disliked post', post.id);
@@ -1405,14 +1415,13 @@ function enablePostLongPress(posterElement, post) {
       console.log('Deleted post', post.id);
       closeActions();
     });
-    
+
     if (navigator.vibrate) navigator.vibrate(20);
   }
 
-  // ─── LONG PRESS DETECTION ───
+  // ─── LONG PRESS ───
   posterElement.addEventListener('touchstart', e => {
     if (e.touches.length > 1) return;
-
     pressTimer = setTimeout(showActions, 500);
   });
 
@@ -1422,10 +1431,18 @@ function enablePostLongPress(posterElement, post) {
 
   posterElement.addEventListener('touchend', () => {
     clearTimeout(pressTimer);
-    // IMPORTANT: do NOT close here
   });
 
-  // ─── TAP OUTSIDE TO CLOSE ───
+  // ─── TAP ON SAME POST ───
+  posterElement.addEventListener('click', e => {
+    if (posterElement.dataset.blockNavigation === 'true') {
+      e.stopPropagation();
+      e.preventDefault();
+      closeActions();
+    }
+  });
+
+  // ─── TAP OUTSIDE ───
   document.addEventListener('touchstart', e => {
     if (
       longPressTriggered &&
@@ -1436,3 +1453,4 @@ function enablePostLongPress(posterElement, post) {
     }
   });
 }
+
