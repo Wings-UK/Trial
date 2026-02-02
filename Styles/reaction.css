@@ -7,6 +7,61 @@
             -webkit-touch-callout: none;
  }
  
+ /* ===== Long-press active post ===== */
+.poster {
+  position: relative;
+}
+
+.poster.long-press-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(255,255,255,0.9),
+    rgba(255,255,255,0.5),
+    rgba(255,255,255,0)
+  );
+  box-shadow:
+    0 18px 30px rgba(255,255,255,0.9),
+    0 8px 16px rgba(255,255,255,0.6);
+  border-radius: 12px;
+}
+
+/* ===== Action bar ===== */
+.post-action-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+  z-index: 20;
+}
+
+.post-action-btn {
+  background: #fff;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: inherit;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.post-action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Optional color hints */
+.post-action-btn.report { color: #f40752; }
+.post-action-btn.delete { color: #d00000; 
+}
+ 
+ 
  .post-modal {
   position: fixed;
   inset: 0;
