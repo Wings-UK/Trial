@@ -1357,6 +1357,10 @@ async function submitPost() {
 let activeLongPressPost = null;
 
 function enablePostLongPress(posterElement, post) {
+  function isActive() {
+  return posterElement.classList.contains('long-press-active');
+}
+
   let pressTimer = null;
   let longPressTriggered = false;
 
@@ -1420,9 +1424,13 @@ function enablePostLongPress(posterElement, post) {
 
   // ─── LONG PRESS ───
   posterElement.addEventListener('touchstart', e => {
-    if (e.touches.length > 1) return;
-    pressTimer = setTimeout(showActions, 500);
-  });
+  if (e.touches.length > 1) return;
+
+  // 🚫 If already long-pressed, ignore further long presses
+  if (isActive()) return;
+
+  pressTimer = setTimeout(showActions, 500);
+});
 
   posterElement.addEventListener('touchmove', () => {
     clearTimeout(pressTimer);
