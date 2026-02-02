@@ -1460,3 +1460,24 @@ function enablePostLongPress(posterElement, post) {
     }
   });
 }
+
+function goBackFromDetail() {
+    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
+
+    // Deactivate detail page
+    document.getElementById('meal')?.classList.remove('active');
+
+    // 🔥 Clear detail content
+    const nuba = document.getElementById('nuba');
+    if (nuba) nuba.innerHTML = '';
+
+    // Hide sticky detail header
+    document.querySelector('.detail-content')?.classList.remove('active');
+
+    // Go back to homepage
+    document.getElementById('food')?.classList.add('active');
+
+    if (savedScroll) {
+        window.scrollTo(0, parseInt(savedScroll));
+    }
+}
