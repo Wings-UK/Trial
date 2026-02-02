@@ -41,6 +41,9 @@
 }
 
 .post-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: #fff;
   padding: 8px 20px;
   border-radius: 20px;
@@ -50,6 +53,11 @@
   border: none;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.post-action-btn .icon {
+  font-size: 15px;
+  line-height: 1;
 }
 
 .post-action-btn:active {
