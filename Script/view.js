@@ -892,10 +892,8 @@ function goBack() {
 
 // Paste this exactly as-is — replace your current showMyProfile function
 async function showMyProfile() {
-    // Save current scroll position of feed
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
-    // Switch to profile page
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const profileSection = document.getElementById('profile');
     if (!profileSection) {
@@ -909,7 +907,6 @@ async function showMyProfile() {
 
     ireti.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading your profile...</p>';
 
-    // Get current logged-in user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -919,16 +916,31 @@ async function showMyProfile() {
 
     const userId = user.id;
 
-    // Fetch profile data
+    // Use maybeSingle instead of single → won't throw on 0 rows
     const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('id, username, avatar, cover, bio, location, followers, following')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-    if (profileError || !profile) {
+    if (profileError) {
         console.error('Profile fetch error:', profileError);
-        ireti.innerHTML = '<p style="text-align:center; padding:40px;">Your profile could not be loaded.</p>';
+        ireti.innerHTML = '<p style="text-align:center; padding:40px;">Error loading profile. Please try again.</p>';
+        return;
+    }
+
+    // No profile row exists
+    if (!profile) {
+        ireti.innerHTML = `
+            <div style="text-align:center; padding:80px 20px; color:#555;">
+                <h3 style="margin-bottom:16px;">Profile setup required</h3>
+                <p>We couldn't find your profile information.</p>
+                <button onclick="createMissingProfile()" 
+                        style="margin-top:24px; padding:12px 32px; background:#f40752; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+                    Create My Profile
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -940,7 +952,7 @@ async function showMyProfile() {
         .order('created_at', { ascending: false })
         .limit(12);
 
-    // Render your own-profile layout
+    // Render profile (same as before)
     ireti.innerHTML = `
         <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
 
@@ -1011,35 +1023,27 @@ async function showMyProfile() {
             </div>
         </div>
 
-        <!-- Post icon — only on your own profile -->
         <div class="wing">
             <img class="wingo" src="pics/geat.svg" onclick="makePost()">
         </div>
     `;
 
-    /* -----------------------------------
-       🔥 NEW: AVATAR UPLOAD (ONLY ADDITION)
-    ------------------------------------*/
     const avatarInput = document.getElementById('avatarInput');
-
     avatarInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         if (!file.type.startsWith('image/')) {
             alert('Please select an image file');
             return;
         }
-
         if (file.size > 2 * 1024 * 1024) {
             alert('Image must be under 2MB');
             return;
         }
-
         uploadAvatar(file);
     });
 
-    // Render posts in masonry grid (UUID SAFE)
+    // Render posts in masonry
     const leftColumn = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
     leftColumn.innerHTML = '';
@@ -1094,7 +1098,6 @@ async function showMyProfile() {
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
 }
-
 
 
 // Paste this exactly as-is — add at the bottom
@@ -1564,4 +1567,34 @@ async function uploadAvatar(file) {
     // 🔥 Update UI instantly
     document.getElementById('myProfileAvatar').src = avatarUrl;
     document.getElementById('usero').src = avatarUrl; // top-right avatar
+}
+
+// Add this at the bottom of view.js
+async function createMissingProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert("Not logged in");
+        return;
+    }
+
+    const tempUsername = 'user_' + user.id.slice(0,8);
+
+    const { error } = await supabase.from('users').insert({
+        id: user.id,
+        username: tempUsername,
+        avatar: 'pics/default-avatar.png',
+        cover: 'pics/default-cover.jpg',
+        bio: 'Just joined Retail ✨',
+        location: '',
+        followers: 0,
+        following: 0
+    });
+
+    if (error) {
+        console.error("Auto-create profile failed:", error);
+        alert("Could not create profile: " + (error.message || 'unknown error'));
+    } else {
+        alert("Profile created successfully!");
+        location.reload();
+    }
 }
