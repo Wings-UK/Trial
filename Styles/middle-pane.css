@@ -4,6 +4,104 @@
   box-sizing: border-box;
 }
 
+/* WALLET UI */
+#wallet {
+  background: #fff;
+}
+
+.wallet-body {
+  padding: 16px;
+}
+
+.wallet-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.wallet-card {
+  background: linear-gradient(135deg, #111, #000);
+  color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.wallet-label {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.wallet-balance {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 6px 0;
+}
+
+.wallet-points {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.wallet-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.wallet-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  font-weight: 600;
+}
+
+.wallet-btn.primary {
+  background: #f40752;
+  color: #fff;
+  border: none;
+}
+
+.wallet-transactions {
+  margin-top: 10px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.tx-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tx-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.tx-amount {
+  font-weight: 600;
+}
+
+.tx-amount.positive {
+  color: #0bbf6a;
+}
+
+.tx-amount.negative {
+  color: #e53935;
+}
 
 /* Profile page post styles */
 .profile-post {
