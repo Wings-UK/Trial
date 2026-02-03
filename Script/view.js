@@ -1598,3 +1598,15 @@ async function createMissingProfile() {
         location.reload();
     }
 }
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('kiy')) {
+    openWallet();
+  }
+});
+
+function openWallet() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('wallet').classList.add('active');
+  window.scrollTo(0, 0);
+}
