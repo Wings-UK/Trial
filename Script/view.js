@@ -943,9 +943,23 @@ async function showMyProfile() {
     // Render your own-profile layout
     ireti.innerHTML = `
         <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
+
         <div>
-            <img class="kor" src="${profile.avatar || 'pics/default-avatar.png'}">
+            <label class="avatar-upload">
+                <img 
+                    class="kor" 
+                    id="myProfileAvatar"
+                    src="${profile.avatar || 'pics/default-avatar.png'}"
+                >
+                <input 
+                    type="file" 
+                    id="avatarInput" 
+                    accept="image/*" 
+                    hidden
+                >
+            </label>
         </div>
+
         <div class="klr">
             <div class="drun">
                 <div>
@@ -964,7 +978,10 @@ async function showMyProfile() {
                 </div>
             </div>
             <div class="nin">
-                <p class="rkl"><span class="bld">${profile.following || 0}</span> following · <span class="bld">${profile.followers || 0}</span> followers</p>
+                <p class="rkl">
+                    <span class="bld">${profile.following || 0}</span> following · 
+                    <span class="bld">${profile.followers || 0}</span> followers
+                </p>
             </div>
             <div class="cha">
                 <p>${profile.bio || 'No bio yet'}</p>
@@ -980,11 +997,13 @@ async function showMyProfile() {
                 </div>
             </div>
         </div>
+
         <div class="ewe">
             <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
             <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
             <div class="yeb"><img class="dee" src="pics/store.svg"></div>
         </div>
+
         <div class="mansonro">
             <div class="masonri">
                 <div class="column left-column"></div>
@@ -997,6 +1016,28 @@ async function showMyProfile() {
             <img class="wingo" src="pics/geat.svg" onclick="makePost()">
         </div>
     `;
+
+    /* -----------------------------------
+       🔥 NEW: AVATAR UPLOAD (ONLY ADDITION)
+    ------------------------------------*/
+    const avatarInput = document.getElementById('avatarInput');
+
+    avatarInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image must be under 2MB');
+            return;
+        }
+
+        uploadAvatar(file);
+    });
 
     // Render posts in masonry grid (UUID SAFE)
     const leftColumn = document.querySelector('.left-column');
@@ -1036,7 +1077,6 @@ async function showMyProfile() {
                 </div>
             `;
 
-            // ✅ UUID-safe click
             masonryDiv.addEventListener('click', () => {
                 showDetail(post.id);
             });
@@ -1051,7 +1091,6 @@ async function showMyProfile() {
 
     window.scrollTo(0, 0);
 
-    // Optional: attach edit profile listener
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
 }
@@ -1480,4 +1519,49 @@ function goBackFromDetail() {
     if (savedScroll) {
         window.scrollTo(0, parseInt(savedScroll));
     }
+}
+async function uploadAvatar(file) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}.${fileExt}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase
+        .storage
+        .from('avatars')
+        .upload(filePath, file, {
+            upsert: true,            // replace old avatar
+            cacheControl: '3600'
+        });
+
+    if (uploadError) {
+        alert('Upload failed');
+        console.error(uploadError);
+        return;
+    }
+
+    // Get public URL
+    const { data } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+    const avatarUrl = data.publicUrl;
+
+    // Save URL to users table
+    const { error: updateError } = await supabase
+        .from('users')
+        .update({ avatar: avatarUrl })
+        .eq('id', user.id);
+
+    if (updateError) {
+        alert('Profile update failed');
+        return;
+    }
+
+    // 🔥 Update UI instantly
+    document.getElementById('myProfileAvatar').src = avatarUrl;
+    document.getElementById('usero').src = avatarUrl; // top-right avatar
 }
