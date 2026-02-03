@@ -261,7 +261,7 @@ function createPostElement(post) {
                 <div class="small-photo1">
                     <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                        <img class="small-photo" src="${post.avatar}">
-                            <div style="padding-bottom: 100%;"></div>
+                          
                         </div>
                     </a>
                 </div>
