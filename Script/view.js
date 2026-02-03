@@ -240,8 +240,8 @@ async function loadMorePosts() {
 
 function createPostElement(post) {
     const user = {
-        username: post.username || 'new user',
-        avatar: post.avatar || 'pics/tt.jpg.jpg'
+        username: post.users?.username || 'new user',
+        avatar: post.users?.avatar || 'pics/tt.jpg.jpg'
     };
 
     const textLimit = (post.image || post.video) ? 250 : 500;
@@ -249,7 +249,7 @@ function createPostElement(post) {
     const hasImage = !!post.image;
 
     // IMPORTANT: This comparison enables "my profile" vs "other profile"
-    const isOwnPost = currentUserId && post.userId === currentUserId;
+    const isOwnPost = currentUserId && post.user_id === currentUserId;
 
     const posterElement = document.createElement('div');
     posterElement.className = 'poster';
@@ -259,7 +259,7 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.user_id}')`}">
                         <div class="placeholder small-photo" data-large="${user.avatar}">
                             <img src="pics/tt.jpg" class="img-small">
                             <div style="padding-bottom: 100%;"></div>
@@ -269,7 +269,7 @@ function createPostElement(post) {
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.user_id}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -379,30 +379,29 @@ function createPostElement(post) {
         </div>
     `;
 
-   
-     // ✅ Attach click handlers via JS — UUID safe
+    // ✅ Attach click handlers via JS — UUID safe
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
         imageDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+            if (posterElement.dataset.blockNavigation === 'true') return;
+            showDetail(post.id);
+        });
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
         videoDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+            if (posterElement.dataset.blockNavigation === 'true') return;
+            showDetail(post.id);
+        });
     }
 
     const textDiv = posterElement.querySelector(".tir");
     textDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
-    
+        if (posterElement.dataset.blockNavigation === 'true') return;
+        showDetail(post.id);
+    });
+
     enablePostLongPress(posterElement, post);
     return posterElement;
 }
