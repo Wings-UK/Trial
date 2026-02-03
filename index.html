@@ -847,5 +847,131 @@
     </div>
   </div>
 </div>
+
+<!-- WALLET OVERLAY (TikTok-style) --><div id="walletPage" class="wallet-page">
+  <div class="wallet-header">
+    <span class="wallet-back" onclick="closeWallet()">‹</span>
+    <p>Wallet</p>
+  </div>  <div class="wallet-balance-card">
+    <p class="wallet-label">Total Balance</p>
+    <h1 class="wallet-amount">$200.00</h1>
+    <p class="wallet-points">Accumulated points: <strong>20,000 pts</strong></p><div class="wallet-actions">
+  <button class="wallet-btn">Withdraw</button>
+  <button class="wallet-btn">Send</button>
+  <button class="wallet-btn primary">Add</button>
+</div>
+
+  </div>  <div class="wallet-transactions">
+    <h3>Transactions</h3><div class="txn">
+  <div>
+    <p class="txn-title">Gift received</p>
+    <p class="txn-date">Today</p>
+  </div>
+  <p class="txn-amount plus">+ $25</p>
+</div>
+
+<div class="txn">
+  <div>
+    <p class="txn-title">Withdrawal</p>
+    <p class="txn-date">Yesterday</p>
+  </div>
+  <p class="txn-amount minus">- $50</p>
+</div>
+
+<div class="txn">
+  <div>
+    <p class="txn-title">Points converted</p>
+    <p class="txn-date">Jan 30</p>
+  </div>
+  <p class="txn-amount plus">+ $10</p>
+</div>
+
+  </div>
+</div><style>
+.wallet-page{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  z-index:99999;
+  display:none;
+  flex-direction:column;
+  font-family:'Noto Sans JP', sans-serif;
+}
+.wallet-page.active{display:flex;}
+
+.wallet-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px;
+  border-bottom:1px solid #eee;
+}
+.wallet-header p{font-weight:600;font-size:18px;}
+.wallet-back{font-size:28px;cursor:pointer;}
+
+.wallet-balance-card{
+  padding:20px;
+}
+.wallet-label{color:#777;font-size:14px;}
+.wallet-amount{
+  font-size:42px;
+  font-weight:800;
+  margin:6px 0;
+}
+.wallet-points{font-size:14px;color:#555;}
+
+.wallet-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+.wallet-btn{
+  flex:1;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  background:#fff;
+  font-weight:600;
+}
+.wallet-btn.primary{
+  background:rgb(244,7,82);
+  color:#fff;
+  border:none;
+}
+
+.wallet-transactions{
+  padding:0 20px 20px;
+}
+.wallet-transactions h3{
+  margin:20px 0 10px;
+  font-size:16px;
+}
+
+.txn{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid #f0f0f0;
+}
+.txn-title{font-weight:500;}
+.txn-date{font-size:12px;color:#888;}
+.txn-amount{font-weight:700;}
+.txn-amount.plus{color:green;}
+.txn-amount.minus{color:#f40752;}
+</style><script>
+function openWallet(){
+  document.getElementById('walletPage').classList.add('active');
+}
+function closeWallet(){
+  document.getElementById('walletPage').classList.remove('active');
+}
+
+// Attach to kiy icon
+setTimeout(()=>{
+  const kiy = document.querySelector('.kiy');
+  if(kiy){ kiy.addEventListener('click', openWallet); }
+},500);
+</script>
   </body>
 </html>
