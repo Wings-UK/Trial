@@ -244,7 +244,7 @@ function createPostElement(post) {
         avatar: post.avatar || 'pics/tt.jpg.jpg'
     };
 
-    const textLimit = (post.image || post.video) ? 250 : 500;
+    const textLimit = (post.image || post.video) ? 150 : 300;
     const hasVideo = !!post.video;
     const hasImage = !!post.image;
 
