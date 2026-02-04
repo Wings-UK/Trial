@@ -862,6 +862,18 @@ async function showProfile(userId) {
                 ` : ''}
                 <div class="contentma">
                     <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
+                     <div class="bioi">
+            <div class="fred">
+              <img class="brekca" src="${user.avatar}">
+              <p class="goo">${user.username}</p>
+            </div>
+            <div class="fred">
+             <svg class="heart-icon heart-clickable" width="17" height="17" viewBox="0 0 24 24">
+                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              <p class="goo">${post.likeCount || '0'}</p>
+            </div>
+          </div>
                 </div>
             `;
 
