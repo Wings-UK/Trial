@@ -138,6 +138,7 @@ function shortenText(text, limit, showSeeMore = true) {
 // ─────────────────────────────────────────────────────────────
 // Updated loadMorePosts() – with users table join (Option A)
 // ─────────────────────────────────────────────────────────────
+// Paste this exactly as-is — replace your current loadMorePosts function
 async function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
@@ -199,19 +200,20 @@ async function loadMorePosts() {
         document.querySelectorAll('.skeleton').forEach(skel => skel.remove());
 
         const adaptedPosts = fetchedPosts.map(p => ({
-            id: p.id,
-            userId: p.user_id || p.user?.id,
-            username: p.user?.username || p.user?.name || '@unknown',
-            avatar: p.user?.avatar || 'pics/default-avatar.png',
-            content: p.content || '',
-            image: p.image || null,
-            video: p.video || null,
-            timestamp: formatTimeSince(p.created_at),
-            likeCount: p.like_count || 0,
-            commentCount: p.comment_count || 0,
-            repostCount: p.repost_count || 0,
-            views: p.views || 0
-        }));
+    id: p.id,
+    userId: p.user_id || p.user?.id,
+    // prefer username, fall back to display name if available
+    username: p.user?.username || p.user?.name || '@unknown',
+    avatar: p.user?.avatar || 'pics/default-avatar.png',
+    content: p.content || '',
+    image: p.image || null,
+    video: p.video || null,
+    timestamp: formatTimeSince(p.created_at),
+    likeCount: p.like_count || 0,
+    commentCount: p.comment_count || 0,
+    repostCount: p.repost_count || 0,
+    views: p.views || 0
+}));
 
         console.log("Adapted posts:", adaptedPosts);
 
@@ -246,6 +248,7 @@ function createPostElement(post) {
     const hasVideo = !!post.video;
     const hasImage = !!post.image;
 
+    // IMPORTANT: This comparison enables "my profile" vs "other profile"
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
     const posterElement = document.createElement('div');
@@ -256,7 +259,9 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}"><img class="small-photo" src="${post.avatar}">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                       <img class="small-photo" src="${post.avatar}">
+                        
                     </a>
                 </div>
                 <div class="pos">
@@ -372,31 +377,34 @@ function createPostElement(post) {
         </div>
     `;
 
+   
+     // ✅ Attach click handlers via JS — UUID safe
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
         imageDiv.addEventListener("click", () => {
-            if (posterElement.dataset.blockNavigation === 'true') return;
-            showDetail(post.id);
-        });
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
         videoDiv.addEventListener("click", () => {
-            if (posterElement.dataset.blockNavigation === 'true') return;
-            showDetail(post.id);
-        });
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     }
 
     const textDiv = posterElement.querySelector(".tir");
     textDiv.addEventListener("click", () => {
-        if (posterElement.dataset.blockNavigation === 'true') return;
-        showDetail(post.id);
-    });
+  if (posterElement.dataset.blockNavigation === 'true') return;
+  showDetail(post.id);
+});
     
     enablePostLongPress(posterElement, post);
     return posterElement;
 }
+
 
 // Start loading when homepage is shown
 document.addEventListener('DOMContentLoaded', function() {
@@ -406,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMorePosts();
     }
 
+    // Also load more when scrolling near bottom
     window.addEventListener('scroll', () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
             loadMorePosts();
@@ -414,7 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ─────────────────────────────────────────────────────────────
-// Minimal reaction styles
+// Minimal reaction styles to fix oversized icons
+// Paste this at the bottom of view.js
 // ─────────────────────────────────────────────────────────────
 function addMinimalReactionStyles() {
     if (document.getElementById('minimal-reaction-styles')) return;
@@ -422,107 +432,113 @@ function addMinimalReactionStyles() {
     const style = document.createElement('style');
     style.id = 'minimal-reaction-styles';
     style.textContent = `
-        .heart-ai {
-            width: 55px;
-            gap: 5px;
-            display: flex;
-            align-items: center;
-        }
-        .heart-clickable {
-            cursor: pointer;
-        }
-        .mee {
-            display: flex;
-            gap: 20px;
-        }
-        .call {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-        }
-        .feeling {
-            width: 22px;
-        }
-        .like-count {
-            font-size: 14px;
-            font-family: ibm plex sans, roboto;
-        } 
-        .like-count.liked {
-            font-weight: 500;
-            color: rgb(244, 7, 82);
-        }
-        .like-count:empty {
-            display: none;
-        }
-        .heart-icon {
-            transition: all 0.3s ease;
-        }
-        .heart-icon .heart-path {
-            stroke: rgb(0, 0, 0);
-            fill: none;
-            transition: all 0.3s ease;
-        }
-        .heart-icon.liked {
-            transform: scale(1);
-        }
-        .heart-icon.liked .heart-path {
-            fill: rgb(244, 7, 82);
-            stroke: rgb(244, 7, 82);
-        }
-        @keyframes heartBeat {
-            0% { transform: scale(0.5); }
-            50% { transform: scale(1.7); }
-            100% { transform: scale(1); }
-        }
-        .heart-animation {
-            animation: heartBeat 0.7s ease-in-out;
-        }
-        .heart-icon {
-            transition: transform 0.2s ease, opacity 0.2s ease;
-        }
-        .heart-animation {
-            animation: pop 0.3s ease forwards;
-        }
-        .unfill-animation {
-            animation: shrinkFade 0.3s ease forwards;
-        }
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.5); }
-            100% { transform: scale(1); }
-        }
-        @keyframes shrinkFade {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.5); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .reaction-container {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .donate-btn {
-            display: flex;
-            align-items: center;
-        }
-        .comment-btn, .repost-btn {
-            display: flex; 
-            width: 55px;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            font-size: 15px;
-            font-family: ibm plex sans, roboto;
-        }
+       
+.heart-ai {
+    width: 55px;
+    gap: 5px;
+    display: flex;
+    align-items: center;
+}
+.heart-clickable {
+    cursor: pointer;
+}
+.mee {
+    display: flex;
+    gap: 20px;
+}
+.call {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.feeling {
+    width: 22px;
+}
+.like-count {
+    font-size: 14px;
+    font-family: ibm plex sans, roboto;
+} 
+.like-count.liked {
+    font-weight: 500;
+    color: rgb(244, 7, 82);
+}
+.like-count:empty {
+    display: none;
+}
+.heart-icon {
+    transition: all 0.3s ease;
+}
+.heart-icon .heart-path {
+    stroke: rgb(0, 0, 0);
+    fill: none;
+    transition: all 0.3s ease;
+}
+.heart-icon.liked {
+    transform: scale(1);
+}
+.heart-icon.liked .heart-path {
+    fill: rgb(244, 7, 82);
+    stroke: rgb(244, 7, 82);
+}
+@keyframes heartBeat {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.7); }
+    100% { transform: scale(1); }
+}
+.heart-animation {
+    animation: heartBeat 0.7s ease-in-out;
+}
+.heart-icon {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.heart-animation {
+    animation: pop 0.3s ease forwards;
+}
+.unfill-animation {
+    animation: shrinkFade 0.3s ease forwards;
+}
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+@keyframes shrinkFade {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.reaction-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.donate-btn {
+    display: flex;
+    align-items: center;
+}
+.comment-btn, .repost-btn {
+    display: flex; 
+    width: 55px;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: ibm plex sans, roboto;
+}
+
     `;
     document.head.appendChild(style);
 }
 
+// Call it once after the page loads
 document.addEventListener('DOMContentLoaded', () => {
     addMinimalReactionStyles();
 });
 
+// Also call it after new posts are added (inside loadMorePosts setTimeout)
+
+// Paste this exactly as-is — replace your current addHeartReactionStyles function
 function addHeartReactionStyles() {
     if (document.getElementById('heart-reaction-styles')) return;
 
@@ -603,7 +619,7 @@ function addHeartReactionStyles() {
     `;
     document.head.appendChild(style);
 }
-
+// Paste this exactly as-is — replace your current initializeHeartReactions function
 function initializeHeartReactions() {
     if (!document.getElementById('heart-reaction-styles')) {
         addHeartReactionStyles();
@@ -617,15 +633,20 @@ function initializeHeartReactions() {
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
         
-        if (!heartIcon || !likeCount) return;
+        // If either critical element is missing → skip this container silently
+        if (!heartIcon || !likeCount) {
+            return;
+        }
         
         const clickableElements = container.querySelectorAll('.heart-clickable');
         let isLiked = container.getAttribute('data-liked') === 'true';
         
+        // Read count safely
         let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
         let count = countText ? parseInt(countText, 10) : 0;
         if (isNaN(count)) count = 0;
         
+        // Initial state
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
@@ -668,6 +689,7 @@ function initializeHeartReactions() {
     });
 }
 
+// Paste this exactly as-is — add at the bottom of view.js
 function initializeLazyLoading() {
     const placeholders = document.querySelectorAll('.placeholder');
 
@@ -675,12 +697,14 @@ function initializeLazyLoading() {
         const smallImg = placeholder.querySelector('.img-small');
         if (!smallImg) return;
 
+        // Load small image first
         const small = new Image();
         small.src = smallImg.src;
         small.onload = () => {
             smallImg.classList.add('loaded');
         };
 
+        // Load large image
         const largeSrc = placeholder.getAttribute('data-large');
         if (largeSrc) {
             const large = new Image();
@@ -695,10 +719,19 @@ function initializeLazyLoading() {
     });
 }
 
+// Paste this exactly as-is — add at the bottom of view.js
+function updateCreatePostElementForLazy() {
+    // No need to change createPostElement — just call initializeLazyLoading after posts are added
+    // Make sure your placeholder divs in createPostElement have:
+    // class="placeholder" data-large="..." 
+    // and contain <img src="low-res.jpg" class="img-small">
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeLazyLoading();
 });
 
+// Paste this exactly as-is — add at the bottom of view.js
 async function fetchUserProfile(userId) {
     const { data: user, error: userError } = await supabase
         .from('users')
@@ -716,7 +749,7 @@ async function fetchUserProfile(userId) {
         .select('id, content, image, video, created_at, like_count')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(12);
+        .limit(12); // show first 12 posts in grid
 
     if (postsError) {
         console.error('User posts error:', postsError);
@@ -728,9 +761,12 @@ async function fetchUserProfile(userId) {
     };
 }
 
+// Paste this exactly as-is — replace your current showProfile function
 async function showProfile(userId) {
+    // Save scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
+    // Switch page
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const profileSection = document.getElementById('profile');
     if (!profileSection) return;
@@ -807,8 +843,6 @@ async function showProfile(userId) {
             masonryDiv.className = 'masonry';
             masonryDiv.setAttribute('data-post-id', post.id);
 
-            const contentText = post.content.substring(0, 80) + (post.content.length > 80 ? '...' : '');
-
             masonryDiv.innerHTML = `
                 ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
                 ${post.video ? `
@@ -827,10 +861,11 @@ async function showProfile(userId) {
                     </div>
                 ` : ''}
                 <div class="contentma">
-                    <p class="partner">${contentText}</p>
+                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
                 </div>
             `;
 
+            // ✅ UUID-SAFE CLICK HANDLER
             masonryDiv.addEventListener('click', () => {
                 showDetail(post.id);
             });
@@ -845,7 +880,7 @@ async function showProfile(userId) {
 
     window.scrollTo(0, 0);
 }
-
+// Paste this exactly as-is — add at the bottom
 function goBack() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
     document.getElementById('profile').classList.remove('active');
@@ -853,6 +888,7 @@ function goBack() {
     if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
 }
 
+// Paste this exactly as-is — replace your current showMyProfile function
 async function showMyProfile() {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
@@ -878,6 +914,7 @@ async function showMyProfile() {
 
     const userId = user.id;
 
+    // Use maybeSingle instead of single → won't throw on 0 rows
     const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('id, username, avatar, cover, bio, location, followers, following')
@@ -890,6 +927,7 @@ async function showMyProfile() {
         return;
     }
 
+    // No profile row exists
     if (!profile) {
         ireti.innerHTML = `
             <div style="text-align:center; padding:80px 20px; color:#555;">
@@ -904,6 +942,7 @@ async function showMyProfile() {
         return;
     }
 
+    // Fetch your posts
     const { data: userPosts } = await supabase
         .from('posts')
         .select('id, content, image, video, created_at, like_count')
@@ -911,6 +950,7 @@ async function showMyProfile() {
         .order('created_at', { ascending: false })
         .limit(12);
 
+    // Render profile (same as before)
     ireti.innerHTML = `
         <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
 
@@ -981,7 +1021,7 @@ async function showMyProfile() {
             </div>
         </div>
 
-        <div class="wing" style="position:fixed; bottom:24px; right:24px; z-index:100;">
+        <div class="wing">
             <img class="wingo" src="pics/geat.svg" onclick="makePost()">
         </div>
     `;
@@ -1001,6 +1041,7 @@ async function showMyProfile() {
         uploadAvatar(file);
     });
 
+    // Render posts in masonry
     const leftColumn = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
     leftColumn.innerHTML = '';
@@ -1010,8 +1051,6 @@ async function showMyProfile() {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
         userPosts.forEach((post, index) => {
-            const truncated = post.content.substring(0, 80) + (post.content.length > 80 ? '...' : '');
-
             const masonryDiv = document.createElement('div');
             masonryDiv.className = 'masonry';
             masonryDiv.setAttribute('data-post-id', post.id);
@@ -1034,7 +1073,9 @@ async function showMyProfile() {
                     </div>
                 ` : ''}
                 <div class="contentma">
-                    <p class="partner">${truncated}</p>
+                    <p class="partner">
+                        ${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}
+                    </p>
                 </div>
             `;
 
@@ -1056,6 +1097,8 @@ async function showMyProfile() {
         ?.addEventListener('click', openEditProfileModal);
 }
 
+
+// Paste this exactly as-is — add at the bottom
 document.addEventListener('DOMContentLoaded', () => {
     const accountIcon = document.querySelector('.account-icon');
     if (accountIcon) {
@@ -1064,6 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Load logged-in user's avatar in top-right
     supabase.auth.getUser().then(({ data: { user } }) => {
         if (user) {
             supabase
@@ -1080,6 +1124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+// Paste this exactly as-is — add at the bottom of view.js
 async function showDetail(postId) {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
@@ -1122,7 +1168,7 @@ async function showDetail(postId) {
         .eq('id', postId)
         .single();
 
-    if (error  !postData) {
+    if (error || !postData) {
         console.error('Post fetch error:', error);
         nuba.innerHTML = '<p>Post not found</p>';
         return;
@@ -1131,17 +1177,17 @@ async function showDetail(postId) {
     const post = {
         id: postData.id,
         userId: postData.user_id,
-        username: postData.user?.username  '@unknown',
-        avatar: postData.user?.avatar  'pics/default-avatar.png',
-        content: postData.content  '',
-        image: postData.image  null,
-        video: postData.video  null,
+        username: postData.user?.username || '@unknown',
+        avatar: postData.user?.avatar || 'pics/default-avatar.png',
+        content: postData.content || '',
+        image: postData.image || null,
+        video: postData.video || null,
         timestamp: formatTimeSince(postData.created_at),
         date: new Date(postData.created_at).toLocaleString(),
-        likeCount: postData.like_count  0,
-        commentCount: postData.comment_count  0,
-        repostCount: postData.repost_count  0,
-        views: postData.views  0
+        likeCount: postData.like_count || 0,
+        commentCount: postData.comment_count || 0,
+        repostCount: postData.repost_count || 0,
+        views: postData.views || 0
     };
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
@@ -1151,7 +1197,7 @@ async function showDetail(postId) {
             <div class="heading">
                 <div class="small-photo1">
                    <a class="lino"
-   onclick="${isOwnPost ? 'showMyProfile()' : showProfile('${post.userId}')}">
+   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
     <img class="small-photo" src="${post.avatar}">
 </a>
                 </div>
@@ -1159,7 +1205,7 @@ async function showDetail(postId) {
                     <div>
                         <div class="link-wrapper">
                             <a class="home-click"
-   onclick="${isOwnPost ? 'showMyProfile()' : showProfile('${post.userId}')}">
+   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${post.username}</p>
@@ -1173,7 +1219,7 @@ async function showDetail(postId) {
                     </div>
                     <div class="comp1">
                         <div class="cll">
-                        <p class="time">${post.date  post.timestamp}</p>
+                            <p class="time">${post.date || post.timestamp}</p>
                         </div>
                     </div>
                 </div>
@@ -1242,7 +1288,7 @@ async function showDetail(postId) {
                     <img class="lefti" src="pics/stats.svg">
                 </div>
                 <div>
-                    <p class="viewe">${post.views  '96.8K'} views</p>
+                    <p class="viewe">${post.views || '96.8K'} views</p>
                 </div>
             </div>
         </div>
@@ -1288,6 +1334,7 @@ async function submitPost() {
 
   let imageUrl = null;
 
+  // OPTIONAL IMAGE UPLOAD
   if (imageFile) {
     const fileName = `${user.id}-${Date.now()}-${imageFile.name}`;
 
@@ -1321,13 +1368,14 @@ async function submitPost() {
     .single();
 
   if (error) {
-    console.error('Post error:', error);
-    alert(error.message);
-    return;
-  }
+  console.error('Post error:', error);
+  alert(error.message);
+  return;
+}
 
   closePostModal();
 
+  // 🔥 INSTANT UI UPDATE (homepage)
   const newPost = {
     id: post.id,
     userId: user.id,
@@ -1352,8 +1400,8 @@ let activeLongPressPost = null;
 
 function enablePostLongPress(posterElement, post) {
   function isActive() {
-    return posterElement.classList.contains('long-press-active');
-  }
+  return posterElement.classList.contains('long-press-active');
+}
 
   let pressTimer = null;
   let longPressTriggered = false;
@@ -1416,11 +1464,15 @@ function enablePostLongPress(posterElement, post) {
     if (navigator.vibrate) navigator.vibrate(20);
   }
 
+  // ─── LONG PRESS ───
   posterElement.addEventListener('touchstart', e => {
-    if (e.touches.length > 1) return;
-    if (isActive()) return;
-    pressTimer = setTimeout(showActions, 500);
-  });
+  if (e.touches.length > 1) return;
+
+  // 🚫 If already long-pressed, ignore further long presses
+  if (isActive()) return;
+
+  pressTimer = setTimeout(showActions, 500);
+});
 
   posterElement.addEventListener('touchmove', () => {
     clearTimeout(pressTimer);
@@ -1430,6 +1482,7 @@ function enablePostLongPress(posterElement, post) {
     clearTimeout(pressTimer);
   });
 
+  // ─── TAP ON SAME POST ───
   posterElement.addEventListener('click', e => {
     if (posterElement.dataset.blockNavigation === 'true') {
       e.stopPropagation();
@@ -1438,6 +1491,7 @@ function enablePostLongPress(posterElement, post) {
     }
   });
 
+  // ─── TAP OUTSIDE ───
   document.addEventListener('touchstart', e => {
     if (
       longPressTriggered &&
@@ -1446,25 +1500,29 @@ function enablePostLongPress(posterElement, post) {
     ) {
       closeActions();
     }
-  }, { capture: true });
+  });
 }
 
 function goBackFromDetail() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
 
+    // Deactivate detail page
     document.getElementById('meal')?.classList.remove('active');
+
+    // 🔥 Clear detail content
     const nuba = document.getElementById('nuba');
     if (nuba) nuba.innerHTML = '';
 
+    // Hide sticky detail header
     document.querySelector('.detail-content')?.classList.remove('active');
 
+    // Go back to homepage
     document.getElementById('food')?.classList.add('active');
 
     if (savedScroll) {
         window.scrollTo(0, parseInt(savedScroll));
     }
 }
-
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -1472,11 +1530,12 @@ async function uploadAvatar(file) {
     const fileExt = file.name.split('.').pop();
     const filePath = `${user.id}.${fileExt}`;
 
+    // Upload to storage
     const { error: uploadError } = await supabase
         .storage
         .from('avatars')
         .upload(filePath, file, {
-            upsert: true,
+            upsert: true,            // replace old avatar
             cacheControl: '3600'
         });
 
@@ -1486,6 +1545,7 @@ async function uploadAvatar(file) {
         return;
     }
 
+    // Get public URL
     const { data } = supabase
         .storage
         .from('avatars')
@@ -1493,6 +1553,7 @@ async function uploadAvatar(file) {
 
     const avatarUrl = data.publicUrl;
 
+    // Save URL to users table
     const { error: updateError } = await supabase
         .from('users')
         .update({ avatar: avatarUrl })
@@ -1503,10 +1564,12 @@ async function uploadAvatar(file) {
         return;
     }
 
+    // 🔥 Update UI instantly
     document.getElementById('myProfileAvatar').src = avatarUrl;
-    document.getElementById('usero').src = avatarUrl;
+    document.getElementById('usero').src = avatarUrl; // top-right avatar
 }
 
+// Add this at the bottom of view.js
 async function createMissingProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
