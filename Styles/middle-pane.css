@@ -4,6 +4,56 @@
   box-sizing: border-box;
 }
 
+.masonry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.meta-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.meta-username {
+  font-size: 12px;
+  color: #111;
+  max-width: 90px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-heart {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: rgb(244, 7, 82);
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.meta-likes {
+  font-size: 12px;
+  color: #444;
+}
+
 /* WALLET UI */
 #wallet {
   background: #fff;
