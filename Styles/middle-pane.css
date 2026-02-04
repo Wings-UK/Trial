@@ -9,8 +9,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 6px 6px 10px;
-  background-color: rgb(245, 245, 245);
-  border-radius: 0 0 5px 5px;
   font-family: 'Noto Sans JP', sans-serif;
 }
 
@@ -49,13 +47,9 @@
   stroke: black;
   stroke-width: 2;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .meta-likes {
-  width: 40px;
-  text-align: right;
-  flex-shrink: 0;
   font-size: 12px;
   color: #444;
 }
