@@ -256,11 +256,7 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
-                        <div class="placeholder small-photo" data-large="${user.avatar}">
-                            <img src="pics/tt.jpg" class="img-small">
-                            <div style="padding-bottom: 100%;"></div>
-                        </div>
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}"><img class="small-photo" src="${post.avatar}">
                     </a>
                 </div>
                 <div class="pos">
@@ -1103,6 +1099,7 @@ async function showDetail(postId) {
 
     nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading post...</p>';
 
+    // Fetch the single post + author
     const { data: postData, error } = await supabase
         .from('posts')
         .select(`
@@ -1125,7 +1122,7 @@ async function showDetail(postId) {
         .eq('id', postId)
         .single();
 
-    if (error || !postData) {
+    if (error  !postData) {
         console.error('Post fetch error:', error);
         nuba.innerHTML = '<p>Post not found</p>';
         return;
@@ -1134,17 +1131,17 @@ async function showDetail(postId) {
     const post = {
         id: postData.id,
         userId: postData.user_id,
-        username: postData.user?.username || '@unknown',
-        avatar: postData.user?.avatar || 'pics/default-avatar.png',
-        content: postData.content || '',
-        image: postData.image || null,
-        video: postData.video || null,
+        username: postData.user?.username  '@unknown',
+        avatar: postData.user?.avatar  'pics/default-avatar.png',
+        content: postData.content  '',
+        image: postData.image  null,
+        video: postData.video  null,
         timestamp: formatTimeSince(postData.created_at),
         date: new Date(postData.created_at).toLocaleString(),
-        likeCount: postData.like_count || 0,
-        commentCount: postData.comment_count || 0,
-        repostCount: postData.repost_count || 0,
-        views: postData.views || 0
+        likeCount: postData.like_count  0,
+        commentCount: postData.comment_count  0,
+        repostCount: postData.repost_count  0,
+        views: postData.views  0
     };
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
@@ -1153,14 +1150,16 @@ async function showDetail(postId) {
         <div class="cust-name" data-post-id="${post.id}">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showUserProfile('${post.userId}')`}">
-                        <img class="small-photo" src="${post.avatar}">
-                    </a>
+                   <a class="lino"
+   onclick="${isOwnPost ? 'showMyProfile()' : showProfile('${post.userId}')}">
+    <img class="small-photo" src="${post.avatar}">
+</a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showUserProfile('${post.userId}')`}">
+                            <a class="home-click"
+   onclick="${isOwnPost ? 'showMyProfile()' : showProfile('${post.userId}')}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${post.username}</p>
@@ -1174,7 +1173,7 @@ async function showDetail(postId) {
                     </div>
                     <div class="comp1">
                         <div class="cll">
-                            <p class="time">${post.date || post.timestamp}</p>
+                        <p class="time">${post.date  post.timestamp}</p>
                         </div>
                     </div>
                 </div>
@@ -1243,7 +1242,7 @@ async function showDetail(postId) {
                     <img class="lefti" src="pics/stats.svg">
                 </div>
                 <div>
-                    <p class="viewe">${post.views || '96.8K'} views</p>
+                    <p class="viewe">${post.views  '96.8K'} views</p>
                 </div>
             </div>
         </div>
