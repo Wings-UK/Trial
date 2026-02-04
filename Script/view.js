@@ -888,7 +888,6 @@ function goBack() {
     if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
 }
 
-// Paste this exactly as-is — replace your current showMyProfile function
 async function showMyProfile() {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
@@ -914,7 +913,6 @@ async function showMyProfile() {
 
     const userId = user.id;
 
-    // Use maybeSingle instead of single → won't throw on 0 rows
     const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('id, username, avatar, cover, bio, location, followers, following')
@@ -927,7 +925,6 @@ async function showMyProfile() {
         return;
     }
 
-    // No profile row exists
     if (!profile) {
         ireti.innerHTML = `
             <div style="text-align:center; padding:80px 20px; color:#555;">
@@ -942,7 +939,6 @@ async function showMyProfile() {
         return;
     }
 
-    // Fetch your posts
     const { data: userPosts } = await supabase
         .from('posts')
         .select('id, content, image, video, created_at, like_count')
@@ -950,7 +946,6 @@ async function showMyProfile() {
         .order('created_at', { ascending: false })
         .limit(12);
 
-    // Render profile (same as before)
     ireti.innerHTML = `
         <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
 
@@ -1021,7 +1016,7 @@ async function showMyProfile() {
             </div>
         </div>
 
-        <div class="wing">
+        <div class="wing" style="position:fixed; bottom:24px; right:24px; z-index:100;">
             <img class="wingo" src="pics/geat.svg" onclick="makePost()">
         </div>
     `;
@@ -1041,7 +1036,6 @@ async function showMyProfile() {
         uploadAvatar(file);
     });
 
-    // Render posts in masonry
     const leftColumn = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
     leftColumn.innerHTML = '';
@@ -1051,6 +1045,8 @@ async function showMyProfile() {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
         userPosts.forEach((post, index) => {
+            const truncated = post.content.substring(0, 80) + (post.content.length > 80 ? '...' : '');
+
             const masonryDiv = document.createElement('div');
             masonryDiv.className = 'masonry';
             masonryDiv.setAttribute('data-post-id', post.id);
@@ -1073,9 +1069,7 @@ async function showMyProfile() {
                     </div>
                 ` : ''}
                 <div class="contentma">
-                    <p class="partner">
-                        ${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}
-                    </p>
+                    <p class="partner">${truncated}</p>
                 </div>
             `;
 
@@ -1096,8 +1090,6 @@ async function showMyProfile() {
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
 }
-
-
 // Paste this exactly as-is — add at the bottom
 document.addEventListener('DOMContentLoaded', () => {
     const accountIcon = document.querySelector('.account-icon');
