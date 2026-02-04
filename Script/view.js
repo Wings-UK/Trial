@@ -833,26 +833,6 @@ async function showProfile(userId) {
                 <div class="contentma">
                     <p class="partner">${contentText}</p>
                 </div>
-
-                <!-- Views badge (positioned 10px above footer) -->
-                <div class="views-badge">
-                    <img src="pics/eye-white.svg" alt="Views" class="eye-icon">
-                    <span>12.4k</span>
-                </div>
-
-                <!-- Footer: avatar + username + heart -->
-                <div class="masonry-footer">
-                    <div class="footer-left">
-                        <img class="footer-avatar" src="${userData.avatar || 'pics/default-avatar.png'}" alt="">
-                        <span class="footer-username">${userData.username}</span>
-                    </div>
-                    <div class="footer-heart heart-ai" data-liked="false">
-                        <svg class="heart-icon heart-clickable" width="18" height="18" viewBox="0 0 24 24">
-                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                        <span class="like-count heart-clickable">342</span>
-                    </div>
-                </div>
             `;
 
             masonryDiv.addEventListener('click', () => {
@@ -865,9 +845,6 @@ async function showProfile(userId) {
                 rightColumn.appendChild(masonryDiv);
             }
         });
-
-        // Re-initialize heart click animations for the new hearts
-        setTimeout(initializeHeartReactions, 100);
     }
 
     window.scrollTo(0, 0);
@@ -1063,26 +1040,6 @@ async function showMyProfile() {
                 <div class="contentma">
                     <p class="partner">${truncated}</p>
                 </div>
-
-                <!-- Views badge -->
-                <div class="views-badge">
-                    <img src="pics/eye-white.svg" alt="Views" class="eye-icon">
-                    <span>12.4k</span>
-                </div>
-
-                <!-- Footer -->
-                <div class="masonry-footer">
-                    <div class="footer-left">
-                        <img class="footer-avatar" src="${profile.avatar || 'pics/default-avatar.png'}" alt="">
-                        <span class="footer-username">${profile.username}</span>
-                    </div>
-                    <div class="footer-heart heart-ai" data-liked="false">
-                        <svg class="heart-icon heart-clickable" width="18" height="18" viewBox="0 0 24 24">
-                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                        <span class="like-count heart-clickable">342</span>
-                    </div>
-                </div>
             `;
 
             masonryDiv.addEventListener('click', () => {
@@ -1095,9 +1052,6 @@ async function showMyProfile() {
                 rightColumn.appendChild(masonryDiv);
             }
         });
-
-        // Re-initialize hearts
-        setTimeout(initializeHeartReactions, 100);
     }
 
     window.scrollTo(0, 0);
