@@ -766,117 +766,144 @@ async function showProfile(userId) {
     // Save scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
-    // Switch page
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const profileSection = document.getElementById('profile');
-    if (!profileSection) return;
-    profileSection.classList.add('active');
+    // Switch page  
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));  
+    const profileSection = document.getElementById('profile');  
+    if (!profileSection) return;  
+    profileSection.classList.add('active');  
 
-    const ireti = document.getElementById('ireti');
-    if (!ireti) return;
+    const ireti = document.getElementById('ireti');  
+    if (!ireti) return;  
 
-    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';
+    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';  
 
-    const userData = await fetchUserProfile(userId);
-    if (!userData) {
-        ireti.innerHTML = '<p>User not found</p>';
-        return;
-    }
+    const userData = await fetchUserProfile(userId);  
+    if (!userData) {  
+        ireti.innerHTML = '<p>User not found</p>';  
+        return;  
+    }  
 
-    ireti.innerHTML = `
-        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">
-        <div>
-            <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">
-        </div>
-        <div class="klr">
-            <div class="drun">
-                <div>
-                    <p class="spe">${userData.username}</p>
-                </div>
-                <div>
-                    <img class="verify" src="pics/very.svg">
-                </div>
-            </div>
-            <div class="druu">
-                <div>
-                    <p class="rkl">${userData.location || 'No location'}</p>
-                </div>
-            </div>
-            <div class="nin">
-                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>
-            </div>
-            <div class="cha">
-                <p>${userData.bio || 'No bio yet'}</p>
-            </div>
-            <div class="man">
-                <div class="vre">
-                    <button class="aasw">Follow</button>
-                </div>
-                <div class="vre">
-                    <button class="aasw">1 : 1</button>
-                </div>
-            </div>
-        </div>
-        <div class="ewe">
-            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
-            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
-            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
-        </div>
-        <div class="mansonro">
-            <div class="masonri">
-                <div class="column left-column"></div>
-                <div class="column right-column"></div>
-            </div>
-        </div>
-    `;
+    ireti.innerHTML = `  
+        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">  
+        <div>  
+            <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">  
+        </div>  
+        <div class="klr">  
+            <div class="drun">  
+                <div>  
+                    <p class="spe">${userData.username}</p>  
+                </div>  
+                <div>  
+                    <img class="verify" src="pics/very.svg">  
+                </div>  
+            </div>  
+            <div class="druu">  
+                <div>  
+                    <p class="rkl">${userData.location || 'No location'}</p>  
+                </div>  
+            </div>  
+            <div class="nin">  
+                <p class="rkl"><span class="bld">\( {userData.following || 0}</span>following · <span class="bld"> \){userData.followers || 0}</span>followers</p>  
+            </div>  
+            <div class="cha">  
+                <p>${userData.bio || 'No bio yet'}</p>  
+            </div>  
+            <div class="man">  
+                <div class="vre">  
+                    <button class="aasw">Follow</button>  
+                </div>  
+                <div class="vre">  
+                    <button class="aasw">1 : 1</button>  
+                </div>  
+            </div>  
+        </div>  
+        <div class="ewe">  
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
+        </div>  
+        <div class="mansonro">  
+            <div class="masonri">  
+                <div class="column left-column"></div>  
+                <div class="column right-column"></div>  
+            </div>  
+        </div>  
+    `;  
 
-    const leftColumn = document.querySelector('.left-column');
-    const rightColumn = document.querySelector('.right-column');
-    leftColumn.innerHTML = '';
-    rightColumn.innerHTML = '';
+    const leftColumn = document.querySelector('.left-column');  
+    const rightColumn = document.querySelector('.right-column');  
+    leftColumn.innerHTML = '';  
+    rightColumn.innerHTML = '';  
 
-    if (!userData.posts || userData.posts.length === 0) {
-        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
-    } else {
-        userData.posts.forEach((post, index) => {
-            const masonryDiv = document.createElement('div');
-            masonryDiv.className = 'masonry';
-            masonryDiv.setAttribute('data-post-id', post.id);
+    if (!userData.posts || userData.posts.length === 0) {  
+        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';  
+    } else {  
+        userData.posts.forEach((post, index) => {  
+            const masonryDiv = document.createElement('div');  
+            masonryDiv.className = 'masonry';  
+            masonryDiv.setAttribute('data-post-id', post.id);  
 
-            masonryDiv.innerHTML = `
-                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
-                ${post.video ? `
-                    <div class="video-container power">
-                        <video class="video-thumbnail" preload="metadata">
-                            <source src="${post.video}" type="video/mp4">
-                        </video>
-                        <div class="video-overlay power">
-                            <div class="play-button power">
-                                <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                ` : ''}
-                <div class="contentma">
-                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
-          </div>
-            `;
+            masonryDiv.innerHTML = `  
+                \( {post.image ? `<img src=" \){post.image}" loading="lazy">` : ''}  
+                ${post.video ? `  
+                    <div class="video-container power">  
+                        <video class="video-thumbnail" preload="metadata">  
+                            <source src="${post.video}" type="video/mp4">  
+                        </video>  
+                        <div class="video-overlay power">  
+                            <div class="play-button power">  
+                                <svg width="30" height="30" viewBox="0 0 48 48" fill="none">  
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>  
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>  
+                                </svg>  
+                            </div>  
+                        </div>  
+                    </div>  
+                ` : ''}  
+                <div class="contentma">  
+                    <p class="partner">\( {post.content.substring(0, 80)} \){post.content.length > 80 ? '...' : ''}</p>  
+                </div>  
+            `;  
 
-            // ✅ UUID-SAFE CLICK HANDLER
-            masonryDiv.addEventListener('click', () => {
-                showDetail(post.id);
-            });
+            // ✅ UUID-SAFE CLICK HANDLER  
+            masonryDiv.addEventListener('click', () => {  
+                showDetail(post.id);  
+            });  
 
-            if (index % 2 === 0) {
-                leftColumn.appendChild(masonryDiv);
-            } else {
-                rightColumn.appendChild(masonryDiv);
-            }
-        });
-    }
+            /* ───── NEW META BAR (ONLY ADDITION) ───── */  
+
+            const metaDiv = document.createElement('div');  
+            metaDiv.className = 'masonry-meta';  
+
+            metaDiv.innerHTML = `  
+                <div class="meta-left">  
+                    <img class="meta-avatar" src="${userData.avatar || 'pics/default-avatar.png'}">  
+                    <span class="meta-username">${userData.username}</span>  
+                </div>  
+                <div class="meta-right">  
+                    <svg class="meta-heart" viewBox="0 0 24 24">  
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5  
+                        2 5.42 4.42 3 7.5 3  
+                        c1.74 0 3.41.81 4.5 2.09  
+                        C13.09 3.81 14.76 3 16.5 3  
+                        19.58 3 22 5.42 22 8.5  
+                        c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>  
+                    </svg>  
+                    <span class="meta-likes">${post.like_count || 0}</span>  
+                </div>  
+            `;  
+
+            const wrapper = document.createElement('div');  
+            wrapper.appendChild(masonryDiv);  
+            wrapper.appendChild(metaDiv);  
+
+            if (index % 2 === 0) {  
+                leftColumn.appendChild(wrapper);  
+            } else {  
+                rightColumn.appendChild(wrapper);  
+            }  
+        });  
+    }  
 
     window.scrollTo(0, 0);
 }
