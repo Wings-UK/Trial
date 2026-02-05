@@ -803,7 +803,10 @@ async function showProfile(userId) {
                 </div>
             </div>
             <div class="nin">
-                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>
+                <p class="rkl">
+                    <span class="bld">${userData.following || 0}</span>following · 
+                    <span class="bld">${userData.followers || 0}</span>followers
+                </p>
             </div>
             <div class="cha">
                 <p>${userData.bio || 'No bio yet'}</p>
@@ -861,19 +864,47 @@ async function showProfile(userId) {
                     </div>
                 ` : ''}
                 <div class="contentma">
-                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>
-          </div>
+                    <p class="partner">
+                        ${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}
+                    </p>
+                </div>
             `;
 
-            // ✅ UUID-SAFE CLICK HANDLER
             masonryDiv.addEventListener('click', () => {
                 showDetail(post.id);
             });
 
+            /* ───── SAME META BAR AS showMyProfile() ───── */
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'masonry-meta';
+
+            metaDiv.innerHTML = `
+                <div class="meta-left">
+                    <img class="meta-avatar" src="${userData.avatar || 'pics/default-avatar.png'}">
+                    <span class="meta-username">${userData.username}</span>
+                </div>
+                <div class="meta-right">
+                    <svg class="meta-heart" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                        2 5.42 4.42 3 7.5 3
+                        c1.74 0 3.41.81 4.5 2.09
+                        C13.09 3.81 14.76 3 16.5 3
+                        19.58 3 22 5.42 22 8.5
+                        c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span class="meta-likes">${post.like_count || 0}</span>
+                </div>
+            `;
+
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(masonryDiv);
+            wrapper.appendChild(metaDiv);
+
             if (index % 2 === 0) {
-                leftColumn.appendChild(masonryDiv);
+                leftColumn.appendChild(wrapper);
             } else {
-                rightColumn.appendChild(masonryDiv);
+                rightColumn.appendChild(wrapper);
             }
         });
     }
