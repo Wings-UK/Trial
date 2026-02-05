@@ -761,7 +761,6 @@ async function fetchUserProfile(userId) {
     };
 }
 
-// Paste this exactly as-is — replace your current showProfile function
 async function showProfile(userId) {
     // Save scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
@@ -803,7 +802,7 @@ async function showProfile(userId) {
                 </div>  
             </div>  
             <div class="nin">  
-                <p class="rkl"><span class="bld">\( {userData.following || 0}</span>following · <span class="bld"> \){userData.followers || 0}</span>followers</p>  
+                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>  
             </div>  
             <div class="cha">  
                 <p>${userData.bio || 'No bio yet'}</p>  
@@ -844,7 +843,7 @@ async function showProfile(userId) {
             masonryDiv.setAttribute('data-post-id', post.id);  
 
             masonryDiv.innerHTML = `  
-                \( {post.image ? `<img src=" \){post.image}" loading="lazy">` : ''}  
+                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}  
                 ${post.video ? `  
                     <div class="video-container power">  
                         <video class="video-thumbnail" preload="metadata">  
@@ -861,7 +860,7 @@ async function showProfile(userId) {
                     </div>  
                 ` : ''}  
                 <div class="contentma">  
-                    <p class="partner">\( {post.content.substring(0, 80)} \){post.content.length > 80 ? '...' : ''}</p>  
+                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>  
                 </div>  
             `;  
 
