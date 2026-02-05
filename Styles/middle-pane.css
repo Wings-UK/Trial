@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+.mansonro .column > div {
+    display: contents;
+}
+
 .masonry-meta {
   display: flex;
   justify-content: space-between;
