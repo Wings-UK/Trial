@@ -1603,7 +1603,7 @@ async function createMissingProfile() {
         username: tempUsername,
         avatar: 'pics/default-avatar.png',
         cover: 'pics/default-cover.jpg',
-        bio: 'Just joined Retail ✨',
+        bio: 'Just joined Wings ✨',
         location: '',
         followers: 0,
         following: 0
