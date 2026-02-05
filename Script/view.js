@@ -897,14 +897,12 @@ async function showProfile(userId) {
                 </div>
             `;
 
-            const wrapper = document.createElement('div');
-            wrapper.appendChild(masonryDiv);
-            wrapper.appendChild(metaDiv);
-
             if (index % 2 === 0) {
-                leftColumn.appendChild(wrapper);
+                leftColumn.appendChild(masonryDiv);
+                leftColumn.appendChild(metaDiv);
             } else {
-                rightColumn.appendChild(wrapper);
+                rightColumn.appendChild(masonryDiv);
+                rightColumn.appendChild(metaDiv);
             }
         });
     }
