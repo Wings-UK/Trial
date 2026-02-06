@@ -1197,10 +1197,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Paste this exactly as-is — add at the bottom of view.js
 async function showDetail(postId) {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
-
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
     if (!detailPage) {
@@ -1214,7 +1212,6 @@ async function showDetail(postId) {
         console.error('nuba container not found');
         return;
     }
-
     nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading post...</p>';
 
     // Fetch the single post + author
@@ -1315,11 +1312,9 @@ async function showDetail(postId) {
                 </div>
             </div>
         </div>
-
         <div class="tir">
             <p class="tiri">${post.content}<br></p>
         </div>
-
         ${post.image ? `
         <div class="swet">
             <div class="laptop1">
@@ -1327,7 +1322,6 @@ async function showDetail(postId) {
             </div>
         </div>
         ` : ''}
-
         ${post.video ? `
         <div class="swet">
             <div class="video-container" data-post-id="${post.id}">
@@ -1345,7 +1339,6 @@ async function showDetail(postId) {
             </div>
         </div>
         ` : ''}
-
         <div class="lefto">
             <div class="dick">
                 <div>
@@ -1364,7 +1357,6 @@ async function showDetail(postId) {
                 </div>
             </div>
         </div>
-
         <div class="reaction">
             <div class="small-photo1">
                 <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
@@ -1374,6 +1366,39 @@ async function showDetail(postId) {
             </div>
             <!-- Other reaction photos -->
         </div>
+
+        <!-- Comment box now lives here inside nuba -->
+        <div class="comment-container">
+            <div class="comment-wrapper">
+              <div class="comment-box">
+                <textarea
+                  class="comment-textarea"
+                  placeholder="Reply to @${post.username}..."
+                  rows="1"
+                ></textarea>
+              </div>
+            </div>
+            <div class="actions">
+              <div class="dil">
+                <div class="repost-btn sted buyt">
+                                <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
+                             
+                            </div>
+                  <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                             <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+             <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2" />
+           </svg>
+                       
+                    </div>
+              </div>
+                  <div class="isji">
+                    <img class="cinu" src="pics/at.svg">
+                    <img class="cinu" src="pics/emoji.svg">
+                    <img class="cinu" src="pics/gallery.svg">
+                    <img class="caun" src="pics/up.svg" onclick="submitComment()">
+                  </div>
+            </div>
+      </div>
     `;
 
     window.scrollTo(0, 0);
