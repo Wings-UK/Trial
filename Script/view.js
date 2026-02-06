@@ -559,6 +559,7 @@ function addMinimalReactionStyles() {
 // Call it once after the page loads
 document.addEventListener('DOMContentLoaded', () => {
     addMinimalReactionStyles();
+    addMasonryHeartAnimationStyles();
 });
 
 // Also call it after new posts are added (inside loadMorePosts setTimeout)
@@ -754,6 +755,7 @@ function updateCreatePostElementForLazy() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeLazyLoading();
+    initializeMasonryHeartReactions();
 });
 
 // Paste this exactly as-is — add at the bottom of view.js
@@ -1679,4 +1681,118 @@ function openWallet() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('wallet').classList.add('active');
   window.scrollTo(0, 0);
+}
+// ─────────────────────────────────────────────────────────────
+// Masonry grid heart animation (safe – reuses existing classes)
+// ─────────────────────────────────────────────────────────────
+function addMasonryHeartAnimationStyles() {
+    if (document.getElementById('masonry-heart-anim-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'masonry-heart-anim-styles';
+    style.textContent = `
+        .meta-heart {
+            cursor: pointer;
+            transition: transform 0.18s ease;
+        }
+
+        .meta-heart path {
+            transition: fill 0.3s ease, stroke 0.3s ease;
+        }
+
+        .meta-heart.liked path {
+            fill: rgb(244, 7, 82);
+            stroke: rgb(244, 7, 82);
+        }
+
+        .meta-heart.animate-pop {
+            animation: pop 0.3s ease forwards;
+        }
+
+        .meta-heart.animate-shrink {
+            animation: shrinkFade 0.3s ease forwards;
+        }
+
+        .meta-likes.liked {
+            color: rgb(244, 7, 82);
+            font-weight: 500;
+        }
+
+        /* Optional small hover feedback */
+        .meta-heart:hover {
+            transform: scale(1.12);
+        }
+
+        /* Reuse the same animations you already have for feed hearts */
+        @keyframes pop {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shrinkFade {
+            0%   { transform: scale(1);   opacity: 1; }
+            50%  { transform: scale(0.6); opacity: 0.6; }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Initialize clickable hearts in profile masonry grid
+// ─────────────────────────────────────────────────────────────
+function initializeMasonryHeartReactions() {
+    // Only target hearts that haven't been initialized yet
+    const hearts = document.querySelectorAll('.masonry-meta .meta-heart:not([data-initialized])');
+
+    hearts.forEach(heartSvg => {
+        heartSvg.setAttribute('data-initialized', 'true');
+
+        // Find the like count span right next to the svg
+        const likesSpan = heartSvg.nextElementSibling;
+        if (!likesSpan || !likesSpan.classList.contains('meta-likes')) {
+            console.warn('Could not find meta-likes span for heart');
+            return;
+        }
+
+        // Get starting number
+        let count = parseInt(likesSpan.textContent.trim() || '0', 10);
+        if (isNaN(count)) count = 0;
+
+        // Check if already liked (you can later load real state from DB)
+        let isLiked = heartSvg.classList.contains('liked');
+
+        // Make it interactive
+        heartSvg.addEventListener('click', function(e) {
+            // Very important: stop click from opening post detail
+            e.stopPropagation();
+            e.preventDefault();
+
+            isLiked = !isLiked;
+
+            if (isLiked) {
+                // Like action
+                heartSvg.classList.add('liked', 'animate-pop');
+                likesSpan.classList.add('liked');
+                count = count + 1;
+                likesSpan.textContent = count;
+                // Clean up animation class
+                setTimeout(() => {
+                    heartSvg.classList.remove('animate-pop');
+                }, 350);
+            } else {
+                // Unlike action
+                heartSvg.classList.add('animate-shrink');
+                heartSvg.classList.remove('liked');
+                likesSpan.classList.remove('liked');
+                count = Math.max(0, count - 1);
+                likesSpan.textContent = count || '0';
+                // Clean up animation class
+                setTimeout(() => {
+                    heartSvg.classList.remove('animate-shrink');
+                }, 350);
+            }
+        });
+    });
 }
