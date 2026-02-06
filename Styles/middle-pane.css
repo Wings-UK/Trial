@@ -1377,7 +1377,7 @@
 }
 .twits {
   display: flex;
-  align-items: center;
+  align-items: bottom;
   gap: 5px;
   margin-right: 10px;
 }
