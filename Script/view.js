@@ -714,7 +714,6 @@ function initializeHeartReactions() {
             });
         });
     });
-    initializeHeartReactions():
 }
 
 // Paste this exactly as-is — add at the bottom of view.js
@@ -1402,7 +1401,7 @@ async function showDetail(postId) {
             </div>
       </div>
     `;
-
+initializeHeartReactions();
     window.scrollTo(0, 0);
 }
 
