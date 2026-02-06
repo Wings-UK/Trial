@@ -892,9 +892,19 @@ async function showProfile(userId) {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';  
     } else {  
         userData.posts.forEach((post, index) => {  
+
+            /* ───── WRAPPER (HOLDS NAVIGATION) ───── */
+            const wrapper = document.createElement('div');
+            wrapper.className = 'masonry-wrapper';
+            wrapper.dataset.postId = post.id;
+
+            wrapper.addEventListener('click', () => {
+                showDetail(post.id);
+            });
+
+            /* ───── MASONRY CONTENT ───── */
             const masonryDiv = document.createElement('div');  
             masonryDiv.className = 'masonry';  
-            masonryDiv.setAttribute('data-post-id', post.id);  
 
             masonryDiv.innerHTML = `  
                 ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}  
@@ -918,13 +928,7 @@ async function showProfile(userId) {
                 </div>  
             `;  
 
-            // ✅ UUID-SAFE CLICK HANDLER  
-            masonryDiv.addEventListener('click', () => {  
-                showDetail(post.id);  
-            });  
-
-            /* ───── NEW META BAR (ONLY ADDITION) ───── */  
-
+            /* ───── META BAR ───── */
             const metaDiv = document.createElement('div');  
             metaDiv.className = 'masonry-meta';  
 
@@ -942,11 +946,18 @@ async function showProfile(userId) {
                         19.58 3 22 5.42 22 8.5  
                         c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>  
                     </svg>  
-                    <span class="meta-likes">${post.like_count || 0}</span>  
+                    <span class="meta-likes">${post.like_count || ''}</span>  
                 </div>  
             `;  
 
-            const wrapper = document.createElement('div');  
+            /* 🔒 STOP HEART FROM TRIGGERING NAVIGATION */
+            const heart = metaDiv.querySelector('.meta-heart');
+            heart.addEventListener('click', e => e.stopPropagation());
+
+            const likes = metaDiv.querySelector('.meta-likes');
+            likes.addEventListener('click', e => e.stopPropagation());
+
+            /* ───── ASSEMBLE ───── */
             wrapper.appendChild(masonryDiv);  
             wrapper.appendChild(metaDiv);  
 
@@ -957,9 +968,11 @@ async function showProfile(userId) {
             }  
         });  
     }  
-initializeMasonryHeartReactions();
+
+    initializeMasonryHeartReactions();
     window.scrollTo(0, 0);
 }
+
 // Paste this exactly as-is — add at the bottom
 function goBack() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
@@ -1127,9 +1140,17 @@ async function showMyProfile() {
         userPosts.forEach((post, index) => {
             const truncated = post.content.substring(0, 80) + (post.content.length > 80 ? '...' : '');
 
+            /* ───── WRAPPER (HOLDS NAVIGATION) ───── */
+            const wrapper = document.createElement('div');
+            wrapper.className = 'masonry-wrapper';
+            wrapper.dataset.postId = post.id;
+
+            wrapper.addEventListener('click', () => {
+                showDetail(post.id);
+            });
+
             const masonryDiv = document.createElement('div');
             masonryDiv.className = 'masonry';
-            masonryDiv.setAttribute('data-post-id', post.id);
 
             masonryDiv.innerHTML = `
                 ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
@@ -1153,12 +1174,6 @@ async function showMyProfile() {
                 </div>
             `;
 
-            masonryDiv.addEventListener('click', () => {
-                showDetail(post.id);
-            });
-
-            /* ───── NEW META BAR (ONLY ADDITION) ───── */
-
             const metaDiv = document.createElement('div');
             metaDiv.className = 'masonry-meta';
 
@@ -1176,11 +1191,17 @@ async function showMyProfile() {
                         19.58 3 22 5.42 22 8.5
                         c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
-                    <span class="meta-likes">${post.like_count || 0}</span>
+                    <span class="meta-likes">${post.like_count || ''}</span>
                 </div>
             `;
 
-            const wrapper = document.createElement('div');
+            /* 🔒 STOP HEART FROM TRIGGERING NAVIGATION */
+            metaDiv.querySelector('.meta-heart')
+                .addEventListener('click', e => e.stopPropagation());
+
+            metaDiv.querySelector('.meta-likes')
+                .addEventListener('click', e => e.stopPropagation());
+
             wrapper.appendChild(masonryDiv);
             wrapper.appendChild(metaDiv);
 
@@ -1191,12 +1212,14 @@ async function showMyProfile() {
             }
         });
     }
-initializeMasonryHeartReactions();
+
+    initializeMasonryHeartReactions();
     window.scrollTo(0, 0);
 
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
 }
+
 // Paste this exactly as-is — add at the bottom
 document.addEventListener('DOMContentLoaded', () => {
     const accountIcon = document.querySelector('.account-icon');
