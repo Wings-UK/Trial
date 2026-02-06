@@ -714,6 +714,7 @@ function initializeHeartReactions() {
             });
         });
     });
+    initializeHeartReactions():
 }
 
 // Paste this exactly as-is — add at the bottom of view.js
