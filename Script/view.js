@@ -1816,60 +1816,39 @@ function addMasonryHeartAnimationStyles() {
 // Initialize clickable hearts in profile masonry grid
 // ─────────────────────────────────────────────────────────────
 function initializeMasonryHeartReactions() {
-    const hearts = document.querySelectorAll('.masonry-meta .meta-heart:not([data-initialized])');
+  document.querySelectorAll('.masonry-meta .meta-heart:not([data-init])')
+    .forEach(heart => {
+      heart.dataset.init = '1';
 
-    hearts.forEach(heartSvg => {
-        heartSvg.setAttribute('data-initialized', 'true');
+      const likesSpan = heart.nextElementSibling;
+      const wrapper = heart.closest('[data-post-id]');
+      const postId = wrapper?.dataset.postId;
 
-        const likesSpan = heartSvg.nextElementSibling;
-        if (!likesSpan || !likesSpan.classList.contains('meta-likes')) return;
+      if (!postId) return;
 
-        // We'll use the post-id from the parent masonry item
-        const masonryItem = heartSvg.closest('.masonry');
-        const postId = masonryItem?.getAttribute('data-post-id');
-        if (!postId) return;
+      // initial state
+      isPostLikedByCurrentUser(postId).then(liked => {
+        if (liked) {
+          heart.classList.add('liked');
+          likesSpan.classList.add('liked');
+        }
+      });
 
-        let count = parseInt(likesSpan.textContent.trim() || '0', 10);
-        if (isNaN(count)) count = 0;
+      heart.addEventListener('click', async e => {
+        e.stopPropagation();
+        e.preventDefault();
 
-        // Initial state from DB
-        isPostLikedByCurrentUser(postId).then(liked => {
-            if (liked) {
-                heartSvg.classList.add('liked');
-                likesSpan.classList.add('liked');
-            }
+        await toggleLike(postId, {
+          querySelector: sel =>
+            sel === '.heart-icon' ? heart :
+            sel === '.like-count' ? likesSpan :
+            null,
+          getAttribute: () =>
+            heart.classList.contains('liked') ? 'true' : 'false',
+          setAttribute: (_, v) =>
+            heart.classList.toggle('liked', v === 'true')
         });
-
-        heartSvg.addEventListener('click', async function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            await toggleLike(postId, {
-                querySelector: (sel) => {
-                    if (sel === '.heart-icon') return heartSvg;
-                    if (sel === '.like-count') return likesSpan;
-                    return null;
-                },
-                getAttribute: (attr) => heartSvg.classList.contains('liked') ? 'true' : 'false',
-                setAttribute: (attr, val) => {
-                    if (attr === 'data-liked') {
-                        if (val === 'true') heartSvg.classList.add('liked');
-                        else heartSvg.classList.remove('liked');
-                    }
-                }
-            });
-
-            // Re-fetch real count after toggle
-            const { data } = await supabase
-                .from('posts')
-                .select('like_count')
-                .eq('id', postId)
-                .single();
-
-            if (data?.like_count !== undefined) {
-                likesSpan.textContent = data.like_count > 0 ? data.like_count : '';
-            }
-        });
+      });
     });
 }
 
