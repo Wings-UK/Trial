@@ -14,6 +14,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+
+// ───────────────────────────────────────────────
+// REAL LIKE HELPERS – persistent across sessions
+// ───────────────────────────────────────────────
+
+async function isPostLikedByCurrentUser(postId) {
+    if (!currentUserId) return false;
+
+    const { data, error } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Like check failed:", error.message);
+        return false;
+    }
+    return !!data?.id;
+}
+
+async function toggleLike(postId, heartContainer) {
+    if (!currentUserId) {
+        alert("Please sign in to like posts");
+        return false;
+    }
+
+    const heartIcon = heartContainer.querySelector('.heart-icon');
+    const likeCountEl = heartContainer.querySelector('.like-count');
+    if (!heartIcon || !likeCountEl) return false;
+
+    const currentlyLiked = heartContainer.getAttribute('data-liked') === 'true';
+    let count = parseInt(likeCountEl.textContent.trim() || '0', 10);
+    if (isNaN(count)) count = 0;
+
+    // Optimistic UI update
+    const newLiked = !currentlyLiked;
+    const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
+
+    heartContainer.setAttribute('data-liked', newLiked ? 'true' : 'false');
+    heartIcon.classList.toggle('liked', newLiked);
+    likeCountEl.classList.toggle('liked', newLiked);
+    likeCountEl.textContent = newCount > 0 ? newCount : '';
+
+    // Animate
+    heartIcon.classList.add(newLiked ? 'heart-animation' : 'unfill-animation');
+    setTimeout(() => {
+        heartIcon.classList.remove('heart-animation', 'unfill-animation');
+    }, 400);
+
+    try {
+        if (newLiked) {
+            // Like
+            const { error } = await supabase
+                .from('likes')
+                .insert({ post_id: postId, user_id: currentUserId });
+
+            if (error && error.code !== '23505') { // 23505 = duplicate → already liked
+                throw error;
+            }
+        } else {
+            // Unlike
+            const { error } = await supabase
+                .from('likes')
+                .delete()
+                .eq('post_id', postId)
+                .eq('user_id', currentUserId);
+
+            if (error) throw error;
+        }
+
+        // Optional: re-fetch real count to sync (in case of race conditions)
+        const { data } = await supabase
+            .from('posts')
+            .select('like_count')
+            .eq('id', postId)
+            .single();
+
+        if (data?.like_count !== undefined) {
+            const realCount = data.like_count;
+            likeCountEl.textContent = realCount > 0 ? realCount : '';
+        }
+
+        return true;
+    } catch (err) {
+        console.error("Like toggle failed:", err.message);
+        // Revert optimistic update on failure
+        heartContainer.setAttribute('data-liked', currentlyLiked ? 'true' : 'false');
+        heartIcon.classList.toggle('liked', currentlyLiked);
+        likeCountEl.classList.toggle('liked', currentlyLiked);
+        likeCountEl.textContent = count > 0 ? count : '';
+        alert("Couldn't update like. Please try again.");
+        return false;
+    }
+}
 // Paste this exactly as-is — add at the top of view.js
 function createSkeletonPost() {
     const skeleton = document.createElement('div');
@@ -273,7 +369,6 @@ function createPostElement(post) {
     const hasVideo = !!post.video;
     const hasImage = !!post.image;
 
-    // IMPORTANT: This comparison enables "my profile" vs "other profile"
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
     const posterElement = document.createElement('div');
@@ -284,15 +379,14 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                    <a class="lino" onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
                        <img class="small-photo" src="${post.avatar}">
-                        
                     </a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                            <a class="home-click" onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -402,30 +496,50 @@ function createPostElement(post) {
         </div>
     `;
 
-   
-     // ✅ Attach click handlers via JS — UUID safe
+    // Attach click handlers for image/video/text → open detail
     if (hasImage) {
         const imageDiv = posterElement.querySelector(".laptop1");
-        imageDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+        imageDiv?.addEventListener("click", () => {
+            if (posterElement.dataset.blockNavigation === 'true') return;
+            showDetail(post.id);
+        });
     }
 
     if (hasVideo) {
         const videoDiv = posterElement.querySelector(".video-container");
-        videoDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
+        videoDiv?.addEventListener("click", () => {
+            if (posterElement.dataset.blockNavigation === 'true') return;
+            showDetail(post.id);
+        });
     }
 
     const textDiv = posterElement.querySelector(".tir");
-    textDiv.addEventListener("click", () => {
-  if (posterElement.dataset.blockNavigation === 'true') return;
-  showDetail(post.id);
-});
-    
+    textDiv?.addEventListener("click", () => {
+        if (posterElement.dataset.blockNavigation === 'true') return;
+        showDetail(post.id);
+    });
+
+    // ─── REAL LIKE INITIALIZATION ───
+    const heartContainer = posterElement.querySelector('.heart-ai');
+    if (heartContainer) {
+        // Check if current user already liked this post
+        isPostLikedByCurrentUser(post.id).then(liked => {
+            if (liked) {
+                heartContainer.setAttribute('data-liked', 'true');
+                heartContainer.querySelector('.heart-icon')?.classList.add('liked');
+                heartContainer.querySelector('.like-count')?.classList.add('liked');
+            }
+        });
+
+        // Click handler for like/unlike
+        heartContainer.querySelectorAll('.heart-clickable').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleLike(post.id, heartContainer);
+            });
+        });
+    }
+
     enablePostLongPress(posterElement, post);
     return posterElement;
 }
@@ -1385,7 +1499,7 @@ async function showDetail(postId) {
                                 <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
                              
                             </div>
-                  <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                 <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
   <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
     <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
   </svg>
@@ -1401,6 +1515,24 @@ async function showDetail(postId) {
             </div>
       </div>
     `;
+    // Initialize detail page heart
+const detailHeart = document.querySelector('#nuba .heart-ai');
+if (detailHeart) {
+    isPostLikedByCurrentUser(post.id).then(liked => {
+        if (liked) {
+            detailHeart.setAttribute('data-liked', 'true');
+            detailHeart.querySelector('.heart-icon')?.classList.add('liked');
+            detailHeart.querySelector('.like-count')?.classList.add('liked');
+        }
+    });
+
+    detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
+        el.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await toggleLike(post.id, detailHeart);
+        });
+    });
+}
 initializeHeartReactions();
     window.scrollTo(0, 0);
 }
@@ -1778,42 +1910,52 @@ function initializeMasonryHeartReactions() {
         heartSvg.setAttribute('data-initialized', 'true');
 
         const likesSpan = heartSvg.nextElementSibling;
-        if (!likesSpan || !likesSpan.classList.contains('meta-likes')) {
-            console.warn('Could not find meta-likes span for heart');
-            return;
-        }
+        if (!likesSpan || !likesSpan.classList.contains('meta-likes')) return;
+
+        // We'll use the post-id from the parent masonry item
+        const masonryItem = heartSvg.closest('.masonry');
+        const postId = masonryItem?.getAttribute('data-post-id');
+        if (!postId) return;
 
         let count = parseInt(likesSpan.textContent.trim() || '0', 10);
         if (isNaN(count)) count = 0;
 
-        let isLiked = heartSvg.classList.contains('liked');
+        // Initial state from DB
+        isPostLikedByCurrentUser(postId).then(liked => {
+            if (liked) {
+                heartSvg.classList.add('liked');
+                likesSpan.classList.add('liked');
+            }
+        });
 
-        // Initial visibility fix (in case server sent 0)
-        likesSpan.textContent = count > 0 ? count : '';
-
-        heartSvg.addEventListener('click', function(e) {
+        heartSvg.addEventListener('click', async function(e) {
             e.stopPropagation();
             e.preventDefault();
 
-            isLiked = !isLiked;
+            await toggleLike(postId, {
+                querySelector: (sel) => {
+                    if (sel === '.heart-icon') return heartSvg;
+                    if (sel === '.like-count') return likesSpan;
+                    return null;
+                },
+                getAttribute: (attr) => heartSvg.classList.contains('liked') ? 'true' : 'false',
+                setAttribute: (attr, val) => {
+                    if (attr === 'data-liked') {
+                        if (val === 'true') heartSvg.classList.add('liked');
+                        else heartSvg.classList.remove('liked');
+                    }
+                }
+            });
 
-            if (isLiked) {
-                heartSvg.classList.add('liked', 'animate-pop');
-                likesSpan.classList.add('liked');
-                count = count + 1;
-                likesSpan.textContent = count;           // always show when >0
-                setTimeout(() => {
-                    heartSvg.classList.remove('animate-pop');
-                }, 350);
-            } else {
-                heartSvg.classList.add('animate-shrink');
-                heartSvg.classList.remove('liked');
-                likesSpan.classList.remove('liked');
-                count = Math.max(0, count - 1);
-                likesSpan.textContent = count > 0 ? count : '';   // ← this is the key fix
-                setTimeout(() => {
-                    heartSvg.classList.remove('animate-shrink');
-                }, 350);
+            // Re-fetch real count after toggle
+            const { data } = await supabase
+                .from('posts')
+                .select('like_count')
+                .eq('id', postId)
+                .single();
+
+            if (data?.like_count !== undefined) {
+                likesSpan.textContent = data.like_count > 0 ? data.like_count : '';
             }
         });
     });
