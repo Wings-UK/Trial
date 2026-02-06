@@ -1381,7 +1381,7 @@ async function showDetail(postId) {
             <div class="heading">
                 <div class="small-photo1">
                    <a class="lino"
-   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+   onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
     <img class="small-photo" src="${post.avatar}">
 </a>
                 </div>
@@ -1389,7 +1389,7 @@ async function showDetail(postId) {
                     <div>
                         <div class="link-wrapper">
                             <a class="home-click"
-   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+   onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${post.username}</p>
@@ -1482,7 +1482,7 @@ async function showDetail(postId) {
             <!-- Other reaction photos -->
         </div>
 
-        <!-- Comment box now lives here inside nuba -->
+        <!-- Comment box -->
         <div class="comment-container">
             <div class="comment-wrapper">
               <div class="comment-box">
@@ -1496,44 +1496,46 @@ async function showDetail(postId) {
             <div class="actions">
               <div class="dil">
                 <div class="repost-btn sted buyt">
-                                <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
-                             
-                            </div>
-                 <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-  <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
-    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-  </svg>
-  <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-</div>
+                    <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
+                </div>
+                <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                  <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                </div>
               </div>
-                  <div class="isji">
-                    <img class="cinu" src="pics/at.svg">
-                    <img class="cinu" src="pics/emoji.svg">
-                    <img class="cinu" src="pics/gallery.svg">
-                    <img class="caun" src="pics/up.svg" onclick="submitComment()">
-                  </div>
+              <div class="isji">
+                <img class="cinu" src="pics/at.svg">
+                <img class="cinu" src="pics/emoji.svg">
+                <img class="cinu" src="pics/gallery.svg">
+                <img class="caun" src="pics/up.svg" onclick="submitComment()">
+              </div>
             </div>
-      </div>
+        </div>
     `;
-    // Initialize detail page heart
-const detailHeart = document.querySelector('#nuba .heart-ai');
-if (detailHeart) {
-    isPostLikedByCurrentUser(post.id).then(liked => {
-        if (liked) {
+
+    // ─── Initialize REAL like functionality for detail page ───
+    const detailHeart = document.querySelector('#nuba .heart-ai');
+    if (detailHeart) {
+        // Set initial liked state from database
+        const alreadyLiked = await isPostLikedByCurrentUser(post.id);
+        if (alreadyLiked) {
             detailHeart.setAttribute('data-liked', 'true');
             detailHeart.querySelector('.heart-icon')?.classList.add('liked');
             detailHeart.querySelector('.like-count')?.classList.add('liked');
         }
-    });
 
-    detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
-        el.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            await toggleLike(post.id, detailHeart);
+        // Attach click handler
+        detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleLike(post.id, detailHeart);
+            });
         });
-    });
-}
-initializeHeartReactions();
+    }
+
+    initializeHeartReactions();
     window.scrollTo(0, 0);
 }
 
