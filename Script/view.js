@@ -1742,53 +1742,49 @@ function addMasonryHeartAnimationStyles() {
 // ─────────────────────────────────────────────────────────────
 // Initialize clickable hearts in profile masonry grid
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Initialize clickable hearts in profile masonry grid
+// ─────────────────────────────────────────────────────────────
 function initializeMasonryHeartReactions() {
-    // Only target hearts that haven't been initialized yet
     const hearts = document.querySelectorAll('.masonry-meta .meta-heart:not([data-initialized])');
 
     hearts.forEach(heartSvg => {
         heartSvg.setAttribute('data-initialized', 'true');
 
-        // Find the like count span right next to the svg
         const likesSpan = heartSvg.nextElementSibling;
         if (!likesSpan || !likesSpan.classList.contains('meta-likes')) {
             console.warn('Could not find meta-likes span for heart');
             return;
         }
 
-        // Get starting number
         let count = parseInt(likesSpan.textContent.trim() || '0', 10);
         if (isNaN(count)) count = 0;
 
-        // Check if already liked (you can later load real state from DB)
         let isLiked = heartSvg.classList.contains('liked');
 
-        // Make it interactive
+        // Initial visibility fix (in case server sent 0)
+        likesSpan.textContent = count > 0 ? count : '';
+
         heartSvg.addEventListener('click', function(e) {
-            // Very important: stop click from opening post detail
             e.stopPropagation();
             e.preventDefault();
 
             isLiked = !isLiked;
 
             if (isLiked) {
-                // Like action
                 heartSvg.classList.add('liked', 'animate-pop');
                 likesSpan.classList.add('liked');
                 count = count + 1;
-                likesSpan.textContent = count;
-                // Clean up animation class
+                likesSpan.textContent = count;           // always show when >0
                 setTimeout(() => {
                     heartSvg.classList.remove('animate-pop');
                 }, 350);
             } else {
-                // Unlike action
                 heartSvg.classList.add('animate-shrink');
                 heartSvg.classList.remove('liked');
                 likesSpan.classList.remove('liked');
                 count = Math.max(0, count - 1);
-                likesSpan.textContent = count || '0';
-                // Clean up animation class
+                likesSpan.textContent = count > 0 ? count : '';   // ← this is the key fix
                 setTimeout(() => {
                     heartSvg.classList.remove('animate-shrink');
                 }, 350);
