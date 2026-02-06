@@ -264,23 +264,26 @@ async function loadMorePosts() {
         console.log("Trying to load posts from Supabase (with user join)...");
 
         const { data: fetchedPosts, error } = await supabase
-  .from('posts')
-  .select(`
-    id,
-    content,
-    image,
-    video,
-    created_at,
-    like_count,
-    comment_count,
-    repost_count,
-    views,
-    user_id,
-    user:users ( id, username, avatar ),
-    liked_by_me:likes!left ( id )    // ← magic: returns array with 1 item if liked, else empty
-  `)
-  .order('created_at', { ascending: false })
-  .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
+            .from('posts')
+            .select(`
+                id,
+                content,
+                image,
+                video,
+                created_at,
+                like_count,
+                comment_count,
+                repost_count,
+                views,
+                user_id,
+                user:users (
+                    id,
+                    username,
+                    avatar
+                )
+            `)
+            .order('created_at', { ascending: false })
+            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
 
         if (error) {
             console.error("Supabase fetch error:", error.message);
@@ -312,7 +315,6 @@ async function loadMorePosts() {
     timestamp: formatTimeSince(p.created_at),
     likeCount: p.like_count || 0,
     commentCount: p.comment_count || 0,
-    isLikedByMe: !!p.liked_by_me?.length
     repostCount: p.repost_count || 0,
     views: p.views || 0
 }));
