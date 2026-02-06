@@ -379,14 +379,14 @@ function createPostElement(post) {
         <div class="cust-name">
             <div class="heading">
                 <div class="small-photo1">
-                    <a class="lino" onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
+                     <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                        <img class="small-photo" src="${post.avatar}">
                     </a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click" onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${user.username}</p>
@@ -1381,7 +1381,7 @@ async function showDetail(postId) {
             <div class="heading">
                 <div class="small-photo1">
                    <a class="lino"
-   onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
+   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
     <img class="small-photo" src="${post.avatar}">
 </a>
                 </div>
@@ -1389,7 +1389,7 @@ async function showDetail(postId) {
                     <div>
                         <div class="link-wrapper">
                             <a class="home-click"
-   onclick="\( {isOwnPost ? 'showMyProfile()' : `showProfile(' \){post.userId}')`}">
+   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${post.username}</p>
