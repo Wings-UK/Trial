@@ -656,11 +656,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addMasonryHeartAnimationStyles();
 });
 
-// Also call it after new posts are added (inside loadMorePosts setTimeout)
-
-// Paste this exactly as-is — replace your current addHeartReactionStyles function
-
-
 
 
 // Paste this exactly as-is — add at the bottom of view.js
