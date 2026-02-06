@@ -1402,7 +1402,7 @@
   width: 18px;
 }
 .leti {
-  width: 14px;
+  width: 16px;
 }
 .werey {
   font-weight: 600;
@@ -1773,6 +1773,9 @@
 .love, .comment, .share, .twit, .luve {
   width: 24px;
   vertical-align: middle;
+}
+.twit {
+  align-items: center;
 }
 .luve {
   width: 20px;
