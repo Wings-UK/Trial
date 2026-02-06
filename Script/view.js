@@ -104,16 +104,41 @@ const fallbackUser = {
     cover: "pics/vu.jpg"
 };
 
+
 function formatTimeSince(dateStr) {
     if (!dateStr) return 'just now';
+
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return 'invalid date';
+
     const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = Math.floor(seconds / 3600);
-    if (interval >= 1) return interval + (interval === 1 ? 'h ago' : 'h ago');
-    interval = Math.floor(seconds / 60);
-    if (interval >= 1) return interval + (interval === 1 ? 'm ago' : 'm ago');
-    return seconds + (seconds === 1 ? 's ago' : 's ago');
+
+    if (seconds < 60) {
+        return seconds + 's ago';
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        return minutes + 'm ago';
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return hours + 'h ago';
+    }
+
+    // 24–47 hours → yesterday
+    if (hours < 48) {
+        return 'yesterday';
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+        return days + 'd ago';
+    }
+
+    const weeks = Math.floor(days / 7);
+    return weeks + 'w ago';
 }
 
 // ─────────────────────────────────────────────────────────────
