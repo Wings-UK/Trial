@@ -329,10 +329,7 @@ async function loadMorePosts() {
             }
         });
 
-        setTimeout(() => {
-            initializeHeartReactions();
-            // Add other initializations here later (lazy loading, video, etc.)
-        }, 100);
+        
 
     } catch (err) {
         console.error("Unexpected error while loading posts:", err);
@@ -742,76 +739,8 @@ function addHeartReactionStyles() {
     `;
     document.head.appendChild(style);
 }
-// Paste this exactly as-is — replace your current initializeHeartReactions function
-function initializeHeartReactions() {
-    if (!document.getElementById('heart-reaction-styles')) {
-        addHeartReactionStyles();
-    }
 
-    // This selector now catches BOTH feed/profile hearts AND the detail-page heart
-    const heartContainers = document.querySelectorAll('.heart-ai:not([data-initialized])');
-    
-    heartContainers.forEach(container => {
-        container.setAttribute('data-initialized', 'true');
-       
-        const heartIcon = container.querySelector('.heart-icon');
-        const likeCount = container.querySelector('.like-count');
-       
-        // Skip if missing critical elements (safe)
-        if (!heartIcon || !likeCount) {
-            return;
-        }
-       
-        const clickableElements = container.querySelectorAll('.heart-clickable');
-        let isLiked = container.getAttribute('data-liked') === 'true';
-       
-        // Read count safely
-        let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
-        let count = countText ? parseInt(countText, 10) : 0;
-        if (isNaN(count)) count = 0;
-       
-        // Initial visibility
-        if (count < 1) {
-            likeCount.style.display = 'none';
-        } else {
-            likeCount.style.display = 'inline';
-        }
-       
-        if (isLiked) {
-            heartIcon.classList.add('liked');
-            likeCount.classList.add('liked');
-        }
-       
-        clickableElements.forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.stopPropagation();
-               
-                isLiked = !isLiked;
-               
-                if (isLiked) {
-                    heartIcon.classList.add('heart-animation', 'liked');
-                    likeCount.classList.add('liked');
-                    count++;
-                    likeCount.style.display = 'inline';
-                    likeCount.textContent = count;
-                    setTimeout(() => heartIcon.classList.remove('heart-animation'), 400);
-                } else {
-                    heartIcon.classList.add('unfill-animation');
-                    heartIcon.classList.remove('liked');
-                    likeCount.classList.remove('liked');
-                    count = Math.max(0, count - 1);
-                    likeCount.textContent = count || '';
-                    if (count < 1) {
-                        likeCount.style.display = 'none';
-                    }
-                    setTimeout(() => heartIcon.classList.remove('unfill-animation'), 400);
-                }
-               
-                container.setAttribute('data-liked', isLiked ? 'true' : 'false');
-            });
-        });
-    });
-}
+
 
 // Paste this exactly as-is — add at the bottom of view.js
 function initializeLazyLoading() {
@@ -1518,7 +1447,6 @@ async function showDetail(postId) {
         });
     }
 
-    initializeHeartReactions();
     window.scrollTo(0, 0);
 }
 
@@ -1608,7 +1536,6 @@ async function submitPost() {
   const postElement = createPostElement(newPost);
   document.getElementById('flyer').prepend(postElement);
 
-  initializeHeartReactions();
 }
 
 let activeLongPressPost = null;
