@@ -755,7 +755,7 @@ function updateCreatePostElementForLazy() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeLazyLoading();
-    initializeMasonryHeartReactions();
+    
 });
 
 // Paste this exactly as-is — add at the bottom of view.js
@@ -930,7 +930,7 @@ async function showProfile(userId) {
             }  
         });  
     }  
-
+initializeMasonryHeartReactions();
     window.scrollTo(0, 0);
 }
 // Paste this exactly as-is — add at the bottom
@@ -1164,7 +1164,7 @@ async function showMyProfile() {
             }
         });
     }
-
+initializeMasonryHeartReactions();
     window.scrollTo(0, 0);
 
     document.querySelector('.edit-profile-btn')
