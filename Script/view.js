@@ -651,45 +651,46 @@ function initializeHeartReactions() {
         addHeartReactionStyles();
     }
 
+    // This selector now catches BOTH feed/profile hearts AND the detail-page heart
     const heartContainers = document.querySelectorAll('.heart-ai:not([data-initialized])');
-
+    
     heartContainers.forEach(container => {
         container.setAttribute('data-initialized', 'true');
-        
+       
         const heartIcon = container.querySelector('.heart-icon');
         const likeCount = container.querySelector('.like-count');
-        
-        // If either critical element is missing → skip this container silently
+       
+        // Skip if missing critical elements (safe)
         if (!heartIcon || !likeCount) {
             return;
         }
-        
+       
         const clickableElements = container.querySelectorAll('.heart-clickable');
         let isLiked = container.getAttribute('data-liked') === 'true';
-        
+       
         // Read count safely
         let countText = likeCount.textContent ? likeCount.textContent.trim() : '';
         let count = countText ? parseInt(countText, 10) : 0;
         if (isNaN(count)) count = 0;
-        
-        // Initial state
+       
+        // Initial visibility
         if (count < 1) {
             likeCount.style.display = 'none';
         } else {
             likeCount.style.display = 'inline';
         }
-        
+       
         if (isLiked) {
             heartIcon.classList.add('liked');
             likeCount.classList.add('liked');
         }
-        
+       
         clickableElements.forEach(element => {
             element.addEventListener('click', (e) => {
                 e.stopPropagation();
-                
+               
                 isLiked = !isLiked;
-                
+               
                 if (isLiked) {
                     heartIcon.classList.add('heart-animation', 'liked');
                     likeCount.classList.add('liked');
@@ -708,7 +709,7 @@ function initializeHeartReactions() {
                     }
                     setTimeout(() => heartIcon.classList.remove('unfill-animation'), 400);
                 }
-                
+               
                 container.setAttribute('data-liked', isLiked ? 'true' : 'false');
             });
         });
