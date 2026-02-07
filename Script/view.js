@@ -1879,6 +1879,10 @@ function syncLikeUI(postId, isLiked = null, count) {
 // NOTIFICATIONS – Likes only for now
 // ───────────────────────────────────────────────
 
+// ───────────────────────────────────────────────
+// NOTIFICATIONS – Likes only for now
+// ───────────────────────────────────────────────
+
 async function loadLikeNotifications() {
     if (!currentUserId) {
         console.log("No user logged in → can't load notifications");
@@ -1891,12 +1895,14 @@ async function loadLikeNotifications() {
             id,
             created_at,
             read,
-            actor:actor_id (
+            actor_id,
+            post_id,
+            users!actor_id (              
                 id,
                 username,
                 avatar
             ),
-            post:post_id (
+            posts!post_id (               
                 id,
                 content,
                 image,
@@ -1913,10 +1919,16 @@ async function loadLikeNotifications() {
         return [];
     }
 
-    console.log("Fetched notifications:", data); // ← helpful for debugging
+    console.log("Fetched notifications (explicit join):", data);
 
-    return data || [];
+    // Optional: simple transform to make rendering easier
+    return (data || []).map(notif => ({
+        ...notif,
+        actor: notif.users || { username: '@unknown', avatar: 'pics/default-avatar.png' },
+        post: notif.posts || null
+    }));
 }
+
 function createLikeNotificationElement(notif) {
     const actor = notif.actor || { username: '@unknown', avatar: DEFAULT_AVATAR };
     const timeAgo = formatTimeSince(notif.created_at);
