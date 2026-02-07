@@ -935,7 +935,7 @@ function switchToNotifications() {
   
   // Highlight bell in bottom nav
   document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
-  
+  renderNotifications();
   window.scrollTo(0, 0);
 }
 
@@ -1868,5 +1868,118 @@ function syncLikeUI(postId, isLiked = null, count) {
         if (likesSpan) {
             likesSpan.textContent = count > 0 ? count : '';
         }
+    });
+}
+
+// ───────────────────────────────────────────────
+// NOTIFICATIONS – Likes only for now
+// ───────────────────────────────────────────────
+
+async function loadLikeNotifications() {
+    if (!currentUserId) {
+        console.log("No user logged in → can't load notifications");
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+            id,
+            created_at,
+            read,
+            actor:actor_id (           // ← join to get liker's info
+                id,
+                username,
+                avatar
+            ),
+            post:post_id (             // ← join to get post info (optional for thumbnail)
+                id,
+                content,
+                image,
+                user_id
+            )
+        `)
+        .eq('user_id', currentUserId)
+        .eq('type', 'like')
+        .order('created_at', { ascending: false })
+        .limit(20);                    // start small
+
+    if (error) {
+        console.error("Notifications fetch failed:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+function createLikeNotificationElement(notif) {
+    const actor = notif.actor || { username: '@unknown', avatar: DEFAULT_AVATAR };
+    const timeAgo = formatTimeSince(notif.created_at);
+    const postPreview = notif.post?.image 
+        ? `<img src="${notif.post.image}" class="notif-post-thumb" style="width:42px;height:42px;object-fit:cover;border-radius:10px;">`
+        : `<div class="notif-post-thumb placeholder" style="width:42px;height:42px;border-radius:10px;background:#eee;"></div>`;
+
+    const div = document.createElement('div');
+    div.className = 'notification-item';
+    div.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        border-radius: 10px;
+        margin: 8px 12px;
+        background: white;
+    `;
+
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+            <img src="${actor.avatar}" 
+                 style="width:42px; height:42px; border-radius:10px; object-fit:cover;">
+            <div>
+                <div style="font-weight:600; font-size:15px;">${actor.username}</div>
+                <div style="color:#555; font-size:14px; margin-top:2px;">
+                    liked your post · ${timeAgo}
+                </div>
+            </div>
+        </div>
+        <div>
+            ${postPreview}
+        </div>
+    `;
+
+    // Optional: click → go to the post detail
+    div.addEventListener('click', () => {
+        if (notif.post?.id) {
+            showDetail(notif.post.id);
+        }
+    });
+
+    return div;
+}
+
+async function renderNotifications() {
+    const container = document.querySelector('#notifications .notifications-body');
+    if (!container) return;
+
+    container.innerHTML = '<div class="skeleton" style="height:120px; margin:16px;"></div><p>Loading...</p>';
+
+    const notifs = await loadLikeNotifications();
+
+    container.innerHTML = '';
+
+    if (notifs.length === 0) {
+        container.innerHTML = `
+            <div style="padding:60px 20px; text-align:center; color:#777;">
+                <h3>No notifications yet</h3>
+                <p style="margin-top:12px;">When someone likes your post, you'll see it here.</p>
+            </div>
+        `;
+        return;
+    }
+
+    notifs.forEach(notif => {
+        const item = createLikeNotificationElement(notif);
+        container.appendChild(item);
     });
 }
