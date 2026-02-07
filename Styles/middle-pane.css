@@ -6,6 +6,7 @@
 
 .wallet-title, .notifications-body {
   font-family: 'Noto Sans JP';
+  text-align: center;
 }
 
 .masonry-meta {
