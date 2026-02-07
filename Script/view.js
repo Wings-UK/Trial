@@ -42,24 +42,21 @@ async function toggleLike(postId, heartContainer) {
         return false;
     }
 
-    const heartIcon = heartContainer.querySelector?.('.heart-icon') || 
-                      (heartContainer.querySelector && heartContainer.querySelector('.heart-icon'));
-    const likeCountEl = heartContainer.querySelector?.('.like-count') || 
-                        (heartContainer.querySelector && heartContainer.querySelector('.like-count'));
+    const heartIcon = heartContainer.querySelector('.heart-icon');
+    const likeCountEl = heartContainer.querySelector('.like-count');
 
-    const currentlyLiked = heartContainer.getAttribute?.('data-liked') === 'true' ||
-                           (heartContainer.getAttribute && heartContainer.getAttribute('data-liked') === 'true');
+    const currentlyLiked = heartContainer.getAttribute('data-liked') === 'true';
     let count = parseInt(likeCountEl?.textContent.trim() || '0', 10);
     if (isNaN(count)) count = 0;
 
-    // Optimistic UI
+    // Optimistic UI - only apply to the clicked heart (not broadcast yet)
     const newLiked = !currentlyLiked;
-    const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
+    const optimisticCount = newLiked ? count + 1 : Math.max(0, count - 1);
 
-    heartContainer.setAttribute?.('data-liked', newLiked ? 'true' : 'false');
+    heartContainer.setAttribute('data-liked', newLiked ? 'true' : 'false');
     heartIcon?.classList.toggle('liked', newLiked);
     likeCountEl?.classList.toggle('liked', newLiked);
-    if (likeCountEl) likeCountEl.textContent = newCount > 0 ? newCount : '';
+    if (likeCountEl) likeCountEl.textContent = optimisticCount > 0 ? optimisticCount : '';
 
     // Animation
     heartIcon?.classList.add(newLiked ? 'heart-animation' : 'unfill-animation');
@@ -67,27 +64,46 @@ async function toggleLike(postId, heartContainer) {
 
     try {
         if (newLiked) {
-            const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: currentUserId });
-            if (error && error.code !== '23505') throw error;
+            const { error } = await supabase.from('likes').insert({
+                post_id: postId,
+                user_id: currentUserId
+            });
+            if (error && error.code !== '23505') throw error; // ignore duplicate
         } else {
-            const { error } = await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUserId);
+            const { error } = await supabase.from('likes').delete()
+                .eq('post_id', postId)
+                .eq('user_id', currentUserId);
             if (error) throw error;
         }
 
-        // === MANUAL COUNT UPDATE (no trigger required) ===
-      
+        // Get the REAL authoritative count from the server
+        const { data: updatedPost, error: fetchError } = await supabase
+            .from('posts')
+            .select('like_count')
+            .eq('id', postId)
+            .single();
 
-        // === PUSH UPDATE TO EVERY VISIBLE HEART ===
-        syncLikeUI(postId, newLiked, newCount);
+        let finalCount = optimisticCount; // fallback
+
+        if (!fetchError && updatedPost) {
+            finalCount = updatedPost.like_count ?? optimisticCount;
+        } else if (fetchError) {
+            console.warn("Failed to fetch updated like count:", fetchError.message);
+        }
+
+        // Now sync EVERY visible heart with the real number
+        syncLikeUI(postId, newLiked, finalCount);
 
         return true;
     } catch (err) {
         console.error("Like toggle failed:", err.message);
-        // Revert only the clicked heart
-        heartContainer.setAttribute?.('data-liked', currentlyLiked ? 'true' : 'false');
+
+        // Revert the clicked heart only
+        heartContainer.setAttribute('data-liked', currentlyLiked ? 'true' : 'false');
         heartIcon?.classList.toggle('liked', currentlyLiked);
         likeCountEl?.classList.toggle('liked', currentlyLiked);
         if (likeCountEl) likeCountEl.textContent = count > 0 ? count : '';
+
         alert("Couldn't update like. Please try again.");
         return false;
     }
@@ -1795,26 +1811,35 @@ function initializeMasonryHeartReactions() {
 // ─────────────────────────────────────────────────────────────
 // SYNC LIKE STATE ACROSS FEED, DETAIL & MASONRY
 // ─────────────────────────────────────────────────────────────
-function syncLikeUI(postId, isLiked, count) {
+function syncLikeUI(postId, isLiked = null, count) {
     // Feed + detail hearts
     document.querySelectorAll(`.heart-ai[data-post-id="${postId}"]`).forEach(container => {
-        container.setAttribute('data-liked', isLiked ? 'true' : 'false');
         const icon = container.querySelector('.heart-icon');
         const countEl = container.querySelector('.like-count');
-        if (icon) icon.classList.toggle('liked', isLiked);
+
+        // Only update liked visual state if we have an explicit value
+        if (isLiked !== null) {
+            container.setAttribute('data-liked', isLiked ? 'true' : 'false');
+            icon?.classList.toggle('liked', isLiked);
+            countEl?.classList.toggle('liked', isLiked);
+        }
+
         if (countEl) {
-            countEl.classList.toggle('liked', isLiked);
             countEl.textContent = count > 0 ? count : '';
         }
     });
 
-    // Masonry hearts
-    document.querySelectorAll(`.masonry[data-post-id="${postId}"]`).forEach(item => {
-        const heartSvg = item.querySelector('.meta-heart');
-        const likesSpan = item.querySelector('.meta-likes');
-        if (heartSvg) heartSvg.classList.toggle('liked', isLiked);
+    // Masonry / profile grid hearts
+    document.querySelectorAll(`.masonry-wrapper[data-post-id="${postId}"] .masonry-meta`).forEach(meta => {
+        const heartSvg = meta.querySelector('.meta-heart');
+        const likesSpan = meta.querySelector('.meta-likes');
+
+        if (isLiked !== null) {
+            heartSvg?.classList.toggle('liked', isLiked);
+            likesSpan?.classList.toggle('liked', isLiked);
+        }
+
         if (likesSpan) {
-            likesSpan.classList.toggle('liked', isLiked);
             likesSpan.textContent = count > 0 ? count : '';
         }
     });
