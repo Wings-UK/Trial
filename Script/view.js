@@ -75,7 +75,7 @@ async function toggleLike(postId, heartContainer) {
         }
 
         // === MANUAL COUNT UPDATE (no trigger required) ===
-        await supabase.from('posts').update({ like_count: newCount }).eq('id', postId);
+      
 
         // === PUSH UPDATE TO EVERY VISIBLE HEART ===
         syncLikeUI(postId, newLiked, newCount);
