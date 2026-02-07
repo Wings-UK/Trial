@@ -1897,10 +1897,10 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
-            actor_username:users!actor_id (username),   
+            actor_username:users!actor_id (username),
             actor_avatar:users!actor_id (avatar),
             post_image:posts!post_id (image),
-            post_id_full:posts!post_id (id)             
+            post_id_full:posts!post_id (id)
         `)
         .eq('user_id', currentUserId)
         .eq('type', 'like')
@@ -1914,7 +1914,6 @@ async function loadLikeNotifications() {
 
     console.log("Fetched notifications:", data);
 
-    // Transform to match your render function
     return (data || []).map(row => ({
         id: row.id,
         created_at: row.created_at,
