@@ -1897,10 +1897,10 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
-            actor_username:users!actor_id (username),   // only fetch username for actor
+            actor_username:users!actor_id (username),   
             actor_avatar:users!actor_id (avatar),
             post_image:posts!post_id (image),
-            post_id_full:posts!post_id (id)             // to get post.id for navigation
+            post_id_full:posts!post_id (id)             
         `)
         .eq('user_id', currentUserId)
         .eq('type', 'like')
