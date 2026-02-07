@@ -1884,10 +1884,7 @@ function syncLikeUI(postId, isLiked = null, count) {
 // ───────────────────────────────────────────────
 
 async function loadLikeNotifications() {
-    if (!currentUserId) {
-        console.log("No user logged in → can't load notifications");
-        return [];
-    }
+    if (!currentUserId) return [];
 
     const { data, error } = await supabase
         .from('notifications')
@@ -1897,10 +1894,8 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
-            actor_username:users!actor_id (username),
-            actor_avatar:users!actor_id (avatar),
-            post_image:posts!post_id (image),
-            post_id_full:posts!post_id (id)
+            users!actor_id (username, avatar),         
+            posts!post_id (image, id)
         `)
         .eq('user_id', currentUserId)
         .eq('type', 'like')
@@ -1912,19 +1907,17 @@ async function loadLikeNotifications() {
         return [];
     }
 
-    console.log("Fetched notifications:", data);
-
     return (data || []).map(row => ({
         id: row.id,
         created_at: row.created_at,
         read: row.read,
         actor: {
-            username: row.actor_username || '@unknown',
-            avatar: row.actor_avatar || 'pics/default-avatar.png'
+            username: row.users?.username || '@unknown',
+            avatar:   row.users?.avatar   || 'pics/default-avatar.png'
         },
         post: {
-            id: row.post_id_full?.id || row.post_id,
-            image: row.post_image?.image
+            id: row.posts?.id || row.post_id,
+            image: row.posts?.image
         }
     }));
 }
