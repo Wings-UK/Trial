@@ -1933,8 +1933,8 @@ function createLikeNotificationElement(notif) {
     const actor = notif.actor || { username: '@unknown', avatar: DEFAULT_AVATAR };
     const timeAgo = formatTimeSince(notif.created_at);
     const postPreview = notif.post?.image 
-        ? `<img src="${notif.post.image}" class="notif-post-thumb" style="width:42px;height:42px;object-fit:cover;border-radius:10px;">`
-        : `<div class="notif-post-thumb placeholder" style="width:42px;height:42px;border-radius:10px;background:#eee;"></div>`;
+        ? `<img src="${notif.post.image}" style="width:42px;height:42px;object-fit:cover;border-radius:10px;">`
+        : `<div style="width:42px;height:42px;border-radius:10px;background:#eee;"></div>`;
 
     const div = document.createElement('div');
     div.className = 'notification-item';
@@ -1943,10 +1943,11 @@ function createLikeNotificationElement(notif) {
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
-        border-bottom: 1px solid #eee;
+        border: 1px solid #eee;
         border-radius: 10px;
         margin: 8px 12px;
         background: white;
+        cursor: pointer;
     `;
 
     div.innerHTML = `
@@ -1965,11 +1966,9 @@ function createLikeNotificationElement(notif) {
         </div>
     `;
 
-    // Optional: click → go to the post detail
+    // Click → open the post detail
     div.addEventListener('click', () => {
-        if (notif.post?.id) {
-            showDetail(notif.post.id);
-        }
+        if (notif.post?.id) showDetail(notif.post.id);
     });
 
     return div;
