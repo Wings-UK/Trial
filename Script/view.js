@@ -913,6 +913,32 @@ function goBack() {
     if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
 }
 
+// Quick switch to home (used from bottom nav)
+function switchToHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('food').classList.add('active');
+  
+  // Optional: reset bottom nav active state
+  document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
+  // You can add .active to home icon if you want visual feedback
+}
+
+// Go back from notifications → home
+function goBackToHome() {
+  switchToHome();
+}
+
+// Switch to notifications
+function switchToNotifications() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('notifications').classList.add('active');
+  
+  // Highlight bell in bottom nav
+  document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
+  
+  window.scrollTo(0, 0);
+}
+
 async function showMyProfile() {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
