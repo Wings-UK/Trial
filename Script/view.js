@@ -1014,6 +1014,24 @@ async function showMyProfile() {
         .limit(12);
 
     ireti.innerHTML = `
+      <header class="heado file">
+        <div class="heador" style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 16px;">
+            
+            <!-- Left: Back -->
+            <div class="exp-order" onclick="goBack()">
+                <img class="flat" src="pics/angle.svg">
+                <div class="tool"><p>Back</p></div>
+            </div>
+
+            <!-- Right: Share icon -->
+            <div class="profile-header-right">
+                <img class="share-icon" src="pics/share.svg" style="width:24px; height:24px; cursor:pointer;" 
+                     onclick="shareProfile()">
+            </div>
+            
+        </div>
+    </header>
+
         <img class="frin" src="${profile.cover || 'pics/default-cover.jpg'}">
 
         <div>
