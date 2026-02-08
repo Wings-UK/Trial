@@ -775,7 +775,7 @@ async function showProfile(userId) {
             <!-- Left: Back -->
             <div class="exp-order" onclick="goBack()">
                 <img class="flat" src="pics/angle.svg">
-                <div class="tool"><p>Back</p></div>
+                
             </div>
 
             <!-- Right: Dots (more options) -->
