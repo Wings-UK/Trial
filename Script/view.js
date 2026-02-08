@@ -1894,8 +1894,8 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
-            users!actor_id (username, avatar),         
-            posts!post_id (image, id)
+            users!actor_id (username, avatar),
+            posts!fk_notifications_post_id (image, id)   
         `)
         .eq('user_id', currentUserId)
         .eq('type', 'like')
@@ -1913,7 +1913,7 @@ async function loadLikeNotifications() {
         read: row.read,
         actor: {
             username: row.users?.username || '@unknown',
-            avatar:   row.users?.avatar   || 'pics/default-avatar.png'
+            avatar: row.users?.avatar   || 'pics/default-avatar.png'
         },
         post: {
             id: row.posts?.id || row.post_id,
