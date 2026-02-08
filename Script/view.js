@@ -1965,7 +1965,7 @@ function createLikeNotificationElement(notif) {
     div.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px; flex:1;">
             <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:10px; object-fit:cover;">
-            <div>
+            <div style="text-align: left;">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
                     liked your post · ${timeAgo}
