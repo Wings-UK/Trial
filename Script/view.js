@@ -1522,108 +1522,123 @@ async function submitPost() {
 let activeLongPressPost = null;
 
 function enablePostLongPress(posterElement, post) {
-  function isActive() {
-  return posterElement.classList.contains('long-press-active');
-}
-
-  let pressTimer = null;
-  let longPressTriggered = false;
-
-  const isOwner = currentUserId && post.userId === currentUserId;
-
-  function closeActions() {
-    posterElement.classList.remove('long-press-active');
-    posterElement.querySelector('.post-action-bar')?.remove();
-    posterElement.dataset.blockNavigation = 'false';
-    longPressTriggered = false;
-
-    if (activeLongPressPost === posterElement) {
-      activeLongPressPost = null;
-    }
-  }
-
-  function showActions() {
-    if (activeLongPressPost && activeLongPressPost !== posterElement) {
-      activeLongPressPost.classList.remove('long-press-active');
-      activeLongPressPost.querySelector('.post-action-bar')?.remove();
-      activeLongPressPost.dataset.blockNavigation = 'false';
+    function isActive() {
+        return posterElement.classList.contains('long-press-active');
     }
 
-    activeLongPressPost = posterElement;
-    longPressTriggered = true;
+    let pressTimer = null;
+    let longPressTriggered = false;
 
-    posterElement.classList.add('long-press-active');
-    posterElement.dataset.blockNavigation = 'true';
+    const isOwner = currentUserId && post.userId === currentUserId;
 
-    const bar = document.createElement('div');
-    bar.className = 'post-action-bar';
+    function closeActions() {
+        posterElement.classList.remove('long-press-active');
+        posterElement.querySelector('.post-action-bar')?.remove();
+        posterElement.dataset.blockNavigation = 'false';
+        longPressTriggered = false;
 
-    bar.innerHTML = `
-      <button class="post-action-btn dislike">Dislike</button>
-      <button class="post-action-btn report">Report</button>
-      ${isOwner ? `<button class="post-action-btn delete">Delete</button>` : ''}
-    `;
+        if (activeLongPressPost === posterElement) {
+            activeLongPressPost = null;
+        }
+    }
 
-    posterElement.appendChild(bar);
+    function showActions() {
+        if (activeLongPressPost && activeLongPressPost !== posterElement) {
+            activeLongPressPost.classList.remove('long-press-active');
+            activeLongPressPost.querySelector('.post-action-bar')?.remove();
+            activeLongPressPost.dataset.blockNavigation = 'false';
+        }
 
-    bar.querySelector('.dislike')?.addEventListener('click', e => {
-      e.stopPropagation();
-      console.log('Disliked post', post.id);
-      closeActions();
+        activeLongPressPost = posterElement;
+        longPressTriggered = true;
+
+        posterElement.classList.add('long-press-active');
+        posterElement.dataset.blockNavigation = 'true';
+
+        const bar = document.createElement('div');
+        bar.className = 'post-action-bar';
+
+        bar.innerHTML = `
+            <button class="post-action-btn dislike">Dislike</button>
+            <button class="post-action-btn report">Report</button>
+            ${isOwner ? `<button class="post-action-btn delete">Delete</button>` : ''}
+        `;
+
+        posterElement.appendChild(bar);
+
+        // ─── ACTION HANDLERS ───
+        bar.querySelector('.dislike')?.addEventListener('click', e => {
+            e.stopPropagation();
+            console.log('Disliked post', post.id);
+            // You can expand this later (e.g. add to dislikes table)
+            closeActions();
+        });
+
+        bar.querySelector('.report')?.addEventListener('click', e => {
+            e.stopPropagation();
+            console.log('Reported post', post.id);
+            // You can expand this later (e.g. open report modal)
+            closeActions();
+        });
+
+        bar.querySelector('.delete')?.addEventListener('click', async e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // Call the delete function (assumes you already added deletePost)
+            await deletePost(post.id, posterElement);
+
+            closeActions();
+        });
+
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
+
+    // ─── TOUCH EVENTS FOR LONG PRESS ───
+    posterElement.addEventListener('touchstart', e => {
+        if (e.touches.length > 1) return;
+        if (isActive()) return; // prevent re-trigger while menu is open
+
+        pressTimer = setTimeout(showActions, 500);
     });
 
-    bar.querySelector('.report')?.addEventListener('click', e => {
-      e.stopPropagation();
-      console.log('Reported post', post.id);
-      closeActions();
+    posterElement.addEventListener('touchmove', () => {
+        clearTimeout(pressTimer);
     });
 
-    bar.querySelector('.delete')?.addEventListener('click', e => {
-      e.stopPropagation();
-      console.log('Deleted post', post.id);
-      closeActions();
+    posterElement.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
     });
 
-    if (navigator.vibrate) navigator.vibrate(20);
-  }
+    // Also support mouse long-press (for desktop testing)
+    let mouseDownTime;
+    posterElement.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        mouseDownTime = setTimeout(showActions, 600);
+    });
 
-  // ─── LONG PRESS ───
-  posterElement.addEventListener('touchstart', e => {
-  if (e.touches.length > 1) return;
+    posterElement.addEventListener('mouseup', () => clearTimeout(mouseDownTime));
+    posterElement.addEventListener('mouseleave', () => clearTimeout(mouseDownTime));
 
-  // 🚫 If already long-pressed, ignore further long presses
-  if (isActive()) return;
+    // ─── CLICK HANDLING WHEN MENU IS OPEN ───
+    posterElement.addEventListener('click', e => {
+        if (posterElement.dataset.blockNavigation === 'true') {
+            e.stopPropagation();
+            e.preventDefault();
+            closeActions();
+        }
+    });
 
-  pressTimer = setTimeout(showActions, 500);
-});
-
-  posterElement.addEventListener('touchmove', () => {
-    clearTimeout(pressTimer);
-  });
-
-  posterElement.addEventListener('touchend', () => {
-    clearTimeout(pressTimer);
-  });
-
-  // ─── TAP ON SAME POST ───
-  posterElement.addEventListener('click', e => {
-    if (posterElement.dataset.blockNavigation === 'true') {
-      e.stopPropagation();
-      e.preventDefault();
-      closeActions();
-    }
-  });
-
-  // ─── TAP OUTSIDE ───
-  document.addEventListener('touchstart', e => {
-    if (
-      longPressTriggered &&
-      activeLongPressPost === posterElement &&
-      !posterElement.contains(e.target)
-    ) {
-      closeActions();
-    }
-  });
+    // ─── CLOSE WHEN TAPPING OUTSIDE ───
+    document.addEventListener('touchstart', e => {
+        if (
+            longPressTriggered &&
+            activeLongPressPost === posterElement &&
+            !posterElement.contains(e.target)
+        ) {
+            closeActions();
+        }
+    }, { capture: true }); // capture phase to catch early
 }
 
 function goBackFromDetail() {
@@ -2012,3 +2027,70 @@ async function renderNotifications() {
         container.appendChild(item);
     });
 }
+
+async function deletePost(postId, postElement) {
+    if (!currentUserId) {
+        alert("You must be signed in");
+        return;
+    }
+
+    // Optional: simple confirmation
+    if (!confirm("Delete this post? This cannot be undone.")) {
+        return;
+    }
+
+    try {
+        // 1. Delete from Supabase
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .eq('id', postId)
+            .eq('user_id', currentUserId);   // safety: only owner can delete
+
+        if (error) throw error;
+
+        // 2. Remove from UI immediately
+        if (postElement) {
+            postElement.remove();
+        }
+
+        // 3. Also remove from masonry grid if we're on profile
+        const masonryWrapper = document.querySelector(`.masonry-wrapper[data-post-id="${postId}"]`);
+        if (masonryWrapper) {
+            masonryWrapper.remove();
+        }
+
+        // 4. (Nice to have) Remove from detail view if open
+        if (document.getElementById('meal').classList.contains('active')) {
+            const currentDetailId = document.querySelector('#nuba .cust-name')?.dataset.postId;
+            if (currentDetailId === postId.toString()) {
+                goBackFromDetail();
+            }
+        }
+
+        console.log(`Post ${postId} deleted successfully`);
+
+        // Optional: small success feedback
+        showToast("Post deleted");
+
+    } catch (err) {
+        console.error("Delete failed:", err.message);
+        alert("Could not delete post. Please try again.");
+    }
+}
+
+// Optional – simple toast
+function showToast(message, duration = 2200) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.85); color: white; padding: 12px 24px;
+        border-radius: 999px; z-index: 9999; font-size: 15px;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
+}
+
+
+
