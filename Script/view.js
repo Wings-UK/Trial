@@ -1943,7 +1943,7 @@ function createLikeNotificationElement(notif) {
     // Right side: now shows author's avatar instead of post image
     const rightAvatar = `
         <img src="${author.avatar}" 
-             style="width:42px; height:42px; object-fit:cover; border-radius:50%;"
+             style="width:42px; height:42px; object-fit:cover; border-radius:10px;"
              onerror="this.src='pics/default-avatar.png';"
              alt="${author.username}'s avatar">
     `;
@@ -1964,7 +1964,7 @@ function createLikeNotificationElement(notif) {
 
     div.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px; flex:1;">
-            <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:50%; object-fit:cover;">
+            <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:10px; object-fit:cover;">
             <div>
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
