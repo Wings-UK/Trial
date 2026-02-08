@@ -780,7 +780,7 @@ async function showProfile(userId) {
 
             <!-- Right: Dots (more options) -->
             <div class="profile-header-right">
-                <img class="dot" src="pics/dots.svg" style="width:20px; height:20px; cursor:pointer;">
+                <img class="dot" src="pics/dots.svg" style="width:18px; height:18px; cursor:pointer;">
             </div>
             
         </div>
