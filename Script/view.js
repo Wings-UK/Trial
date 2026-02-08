@@ -1894,8 +1894,16 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
-            users!actor_id (username, avatar),
-            posts!fk_notifications_post_id (image, id)   
+            users!actor_id (username, avatar),                    
+            posts!fk_notifications_post_id (                   
+                id,
+                image,                                         
+                user_id,                                       
+                users!user_id (                                
+                    username,
+                    avatar
+                )
+            )
         `)
         .eq('user_id', currentUserId)
         .eq('type', 'like')
@@ -1913,21 +1921,32 @@ async function loadLikeNotifications() {
         read: row.read,
         actor: {
             username: row.users?.username || '@unknown',
-            avatar: row.users?.avatar   || 'pics/default-avatar.png'
+            avatar: row.users?.avatar || 'pics/default-avatar.png'
         },
         post: {
             id: row.posts?.id || row.post_id,
-            image: row.posts?.image
+            image: row.posts?.image,                          // optional now
+            author: {
+                username: row.posts?.users?.username || '@unknown',
+                avatar: row.posts?.users?.avatar || 'pics/default-avatar.png'
+            }
         }
     }));
 }
 
 function createLikeNotificationElement(notif) {
     const actor = notif.actor || { username: '@unknown', avatar: 'pics/default-avatar.png' };
+    const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
+
     const timeAgo = formatTimeSince(notif.created_at);
-    const postPreview = notif.post?.image 
-        ? `<img src="${notif.post.image}" style="width:42px; height:42px; object-fit:cover; border-radius:10px;">`
-        : `<div style="width:42px; height:42px; border-radius:10px; background:#eee;"></div>`;
+
+    // Right side: now shows author's avatar instead of post image
+    const rightAvatar = `
+        <img src="${author.avatar}" 
+             style="width:42px; height:42px; object-fit:cover; border-radius:50%;"
+             onerror="this.src='pics/default-avatar.png';"
+             alt="${author.username}'s avatar">
+    `;
 
     const div = document.createElement('div');
     div.className = 'notification-item';
@@ -1945,7 +1964,7 @@ function createLikeNotificationElement(notif) {
 
     div.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px; flex:1;">
-            <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:10px; object-fit:cover;">
+            <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:50%; object-fit:cover;">
             <div>
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
@@ -1954,7 +1973,7 @@ function createLikeNotificationElement(notif) {
             </div>
         </div>
         <div>
-            ${postPreview}
+            ${rightAvatar}
         </div>
     `;
 
@@ -1984,6 +2003,7 @@ async function renderNotifications() {
                 <p style="margin-top:12px;">When someone likes your post, you'll see it here.</p>
             </div>
         `;
+     
         return;
     }
 
