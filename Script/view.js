@@ -769,6 +769,22 @@ async function showProfile(userId) {
     }  
 
     ireti.innerHTML = `  
+    <header class="heado file">
+        <div class="heador" style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 16px;">
+            
+            <!-- Left: Back -->
+            <div class="exp-order" onclick="goBack()">
+                <img class="flat" src="pics/angle.svg">
+                <div class="tool"><p>Back</p></div>
+            </div>
+
+            <!-- Right: Dots (more options) -->
+            <div class="profile-header-right">
+                <img class="dot" src="pics/dots.svg" style="width:24px; height:24px; cursor:pointer;">
+            </div>
+            
+        </div>
+    </header>
         <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">  
         <div>  
             <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">  
