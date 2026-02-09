@@ -963,15 +963,15 @@ function goBackToHome() {
 }
 
 // Switch to notifications
-function switchToNotifications() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('notifications').classList.add('active');
-  
-  // ─── NEW: Reset unread count when user opens the tab ───
+async function switchToNotifications() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('notifications').classList.add('active');
+    
+    // Reset unread count when user opens the tab
     unreadNotificationCount = 0;
     updateNotificationBadge();
 
-    // ─── NEW: Mark all notifications as read (optional but strongly recommended) ───
+    // Mark all notifications as read (optional but strongly recommended)
     if (currentUserId) {
         const { error } = await supabase
             .from('notifications')
@@ -981,13 +981,16 @@ function switchToNotifications() {
 
         if (error) {
             console.error("Failed to mark notifications as read:", error);
+        } else {
+            console.log("Marked all notifications as read");
         }
     }
-  
-  // Highlight bell in bottom nav
-  document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
-  renderNotifications();
-  window.scrollTo(0, 0);
+    
+    // Highlight bell in bottom nav
+    document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
+    
+    renderNotifications();
+    window.scrollTo(0, 0);
 }
 
 async function showMyProfile() {
