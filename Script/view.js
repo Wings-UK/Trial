@@ -10,17 +10,26 @@ let notificationChannel = null;   // will hold the realtime subscription
 
 // Get logged-in user ID once when page loads
 document.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-        currentUserId = user.id;
-        console.log('Logged-in user ID:', currentUserId);
-    } else {
-        console.log('No user logged in');
-    }
-    // NEW ── load initial count + subscribe
-        await loadInitialNotificationCount();
-        subscribeToNotifications();
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
 
+        if (user) {
+            currentUserId = user.id;
+            console.log('Logged-in user ID:', currentUserId);
+
+            // Only load count + subscribe when there is a real user
+            await loadInitialNotificationCount();
+            subscribeToNotifications();
+
+            // You can also load avatar, start loading posts, etc. here
+        } else {
+            console.log('No user logged in');
+            // Optional: show login modal
+            // document.getElementById('auth-modal').style.display = 'block';
+        }
+    } catch (err) {
+        console.error('Error during initial load:', err);
+    }
 });
 
 
