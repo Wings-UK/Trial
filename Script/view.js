@@ -2,6 +2,11 @@
 
 // Paste this exactly as-is — add near the top, after any global variables
 let currentUserId = null;
+// ───────────────────────────────────────────────
+// NOTIFICATION BADGE STATE
+// ───────────────────────────────────────────────
+let unreadNotificationCount = 0;
+let notificationChannel = null;   // will hold the realtime subscription
 
 // Get logged-in user ID once when page loads
 document.addEventListener('DOMContentLoaded', async () => {
@@ -12,6 +17,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.log('No user logged in');
     }
+    // NEW ── load initial count + subscribe
+        await loadInitialNotificationCount();
+        subscribeToNotifications();
+
 });
 
 
@@ -948,6 +957,23 @@ function goBackToHome() {
 function switchToNotifications() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('notifications').classList.add('active');
+  
+  // ─── NEW: Reset unread count when user opens the tab ───
+    unreadNotificationCount = 0;
+    updateNotificationBadge();
+
+    // ─── NEW: Mark all notifications as read (optional but strongly recommended) ───
+    if (currentUserId) {
+        const { error } = await supabase
+            .from('notifications')
+            .update({ read: true })
+            .eq('user_id', currentUserId)
+            .eq('read', false);
+
+        if (error) {
+            console.error("Failed to mark notifications as read:", error);
+        }
+    }
   
   // Highlight bell in bottom nav
   document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
@@ -2142,5 +2168,74 @@ function shareProfile() {
     }
 }
 
+function updateNotificationBadge() {
+    const badgeElements = document.querySelectorAll('.note-num');
+    const noteIcons = document.querySelectorAll('.note1');
 
+    badgeElements.forEach(el => {
+        if (unreadNotificationCount > 0) {
+            el.textContent = unreadNotificationCount > 99 ? '99+' : unreadNotificationCount;
+            el.parentElement.style.display = 'flex';   // show red circle
+        } else {
+            el.textContent = '';
+            el.parentElement.style.display = 'none';   // hide red circle
+        }
+    });
 
+    // Optional: visual feedback on bell icon
+    noteIcons.forEach(icon => {
+        if (unreadNotificationCount > 0) {
+            icon.classList.add('has-unread');
+        } else {
+            icon.classList.remove('has-unread');
+        }
+    });
+}
+
+async function subscribeToNotifications() {
+    if (!currentUserId) return;
+    if (notificationChannel) return; // already subscribed
+
+    console.log("Subscribing to realtime notifications...");
+
+    notificationChannel = supabase
+        .channel('public:notifications')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${currentUserId}`
+        }, (payload) => {
+            console.log('New notification received!', payload.new);
+
+            // Only count unread notifications of types you care about
+            if (payload.new.read === false) {
+                unreadNotificationCount += 1;
+                updateNotificationBadge();
+
+                // Optional: play a tiny sound or vibration
+                if (navigator.vibrate) navigator.vibrate(40);
+            }
+        })
+        .subscribe((status) => {
+            console.log('Realtime subscription status:', status);
+        });
+}
+
+async function loadInitialNotificationCount() {
+    if (!currentUserId) return;
+
+    const { data, error, count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', currentUserId)
+        .eq('read', false);
+
+    if (error) {
+        console.error("Could not load unread count:", error);
+        return;
+    }
+
+    unreadNotificationCount = count || 0;
+    updateNotificationBadge();
+}
