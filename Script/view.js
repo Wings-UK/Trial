@@ -2126,5 +2126,21 @@ function showToast(message, duration = 2200) {
     setTimeout(() => toast.remove(), duration);
 }
 
+function shareProfile() {
+    if (navigator.share) {
+        navigator.share({
+            title: document.querySelector('.spe')?.textContent || "My Retail profile",
+            url: window.location.href
+        }).catch(err => {
+            console.log("Share failed", err);
+        });
+    } else {
+        // Fallback: copy link
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => alert("Profile link copied to clipboard!"))
+            .catch(() => alert("Could not copy link"));
+    }
+}
+
 
 
