@@ -2054,7 +2054,7 @@ function createLikeNotificationElement(notif) {
         <div class="notification-left" style="display:flex; align-items:center; gap:12px; flex:1;">
             <div class="actor-avatar" style="cursor: pointer;">
                 <img src="${actor.avatar}" 
-                     style="width:42px; height:42px; border-radius:50%; object-fit:cover;"
+                     style="width:42px; height:42px; border-radius:10px; object-fit:cover;"
                      onerror="this.src='pics/default-avatar.png';"
                      alt="${actor.username}">
             </div>
