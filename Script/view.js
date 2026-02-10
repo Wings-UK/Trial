@@ -936,6 +936,7 @@ async function showProfile(userId) {
     }  
 
     initializeMasonryHeartReactions();
+    history.pushState({}, '', `/profile/${userId}`); 
     window.scrollTo(0, 0);
 }
 
@@ -984,6 +985,7 @@ async function switchToNotifications() {
         } else {
             console.log("Marked all notifications as read");
         }
+        history.pushState({}, '', '/notifications');
     }
     
     // Highlight bell in bottom nav
@@ -1248,6 +1250,7 @@ async function showMyProfile() {
 
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
+        history.pushState({}, '', '/profile');  
 }
 
 // Paste this exactly as-is — add at the bottom
@@ -1501,6 +1504,7 @@ async function showDetail(postId) {
     }
 
     window.scrollTo(0, 0);
+    history.pushState({}, '', `/post/${postId}`); 
 }
 
 function makePost() {
@@ -2285,3 +2289,57 @@ async function loadInitialNotificationCount() {
     unreadNotificationCount = count || 0;
     updateNotificationBadge();
 }
+
+// ─── READ THE URL AND SHOW THE CORRECT SCREEN ────────────────────────
+function showCorrectPageFromUrl() {
+    // Get whatever is after the domain name (example: /notifications, /post/xyz)
+    const path = window.location.pathname;
+
+    // First: hide ALL pages (remove .active from everyone)
+    document.querySelectorAll('.homepage1.page').forEach(el => {
+        el.classList.remove('active');
+    });
+
+    // Now decide which one to show
+    if (path.startsWith('/post/')) {
+        const postId = path.split('/')[2];          // take the part after /post/
+        if (postId) {
+            showDetail(postId);
+            document.getElementById('meal')?.classList.add('active');
+        }
+    }
+
+    else if (path === '/profile' || path.startsWith('/profile/')) {
+        const userId = path.split('/')[2];          // if /profile/xyz → xyz
+        if (userId) {
+            showProfile(userId);
+        } else {
+            showMyProfile();
+        }
+        document.getElementById('profile')?.classList.add('active');
+    }
+
+    else if (path === '/notifications') {
+        switchToNotifications();
+        document.getElementById('notifications')?.classList.add('active');
+    }
+
+    else if (path === '/wallet') {
+        openWallet();
+        document.getElementById('wallet')?.classList.add('active');
+    }
+
+    // fallback = home / feed
+    else {
+        // make sure home/feed is visible
+        document.getElementById('food')?.classList.add('active');
+        // optional: scroll to top
+        window.scrollTo(0, 0);
+    }
+}
+
+// Run this function when the page first opens
+document.addEventListener('DOMContentLoaded', showCorrectPageFromUrl);
+
+// Run this function when user presses back or forward in browser
+window.addEventListener('popstate', showCorrectPageFromUrl);
