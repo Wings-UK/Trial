@@ -2293,48 +2293,35 @@ async function loadInitialNotificationCount() {
 
 // ─── READ THE URL AND SHOW THE CORRECT SCREEN ────────────────────────
 function showCorrectPageFromUrl() {
-    // Get whatever is after the domain name (example: /notifications, /post/xyz)
-    const path = window.location.pathname;
+    const path = location.pathname;
 
-    // First: hide ALL pages (remove .active from everyone)
     document.querySelectorAll('.homepage1.page').forEach(el => {
         el.classList.remove('active');
     });
 
-    // Now decide which one to show
     if (path.startsWith('/post/')) {
-        const postId = path.split('/')[2];          // take the part after /post/
+        const postId = path.split('/')[2];
         if (postId) {
             showDetail(postId);
             document.getElementById('meal')?.classList.add('active');
         }
     }
-
-    else if (path === '/profile' || path.startsWith('/profile/')) {
-        const userId = path.split('/')[2];          // if /profile/xyz → xyz
-        if (userId) {
-            showProfile(userId);
-        } else {
-            showMyProfile();
-        }
+    else if (path.startsWith('/profile/') || path === '/profile') {
+        // your profile logic...
         document.getElementById('profile')?.classList.add('active');
     }
-
     else if (path === '/notifications') {
         switchToNotifications();
         document.getElementById('notifications')?.classList.add('active');
     }
-
     else if (path === '/wallet') {
         openWallet();
         document.getElementById('wallet')?.classList.add('active');
     }
-
-    // fallback = home / feed
     else {
-        // make sure home/feed is visible
+        // This catches /   AND   /home   AND   any unknown path
         document.getElementById('food')?.classList.add('active');
-        // optional: scroll to top
+        // Optional: clean scroll
         window.scrollTo(0, 0);
     }
 }
