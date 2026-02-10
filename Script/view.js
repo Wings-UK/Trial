@@ -2088,14 +2088,14 @@ function createLikeNotificationElement(notif) {
     if (infoEl && notif.actor_id) {
         infoEl.addEventListener('click', (e) => {
             e.stopPropagation();
-            showProfile(notif.actor_id);
+            showDetail(notif.post.id);
         });
     }
 
     // Whole notification → post detail (unless click was on avatar or info)
     div.addEventListener('click', (e) => {
         // Skip if click originated from profile areas
-        if (e.target.closest('.actor-avatar, .actor-info')) {
+        if (e.target.closest('.actor-avatar')) {
             return;
         }
 
