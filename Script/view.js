@@ -465,7 +465,7 @@ function createPostElement(post) {
                     <img class="lefti" src="pics/bounce.svg">
                 </div>
                 <div>
-                    <p class="viewe">View all ${post.commentCount || 142} discuss</p>
+                    <p class="viewe">SEE all ${post.commentCount || 142} discuss</p>
                 </div>
             </div>
             <div class="twits">
