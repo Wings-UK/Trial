@@ -1246,11 +1246,12 @@ async function showMyProfile() {
     }
 
     initializeMasonryHeartReactions();
+    history.pushState({}, '', '/profile');  
     window.scrollTo(0, 0);
 
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
-        history.pushState({}, '', '/profile');  
+        
 }
 
 // Paste this exactly as-is — add at the bottom
