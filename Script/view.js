@@ -1969,7 +1969,6 @@ function syncLikeUI(postId, isLiked = null, count) {
 // ───────────────────────────────────────────────
 // NOTIFICATIONS – Likes only for now
 // ───────────────────────────────────────────────
-
 async function loadLikeNotifications() {
     if (!currentUserId) return [];
 
@@ -1979,14 +1978,17 @@ async function loadLikeNotifications() {
             id,
             created_at,
             read,
-            actor_id,
+            actor_id,                 // ← make sure this is selected
             post_id,
-            users!actor_id (username, avatar),                    
-            posts!fk_notifications_post_id (                   
+            users!actor_id (          // ← this gives you the actor's data
+                username,
+                avatar
+            ),
+            posts!fk_notifications_post_id (
                 id,
-                image,                                         
-                user_id,                                       
-                users!user_id (                                
+                image,
+                user_id,
+                users!user_id (
                     username,
                     avatar
                 )
@@ -2006,13 +2008,14 @@ async function loadLikeNotifications() {
         id: row.id,
         created_at: row.created_at,
         read: row.read,
+        actor_id: row.actor_id,                    // ← add this
         actor: {
             username: row.users?.username || '@unknown',
             avatar: row.users?.avatar || 'pics/default-avatar.png'
         },
         post: {
             id: row.posts?.id || row.post_id,
-            image: row.posts?.image,                          // optional now
+            image: row.posts?.image,
             author: {
                 username: row.posts?.users?.username || '@unknown',
                 avatar: row.posts?.users?.avatar || 'pics/default-avatar.png'
@@ -2024,10 +2027,9 @@ async function loadLikeNotifications() {
 function createLikeNotificationElement(notif) {
     const actor = notif.actor || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
-
     const timeAgo = formatTimeSince(notif.created_at);
 
-    // Right side: now shows author's avatar instead of post image
+    // Right side: author's avatar (still clickable to post detail)
     const rightAvatar = `
         <img src="${author.avatar}" 
              style="width:42px; height:42px; object-fit:cover; border-radius:10px;"
@@ -2051,20 +2053,35 @@ function createLikeNotificationElement(notif) {
 
     div.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px; flex:1;">
-            <img src="${actor.avatar}" style="width:42px; height:42px; border-radius:10px; object-fit:cover;">
-            <div style="text-align: left;">
+            <!-- Clickable avatar -->
+            <div style="position: relative; cursor: pointer;" 
+                 onclick="showProfile('${notif.actor_id}'); event.stopPropagation();">
+                <img src="${actor.avatar}" 
+                     style="width:42px; height:42px; border-radius:50%; object-fit:cover;"
+                     onerror="this.src='pics/default-avatar.png';"
+                     alt="${actor.username}">
+            </div>
+
+            <!-- Clickable username + message -->
+            <div style="text-align: left; flex:1; cursor: pointer;" 
+                 onclick="showProfile('${notif.actor_id}'); event.stopPropagation();">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
                     liked your post · ${timeAgo}
                 </div>
             </div>
         </div>
-        <div>
+
+        <!-- Right side - post author's avatar - still goes to post detail -->
+        <div onclick="event.stopPropagation();">
             ${rightAvatar}
         </div>
     `;
 
-    div.addEventListener('click', () => {
+    // Whole notification row still opens the POST detail when clicked (except avatar/username)
+    div.addEventListener('click', (e) => {
+        // Prevent if click was on avatar or username (already handled)
+        if (e.target.closest('[onclick^="showProfile"]')) return;
         if (notif.post?.id) {
             showDetail(notif.post.id);
         }
