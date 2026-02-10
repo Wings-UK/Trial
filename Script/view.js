@@ -836,11 +836,22 @@ async function showProfile(userId) {
                 </div>  
             </div>  
         </div>  
-        <div class="ewe">  
-            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
-        </div>  
+        <div class="ewe tab-slider-container">
+    <!-- Scrollable part with the 4 icons -->
+    <div class="tab-slider-inner">
+        <div class="yeb" data-tab="posts"><img class="dee" src="pics/apps.svg" alt="Posts"></div>
+        <div class="yeb" data-tab="activity"><img class="dee" src="pics/newspaper.svg" alt="Activity"></div>
+        <div class="yeb" data-tab="store"><img class="dee" src="pics/store.svg" alt="Store"></div>
+        <div class="yeb extra-tab" data-tab="extra"><img class="dee" src="pics/store.svg" alt="Extra"></div>
+    </div>
+
+    <!-- Fixed search icon on the right -->
+    <div class="search-fixed">
+        <div class="yeb search-icon-wrapper">
+            <img class="dee" src="pics/search.svg" alt="Search">
+        </div>
+    </div>
+</div>
         <div class="mansonro">  
             <div class="masonri">  
                 <div class="column left-column"></div>  
@@ -2331,3 +2342,93 @@ document.addEventListener('DOMContentLoaded', showCorrectPageFromUrl);
 
 // Run this function when user presses back or forward in browser
 window.addEventListener('popstate', showCorrectPageFromUrl);
+
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.ewe.tab-slider-container');
+    if (!container) return;
+
+    const inner = container.querySelector('.tab-slider-inner');
+    const searchFixed = container.querySelector('.search-fixed');
+    const extraTab = container.querySelector('.extra-tab');
+
+    if (!inner || !searchFixed || !extraTab) return;
+
+    let startX = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let isDragging = false;
+
+    // ─── Touch events ───
+    inner.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        inner.style.transition = 'none';
+    });
+
+    inner.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        const currentX = e.touches[0].clientX;
+        const diff = currentX - startX;
+
+        // Allow sliding left (negative) to reveal 4th icon
+        // Prevent sliding too far right
+        currentTranslate = prevTranslate + diff;
+        currentTranslate = Math.min(0, currentTranslate);           // can't go right of 0
+        currentTranslate = Math.max(-80, currentTranslate);         // adjust max slide distance
+
+        inner.style.transform = `translateX(${currentTranslate}px)`;
+
+        // Visual feedback: fade/search overlap effect
+        const progress = Math.abs(currentTranslate) / 80;
+        extraTab.style.opacity = 0.7 + progress * 0.3;
+    });
+
+    inner.addEventListener('touchend', () => {
+        isDragging = false;
+        inner.style.transition = 'transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+        // Snap behavior
+        if (currentTranslate < -40) {
+            // show 4th icon
+            inner.style.transform = `translateX(-64px)`;   // exactly one icon width
+            prevTranslate = -64;
+            extraTab.style.opacity = 1;
+        } else {
+            // hide again
+            inner.style.transform = `translateX(0)`;
+            prevTranslate = 0;
+            extraTab.style.opacity = 0.85;
+        }
+    });
+
+    // Optional: click/tap on tabs to change content
+    document.querySelectorAll('.yeb[data-tab]').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.yeb').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            const tabName = tab.dataset.tab;
+            changeTabContent(tabName);
+        });
+    });
+
+    // Make first tab active by default
+    document.querySelector('.yeb[data-tab="posts"]')?.classList.add('active');
+});
+
+// Example tab content switcher (customize as needed)
+function changeTabContent(tabName) {
+    const contentArea = document.getElementById('profile-tab-content');
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `<div style="padding:40px; text-align:center; color:#777;">
+        <h3>${tabName} tab selected</h3>
+        <p>Content for <strong>${tabName}</strong> goes here...</p>
+    </div>`;
+
+    // Later you'll replace this with real logic:
+    // "posts"     → show masonry of user's own posts
+    // "activity"  → show posts user liked / commented on
+    // "store"     → show storefront / products
+    // "extra"     → whatever the 4th tab is meant for
+}
