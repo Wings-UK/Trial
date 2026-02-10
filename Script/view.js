@@ -2052,6 +2052,7 @@ function createLikeNotificationElement(notif) {
 
     div.innerHTML = `
         <div class="notification-left" style="display:flex; align-items:center; gap:12px; flex:1;">
+            <!-- Only avatar is clickable to profile -->
             <div class="actor-avatar" style="cursor: pointer;">
                 <img src="${actor.avatar}" 
                      style="width:42px; height:42px; border-radius:50%; object-fit:cover;"
@@ -2059,7 +2060,8 @@ function createLikeNotificationElement(notif) {
                      alt="${actor.username}">
             </div>
 
-            <div class="actor-info" style="text-align: left; flex:1; cursor: pointer;">
+            <!-- Username + message - NOT clickable to profile, goes to post detail -->
+            <div class="actor-info" style="text-align: left; flex:1;">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
                     liked your post · ${timeAgo}
@@ -2067,14 +2069,14 @@ function createLikeNotificationElement(notif) {
             </div>
         </div>
 
-        <div class="post-preview" style="cursor: pointer;">
+        <div class="post-preview">
             ${rightAvatar}
         </div>
     `;
 
-    // ─── Add click listeners after innerHTML is set ───
+    // ─── Event listeners ───
 
-    // Actor avatar → profile
+    // 1. Only avatar → actor profile
     const avatarEl = div.querySelector('.actor-avatar');
     if (avatarEl && notif.actor_id) {
         avatarEl.addEventListener('click', (e) => {
@@ -2083,19 +2085,10 @@ function createLikeNotificationElement(notif) {
         });
     }
 
-    // Actor username + message → profile
-    const infoEl = div.querySelector('.actor-info');
-    if (infoEl && notif.actor_id) {
-        infoEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showProfile(notif.actor_id);
-        });
-    }
-
-    // Whole notification → post detail (unless click was on avatar or info)
+    // 2. Everything else → post detail
     div.addEventListener('click', (e) => {
-        // Skip if click originated from profile areas
-        if (e.target.closest('.actor-avatar, .actor-info')) {
+        // Prevent if click was exactly on the avatar (already handled)
+        if (e.target.closest('.actor-avatar')) {
             return;
         }
 
