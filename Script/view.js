@@ -1978,9 +1978,9 @@ async function loadLikeNotifications() {
             id,
             created_at,
             read,
-            actor_id,                 // ← make sure this is selected
+            actor_id,                 
             post_id,
-            users!actor_id (          // ← this gives you the actor's data
+            users!actor_id (          
                 username,
                 avatar
             ),
