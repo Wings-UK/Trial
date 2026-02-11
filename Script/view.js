@@ -465,7 +465,7 @@ function createPostElement(post) {
                     <img class="lefti" src="pics/bounce.svg">
                 </div>
                 <div>
-                    <p class="viewe">View all ${post.commentCount || 142} discuss</p>
+                    <p class="viewe">SEE all ${post.commentCount || 142} discuss</p>
                 </div>
             </div>
             <div class="twits">
@@ -836,23 +836,11 @@ async function showProfile(userId) {
                 </div>  
             </div>  
         </div>  
-<div class="ewe tab-slider-container">
-  <!-- scrolling part -->
-  <div class="tab-slider-inner">
-    <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
-    <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
-    <div class="yeb"><img class="dee" src="pics/store.svg"></div>
-    <div class="yeb extra-tab bookmark-tab">
-      <img class="dee" src="pics/bookmark.svg">
-    </div>
-  </div>
-
-  <!-- always stays on right – covers the 4th tab when at rest -->
-  <div class="search-fixed">
-    <img class="dee" src="pics/search.svg">
-  </div>
-</div>
-        
+        <div class="ewe">  
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
+        </div>  
         <div class="mansonro">  
             <div class="masonri">  
                 <div class="column left-column"></div>  
@@ -948,10 +936,9 @@ async function showProfile(userId) {
     }  
 
     initializeMasonryHeartReactions();
+    history.pushState({}, '', `/profile/${userId}`); 
     window.scrollTo(0, 0);
 }
-
-
 
 // Paste this exactly as-is — add at the bottom
 function goBack() {
@@ -998,6 +985,7 @@ async function switchToNotifications() {
         } else {
             console.log("Marked all notifications as read");
         }
+        history.pushState({}, '', '/notifications');
     }
     
     // Highlight bell in bottom nav
@@ -1262,6 +1250,7 @@ async function showMyProfile() {
 
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
+        history.pushState({}, '', '/profile');  
 }
 
 // Paste this exactly as-is — add at the bottom
@@ -1515,6 +1504,7 @@ async function showDetail(postId) {
     }
 
     window.scrollTo(0, 0);
+    history.pushState({}, '', `/post/${postId}`); 
 }
 
 function makePost() {
@@ -2068,7 +2058,7 @@ function createLikeNotificationElement(notif) {
         <div class="notification-left" style="display:flex; align-items:center; gap:12px; flex:1;">
             <div class="actor-avatar" style="cursor: pointer;">
                 <img src="${actor.avatar}" 
-                     style="width:42px; height:42px; border-radius:50%; object-fit:cover;"
+                     style="width:42px; height:42px; border-radius:10px; object-fit:cover;"
                      onerror="this.src='pics/default-avatar.png';"
                      alt="${actor.username}">
             </div>
@@ -2102,14 +2092,14 @@ function createLikeNotificationElement(notif) {
     if (infoEl && notif.actor_id) {
         infoEl.addEventListener('click', (e) => {
             e.stopPropagation();
-            showProfile(notif.actor_id);
+            showDetail(notif.post.id);
         });
     }
 
     // Whole notification → post detail (unless click was on avatar or info)
     div.addEventListener('click', (e) => {
         // Skip if click originated from profile areas
-        if (e.target.closest('.actor-avatar, .actor-info')) {
+        if (e.target.closest('.actor-avatar')) {
             return;
         }
 
@@ -2300,48 +2290,56 @@ async function loadInitialNotificationCount() {
     updateNotificationBadge();
 }
 
-const ewe = document.querySelector('.ewe');
-const inner = document.querySelector('.tab-slider-inner');
-const searchWidth = 64; // px
+// ─── READ THE URL AND SHOW THE CORRECT SCREEN ────────────────────────
+function showCorrectPageFromUrl() {
+    // Get whatever is after the domain name (example: /notifications, /post/xyz)
+    const path = window.location.pathname;
 
-let startX = 0;
-let currentTranslate = 0;
-let prevTranslate = 0;
-let isDragging = false;
+    // First: hide ALL pages (remove .active from everyone)
+    document.querySelectorAll('.homepage1.page').forEach(el => {
+        el.classList.remove('active');
+    });
 
-ewe.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  isDragging = true;
-});
+    // Now decide which one to show
+    if (path.startsWith('/post/')) {
+        const postId = path.split('/')[2];          // take the part after /post/
+        if (postId) {
+            showDetail(postId);
+            document.getElementById('meal')?.classList.add('active');
+        }
+    }
 
-ewe.addEventListener('touchmove', e => {
-  if (!isDragging) return;
-  const currentX = e.touches[0].clientX;
-  const diff = currentX - startX;
-  currentTranslate = prevTranslate + diff;
+    else if (path === '/profile' || path.startsWith('/profile/')) {
+        const userId = path.split('/')[2];          // if /profile/xyz → xyz
+        if (userId) {
+            showProfile(userId);
+        } else {
+            showMyProfile();
+        }
+        document.getElementById('profile')?.classList.add('active');
+    }
 
-  // Limit how far left you can go
-  currentTranslate = Math.min(0, currentTranslate);
-  // Optional: limit how far right (show at least part of bookmark)
-  currentTranslate = Math.max(-searchWidth - 20, currentTranslate);
+    else if (path === '/notifications') {
+        switchToNotifications();
+        document.getElementById('notifications')?.classList.add('active');
+    }
 
-  inner.style.transform = `translateX(${currentTranslate}px)`;
-});
+    else if (path === '/wallet') {
+        openWallet();
+        document.getElementById('wallet')?.classList.add('active');
+    }
 
-ewe.addEventListener('touchend', () => {
-  isDragging = false;
-  prevTranslate = currentTranslate;
+    // fallback = home / feed
+    else {
+        // make sure home/feed is visible
+        document.getElementById('food')?.classList.add('active');
+        // optional: scroll to top
+        window.scrollTo(0, 0);
+    }
+}
 
-  // Snap logic – either fully show bookmark or hide it
-  if (currentTranslate < -searchWidth / 2) {
-    // show bookmark
-    inner.style.transform = `translateX(${-searchWidth}px)`;
-    prevTranslate = -searchWidth;
-    ewe.classList.add('scrolled-left');
-  } else {
-    // hide
-    inner.style.transform = `translateX(0px)`;
-    prevTranslate = 0;
-    ewe.classList.remove('scrolled-left');
-  }
-});
+// Run this function when the page first opens
+document.addEventListener('DOMContentLoaded', showCorrectPageFromUrl);
+
+// Run this function when user presses back or forward in browser
+window.addEventListener('popstate', showCorrectPageFromUrl);
