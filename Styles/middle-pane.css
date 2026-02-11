@@ -14,6 +14,7 @@ body {
   min-height: 100vh;
   box-shadow: 0 0 40px rgba(0,0,0,0.4);   /* optional – gives "phone" feel */
   overflow-x: hidden;
+  margin-top: 30px;
 }
 
 /* If you have a wrapper inside retail-project */
