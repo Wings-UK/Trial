@@ -4,18 +4,6 @@
   box-sizing: border-box;
 }
 
-/* Hide all page sections until JavaScript activates one */
-.homepage1.page {
-    display: none !important;
-}
-
-/* Only show the one that has .active */
-.homepage1.page.active {
-    display: block !important;   /* or flex/grid depending on your layout */
-}
-
-
-
 .wallet-title, .notifications-body {
   font-family: 'Noto Sans JP';
   text-align: center;
