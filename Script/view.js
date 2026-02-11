@@ -836,11 +836,19 @@ async function showProfile(userId) {
                 </div>  
             </div>  
         </div>  
-        <div class="ewe">  
-            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
-        </div>  
+        <div class="ewe">
+  <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+  <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+  <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+  
+  <!-- This one starts hidden behind search -->
+  <div class="yeb"><img class="dee" src="pics/bookmark.svg"></div>
+  
+  <!-- Fixed-looking search on right -->
+  <div class="yeb search-fixed">
+    <img class="dee" src="pics/search.svg">
+  </div>
+</div>  
         <div class="mansonro">  
             <div class="masonri">  
                 <div class="column left-column"></div>  
