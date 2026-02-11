@@ -3,75 +3,71 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 .ewe {
   --icon-size: 44px;
-  --gap: 0px;               /* almost no gap between icons */
-  --search-width: 60px;     /* space reserved for fixed-looking search */
+  --gap: 8px;
+  --search-width: 64px;     /* enough space for search icon + padding */
 
   display: flex;
   align-items: center;
-  justify-content: center;  /* centers the 3 icons initially */
   gap: var(--gap);
-  width: 100%;
   height: 60px;
+  padding: 0 16px;
   background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid #e8e8e8;
-  border-bottom: 1px solid #e8e8e8;
-  position: sticky;
-  top: 0;                   /* or whatever your header height is */
-  z-index: 90;
+  backdrop-filter: blur(10px);
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
 
-  /* ── Enable horizontal scrolling ── */
+  /* Critical for scrolling */
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding-right: var(--search-width);   /* important trick */
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;   /* gentle snap, not mandatory */
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;  /* smooth iOS scrolling */
 
-  /* Hide scrollbar */
-  -ms-overflow-style: none;
+  /* Hide scrollbar completely */
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .ewe::-webkit-scrollbar {
   display: none;
 }
 
-/* Each icon container */
+/* All icon containers are fixed size — no growing */
 .yeb {
   flex: 0 0 var(--icon-size);
+  width: var(--icon-size);
   height: var(--icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
   scroll-snap-align: center;
-  transition: opacity 0.2s ease;
 }
 
-/* The search icon container – stays on right */
+/* Search stays glued to the right edge */
 .yeb.search-fixed {
   position: sticky;
   right: 0;
-  background: inherit;           /* same bg as .ewe */
+  z-index: 10;
+  background: inherit;
   backdrop-filter: inherit;
-  z-index: 95;
   flex: 0 0 var(--search-width);
   justify-content: flex-end;
   padding-right: 16px;
-  scroll-snap-align: none;       /* don't snap to search */
+  margin-right: -16px;           /* compensate padding */
+  box-shadow: -4px 0 8px -4px rgba(0,0,0,0.08); /* subtle separation */
 }
 
-/* Optional: little shadow / fade on left when scrolled */
-.ewe.scrolled-left::before {
+/* Optional: fade on left side when scrolled */
+.ewe:not(:has(.scrolled-to-start))::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
-  z-index: 10;
+  top: 0; bottom: 0;
+  width: 24px;
+  background: linear-gradient(to right, white, transparent);
+  z-index: 5;
   pointer-events: none;
 }
 
