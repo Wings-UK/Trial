@@ -14,7 +14,7 @@ body {
   min-height: 100vh;
   box-shadow: 0 0 40px rgba(0,0,0,0.4);   /* optional – gives "phone" feel */
   overflow-x: hidden;
-  margin-top: 30px;
+  
 }
 
 /* If you have a wrapper inside retail-project */
@@ -22,6 +22,7 @@ body {
 .homepage1 {
   max-width: 100%;                 /* full width of the centered container */
   width: 100%;
+  margin-top: 40px;
 }
 
 
