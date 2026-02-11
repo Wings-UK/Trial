@@ -49,6 +49,7 @@ body {
 .ewe {
   width: 100%;                     /* full width of parent (which is already max 428px) */
   /* ... rest of your .ewe styles ... */
+  position: relative;
 }
 
 * {
@@ -102,6 +103,7 @@ body {
 .yeb.search-fixed {
   position: absolute;
   right: 0;
+  top: 0;
   width: 50px;
   z-index: 10;
   background: inherit;
