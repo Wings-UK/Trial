@@ -57,7 +57,7 @@ body {
 .tab-slider-inner {
   display: flex;
   height: 100%;
-  width: max-content;               /* ← important */
+  width: 150%;               /* ← important */
   gap: 32px;                        /* ← wider gap – try 28px, 32px, 40px */
   padding-right: 96px;              /* ← this is key: extra space after last icon */
   /* padding-right should be ≈ search-width + 20–40px extra hiding */
