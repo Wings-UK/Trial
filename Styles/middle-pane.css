@@ -46,7 +46,6 @@ body {
 }
 
 /* Now .ewe – NO max-width here anymore */
-/*
 .ewe.tab-slider-container {
     position: relative;
     width: 100%;
@@ -54,6 +53,9 @@ body {
     background: white;
     overflow: hidden;
     border-bottom: 1px solid #eee;
+  scroll-snap-type: x proximity;   /* gentle snap, not mandatory */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab-slider-inner {
