@@ -1,3 +1,55 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;                /* or dark color / gradient */
+  min-height: 100vh;
+}
+
+.retail-project {
+  /* This is your main grid / root container */
+  max-width: 428px;                /* ≈ iPhone 14/15/16 Pro Max width */
+  margin: 0 auto;
+  background: white;
+  min-height: 100vh;
+  box-shadow: 0 0 40px rgba(0,0,0,0.4);   /* optional – gives "phone" feel */
+  overflow-x: hidden;
+}
+
+/* If you have a wrapper inside retail-project */
+.main-container,
+.homepage1 {
+  max-width: 100%;                 /* full width of the centered container */
+  width: 100%;
+}
+
+  @media (min-width: 500px) {
+  .retail-project {
+    max-width: 428px !important;
+  }
+}
+
+/* Optional: force portrait orientation hint (mostly for PWA feel) */
+@media (orientation: landscape) and (max-height: 500px) {
+  body::before {
+    content: "Please rotate your device to portrait mode";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+}
+
+/* Now .ewe – NO max-width here anymore */
+.ewe {
+  width: 100%;                     /* full width of parent (which is already max 428px) */
+  /* ... rest of your .ewe styles ... */
+}
+
 * {
   margin: 0;
   padding: 0;
