@@ -2301,24 +2301,6 @@ async function loadInitialNotificationCount() {
 }
 
 const ewe = document.querySelector('.ewe');
-
-ewe.addEventListener('scroll', () => {
-  // Add subtle visual feedback
-  if (ewe.scrollLeft > 10) {
-    ewe.classList.add('scrolled-left');
-  } else {
-    ewe.classList.remove('scrolled-left');
-  }
-});
-
-// Optional: snap back when user releases far left
-ewe.addEventListener('scrollend', () => {
-  if (ewe.scrollLeft < 20) {
-    ewe.scrollTo({ left: 0, behavior: 'smooth' });
-  }
-});
-
-const ewe = document.querySelector('.ewe');
 const inner = document.querySelector('.tab-slider-inner');
 const searchWidth = 64; // px
 
