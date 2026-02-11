@@ -836,19 +836,23 @@ async function showProfile(userId) {
                 </div>  
             </div>  
         </div>  
-        <div class="ewe">
-  <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
-  <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
-  <div class="yeb"><img class="dee" src="pics/store.svg"></div>
-  
-  <!-- This one starts hidden behind search -->
-  <div class="yeb"><img class="dee" src="pics/bookmark.svg"></div>
-  
-  <!-- Fixed-looking search on right -->
-  <div class="yeb search-fixed">
+<div class="ewe tab-slider-container">
+  <!-- scrolling part -->
+  <div class="tab-slider-inner">
+    <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+    <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+    <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+    <div class="yeb extra-tab bookmark-tab">
+      <img class="dee" src="pics/bookmark.svg">
+    </div>
+  </div>
+
+  <!-- always stays on right – covers the 4th tab when at rest -->
+  <div class="search-fixed">
     <img class="dee" src="pics/search.svg">
   </div>
-</div>  
+</div>
+        
         <div class="mansonro">  
             <div class="masonri">  
                 <div class="column left-column"></div>  
@@ -946,6 +950,8 @@ async function showProfile(userId) {
     initializeMasonryHeartReactions();
     window.scrollTo(0, 0);
 }
+
+
 
 // Paste this exactly as-is — add at the bottom
 function goBack() {
@@ -2309,5 +2315,51 @@ ewe.addEventListener('scroll', () => {
 ewe.addEventListener('scrollend', () => {
   if (ewe.scrollLeft < 20) {
     ewe.scrollTo({ left: 0, behavior: 'smooth' });
+  }
+});
+
+const ewe = document.querySelector('.ewe');
+const inner = document.querySelector('.tab-slider-inner');
+const searchWidth = 64; // px
+
+let startX = 0;
+let currentTranslate = 0;
+let prevTranslate = 0;
+let isDragging = false;
+
+ewe.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  isDragging = true;
+});
+
+ewe.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  const currentX = e.touches[0].clientX;
+  const diff = currentX - startX;
+  currentTranslate = prevTranslate + diff;
+
+  // Limit how far left you can go
+  currentTranslate = Math.min(0, currentTranslate);
+  // Optional: limit how far right (show at least part of bookmark)
+  currentTranslate = Math.max(-searchWidth - 20, currentTranslate);
+
+  inner.style.transform = `translateX(${currentTranslate}px)`;
+});
+
+ewe.addEventListener('touchend', () => {
+  isDragging = false;
+  prevTranslate = currentTranslate;
+
+  // Snap logic – either fully show bookmark or hide it
+  if (currentTranslate < -searchWidth / 2) {
+    // show bookmark
+    inner.style.transform = `translateX(${-searchWidth}px)`;
+    prevTranslate = -searchWidth;
+    ewe.classList.add('scrolled-left');
+  } else {
+    // hide
+    inner.style.transform = `translateX(0px)`;
+    prevTranslate = 0;
+    ewe.classList.remove('scrolled-left');
   }
 });
