@@ -14,64 +14,6 @@
     display: block !important;   /* or flex/grid depending on your layout */
 }
 
-.ewe.tab-slider-container {
-    position: relative;
-    width: 100%;
-    height: 54px;           /* adjust to your icon height + padding */
-    background: white;
-    overflow: hidden;
-    border-bottom: 1px solid #eee;
-}
-
-.tab-slider-inner {
-    display: flex;
-    height: 100%;
-    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
-}
-
-.yeb {
-    flex: 0 0 auto;
-    width: 64px;            /* adjust to your desired icon slot width */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-}
-
-.yeb img.dee {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-}
-
-/* Fixed search icon - always visible on right */
-.search-fixed {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: 64px;            /* same as .yeb width */
-    background: white;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-left: 1px solid #eee;   /* subtle separator */
-    box-shadow: -4px 0 8px -4px rgba(0,0,0,0.08);
-}
-
-/* Hide the 4th tab by default (starts under search icon) */
-.yeb.extra-tab {
-    opacity: 0.85;   /* slight visual hint it's different */
-}
-
-/* Optional: active tab style */
-.yeb.active img.dee {
-    filter: brightness(0.3) saturate(3);   /* or use your pink color */
-    transform: scale(1.12);
-}
 
 
 .wallet-title, .notifications-body {
