@@ -20,6 +20,7 @@ body {
 .homepage1 {
   max-width: 100%;                 /* full width of the centered container */
   width: 100%;
+  margin-top: 70px;
 }
 
   @media (min-width: 500px) {
