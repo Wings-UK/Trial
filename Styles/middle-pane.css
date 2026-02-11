@@ -99,7 +99,7 @@ body {
 
 /* Search stays glued to the right edge */
 .yeb.search-fixed {
-  position: sticky;
+  position: fixed;
   right: 0;
   z-index: 10;
   background: inherit;
