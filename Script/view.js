@@ -2293,3 +2293,21 @@ async function loadInitialNotificationCount() {
     unreadNotificationCount = count || 0;
     updateNotificationBadge();
 }
+
+const ewe = document.querySelector('.ewe');
+
+ewe.addEventListener('scroll', () => {
+  // Add subtle visual feedback
+  if (ewe.scrollLeft > 10) {
+    ewe.classList.add('scrolled-left');
+  } else {
+    ewe.classList.remove('scrolled-left');
+  }
+});
+
+// Optional: snap back when user releases far left
+ewe.addEventListener('scrollend', () => {
+  if (ewe.scrollLeft < 20) {
+    ewe.scrollTo({ left: 0, behavior: 'smooth' });
+  }
+});
