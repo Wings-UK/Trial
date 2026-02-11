@@ -46,87 +46,65 @@ body {
 }
 
 /* Now .ewe – NO max-width here anymore */
-.ewe {
-  width: 100%;                     /* full width of parent (which is already max 428px) */
-  /* ... rest of your .ewe styles ... */
-  position: relative;
+/*
+.ewe.tab-slider-container {
+    position: relative;
+    width: 100%;
+    height: 54px;           /* adjust to your icon height + padding */
+    background: white;
+    overflow: hidden;
+    border-bottom: 1px solid #eee;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-.ewe {
-  --icon-size: 44px;
-  --gap: 8px;
-  --search-width: 64px;     /* enough space for search icon + padding */
-
-  display: flex;
-  align-items: center;
-  gap: var(--gap);
-  height: 60px;
-  padding: 0 16px;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-
-  /* Critical for scrolling */
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;   /* gentle snap, not mandatory */
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;  /* smooth iOS scrolling */
-
-  /* Hide scrollbar completely */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.tab-slider-inner {
+    display: flex;
+    height: 100%;
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
 }
 
-.ewe::-webkit-scrollbar {
-  display: none;
-}
-
-/* All icon containers are fixed size — no growing */
 .yeb {
-  flex: 0 0 var(--icon-size);
-  width: var(--icon-size);
-  height: var(--icon-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  scroll-snap-align: center;
+    flex: 0 0 auto;
+    width: 64px;            /* adjust to your desired icon slot width */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
 }
 
-/* Search stays glued to the right edge */
-.yeb.search-fixed {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 50px;
-  z-index: 10;
-  background: inherit;
-  backdrop-filter: inherit;
-  flex: 0 0 var(--search-width);
-  justify-content: flex-end;
-  padding-right: 16px;
-  margin-right: -16px;           /* compensate padding */
-  box-shadow: -4px 0 8px -4px rgba(0,0,0,0.08); /* subtle separation */
+.yeb img.dee {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
-/* Optional: fade on left side when scrolled */
-.ewe:not(:has(.scrolled-to-start))::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0; bottom: 0;
-  width: 24px;
-  background: linear-gradient(to right, white, transparent);
-  z-index: 5;
-  pointer-events: none;
+/* Fixed search icon - always visible on right */
+.search-fixed {
+    position:fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 64px;            /* same as .yeb width */
+    background: white;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid #eee;   /* subtle separator */
+    box-shadow: -4px 0 8px -4px rgba(0,0,0,0.08);
 }
 
+/* Hide the 4th tab by default (starts under search icon) */
+.yeb.extra-tab {
+    opacity: 0.85;   /* slight visual hint it's different */
+}
+
+/* Optional: active tab style */
+.yeb.active img.dee {
+    filter: brightness(0.3) saturate(3);   /* or use your pink color */
+    transform: scale(1.12);
+}
 
 .wallet-title, .notifications-body {
   font-family: 'Noto Sans JP';
