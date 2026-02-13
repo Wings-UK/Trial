@@ -1663,35 +1663,53 @@ async function submitPost() {
 
     let imageUrl = null;
 
-    // Upload image if selected
+    // ─── IMAGE UPLOAD ───────────────────────────────────────
     if (selectedMediaFile) {
-        const fileName = `\( {user.id}- \){Date.now()}-${selectedMediaFile.name.replace(/\s+/g, '_')}`;
+        const fileExt    = selectedMediaFile.name.split('.').pop() || 'jpg';
+        const fileName   = `\( {user.id}_ \){Date.now()}.${fileExt}`;
+        const filePath   = fileName;   // or `private/${fileName}` if you want folders
 
-        const { data, error: uploadError } = await supabase.storage
+        console.log("Uploading to:", filePath);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
             .from('post-images')
-            .upload(fileName, selectedMediaFile, {
+            .upload(filePath, selectedMediaFile, {
                 cacheControl: '3600',
                 upsert: false
             });
 
         if (uploadError) {
-            console.error("Upload error:", uploadError);
-            alert('Failed to upload image: ' + uploadError.message);
+            console.error("UPLOAD FAILED:", uploadError);
+            alert("Image upload failed:\n" + uploadError.message);
             return;
         }
 
-        imageUrl = supabase.storage
+        console.log("Upload success → path:", uploadData.path);
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
             .from('post-images')
-            .getPublicUrl(fileName).data.publicUrl;
+            .getPublicUrl(filePath);
+
+        imageUrl = urlData.publicUrl;
+
+        if (!imageUrl || imageUrl.includes('403') || imageUrl.includes('not-found')) {
+            console.warn("Public URL looks broken:", imageUrl);
+            alert("Image uploaded but cannot be accessed publicly. Check bucket policies.");
+            return;
+        }
+
+        console.log("Public image URL:", imageUrl);
     }
 
-    // Insert post into database
-    const { data: post, error } = await supabase
+    // ─── INSERT POST ────────────────────────────────────────
+    const { data: post, error: insertError } = await supabase
         .from('posts')
         .insert({
             user_id: user.id,
             content: content || null,
-            image: imageUrl || null
+            image: imageUrl || null,
+            // video: null,    ← add later when you implement video
         })
         .select(`
             id, content, image, created_at,
@@ -1699,16 +1717,17 @@ async function submitPost() {
         `)
         .single();
 
-    if (error) {
-        console.error('Post creation failed:', error);
-        alert('Could not create post: ' + (error.message || 'Unknown error'));
+    if (insertError) {
+        console.error("INSERT FAILED:", insertError);
+        alert("Could not create post:\n" + insertError.message);
         return;
     }
 
-    // Success: close modal
+    console.log("Post created successfully:", post);
+
+    // ─── UI success path ────────────────────────────────────
     closePostModal();
 
-    // Add new post to feed instantly
     const newPost = {
         id: post.id,
         userId: user.id,
@@ -1724,16 +1743,9 @@ async function submitPost() {
     };
 
     const postElement = createPostElement(newPost);
-    if (postElement && document.getElementById('flyer')) {
-        document.getElementById('flyer').prepend(postElement);
-    }
+    document.getElementById('flyer')?.prepend(postElement);
 
-    // Optional feedback
-    if (typeof showToast === 'function') {
-        showToast("Posted!");
-    } else {
-        alert("Posted successfully!");
-    }
+    showToast?.("Posted!") || alert("Posted successfully!");
 }
 
 // ───────────────────────────────────────────────
