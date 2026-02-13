@@ -922,25 +922,29 @@
    
    
    <!-- CREATE POST MODAL -->
-<div id="createPostModal" class="post-modal hidden">
-  <div class="post-sheet">
-    <div class="post-header">
-      <p>Create post</p>
-      <span class="close-post" onclick="closePostModal()">×</span>
-    </div>
+<div id="createPostModal" class="modal-overlay hidden">
+  <div class="composer-background"></div>
 
-    <textarea 
-      id="postContent"
-      placeholder="What's happening?"
-      rows="4"></textarea>
+  <div class="composer-container">
+    <!-- Close button -->
+    <button class="close-composer" onclick="closePostModal()">×</button>
 
-    <div class="post-actions">
-      <label class="media-btn">
-        <img src="pics/gallery.svg">
-        <input type="file" id="postImage" accept="image/*" hidden>
-      </label>
+    <!-- Main white card -->
+    <div class="composer-card">
+      <textarea
+        id="postContent"
+        class="composer-textarea"
+        placeholder="What's happening?"
+        autofocus
+      ></textarea>
 
-      <button class="post-btn" onclick="submitPost()">Post</button>
+      <!-- Optional: media preview area (you can expand later) -->
+      <div id="mediaPreview" class="media-preview"></div>
+
+      <!-- Bottom bar with Post button -->
+      <div class="composer-footer">
+        <button class="post-button" onclick="submitPost()">Post</button>
+      </div>
     </div>
   </div>
 </div>
