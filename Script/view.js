@@ -1503,79 +1503,195 @@ async function showDetail(postId) {
     window.scrollTo(0, 0);
 }
 
-// Open composer
+
+// Global variable to hold the currently selected image file
+let selectedMediaFile = null;
+
+// ───────────────────────────────────────────────
+// Open composer (only from profile)
 function makePost() {
+    // Optional safety: only allow from profile page
+    const profilePage = document.getElementById('profile');
+    if (!profilePage || !profilePage.classList.contains('active')) {
+        console.warn("Post composer can only be opened from your profile");
+        return;
+    }
+
     const modal = document.getElementById('createPostModal');
     if (!modal) {
         console.error("createPostModal not found in DOM");
         return;
     }
-    
+
     modal.classList.remove('hidden');
-    
-    // Focus and clear textarea
+
+    // Reset and focus textarea
     const textarea = document.getElementById('postContent');
     if (textarea) {
         textarea.value = '';
-        textarea.focus();
+        // Small delay helps mobile keyboards appear properly
+        setTimeout(() => textarea.focus(), 100);
     }
 
-    // Optional: reset any media preview if you add upload later
-    const preview = document.getElementById('mediaPreview');
-    if (preview) preview.innerHTML = '';
+    // Reset media
+    clearMedia();
+
+    // Disable post button initially
+    document.getElementById('postBtn')?.setAttribute('disabled', 'disabled');
 }
 
-// Close composer
+// ───────────────────────────────────────────────
+// Close composer and clean up
 function closePostModal() {
     const modal = document.getElementById('createPostModal');
     if (modal) {
         modal.classList.add('hidden');
     }
-    
-    // Clear content
+
+    // Clear textarea
     const textarea = document.getElementById('postContent');
     if (textarea) textarea.value = '';
-    
-    // Optional: clear media preview
-    const preview = document.getElementById('mediaPreview');
-    if (preview) preview.innerHTML = '';
+
+    // Clear media
+    clearMedia();
+
+    // Reset post button
+    document.getElementById('postBtn')?.setAttribute('disabled', 'disabled');
 }
 
-// Your existing submitPost() – just make sure it calls closePostModal() at the end
-async function submitPost() {
-    const content = document.getElementById('postContent')?.value?.trim();
-    const imageFile = document.getElementById('postImage')?.files?.[0];   // if you still have file input
+// ───────────────────────────────────────────────
+// Clear selected media and preview
+function clearMedia() {
+    selectedMediaFile = null;
+    const previewContainer = document.getElementById('mediaPreview');
+    if (previewContainer) previewContainer.innerHTML = '';
 
-    if (!content && !imageFile) {
-        alert('Write something or add media');
+    const fileInput = document.getElementById('postImageInput');
+    if (fileInput) fileInput.value = '';
+
+    // Re-check if post button should stay disabled
+    updatePostButtonState();
+}
+
+// ───────────────────────────────────────────────
+// Enable/disable Post button based on content or media
+function updatePostButtonState() {
+    const textarea = document.getElementById('postContent');
+    const postBtn = document.getElementById('postBtn');
+
+    if (!textarea || !postBtn) return;
+
+    const hasText = textarea.value.trim().length > 0;
+    const hasMedia = !!selectedMediaFile;
+
+    if (hasText || hasMedia) {
+        postBtn.removeAttribute('disabled');
+    } else {
+        postBtn.setAttribute('disabled', 'disabled');
+    }
+}
+
+// ───────────────────────────────────────────────
+// Handle image selection and show preview
+function handleMediaSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate it's an image
+    if (!file.type.startsWith('image/')) {
+        alert("Please select an image file");
+        e.target.value = '';
         return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        alert('You must be logged in');
+    // Optional size limit (8MB)
+    if (file.size > 8 * 1024 * 1024) {
+        alert("Image must be smaller than 8MB");
+        e.target.value = '';
+        return;
+    }
+
+    selectedMediaFile = file;
+
+    // Show preview
+    const previewContainer = document.getElementById('mediaPreview');
+    if (!previewContainer) return;
+
+    // Clear old previews (single image for now)
+    previewContainer.innerHTML = '';
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const div = document.createElement('div');
+        div.className = 'preview-item';
+
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        img.alt = "Selected image preview";
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'preview-remove';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = clearMedia;
+
+        div.appendChild(img);
+        div.appendChild(removeBtn);
+        previewContainer.appendChild(div);
+
+        // Enable post button
+        updatePostButtonState();
+    };
+
+    reader.readAsDataURL(file);
+}
+
+// ───────────────────────────────────────────────
+// Submit the post (text + optional image)
+async function submitPost() {
+    const content = document.getElementById('postContent')?.value?.trim() || '';
+
+    if (!content && !selectedMediaFile) {
+        alert('Please write something or add a photo');
+        return;
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        alert('You must be logged in to post');
         return;
     }
 
     let imageUrl = null;
-    if (imageFile) {
-        const fileName = `${user.id}-${Date.now()}-${imageFile.name}`;
-        const { data, error } = await supabase.storage
+
+    // Upload image if selected
+    if (selectedMediaFile) {
+        const fileName = `\( {user.id}- \){Date.now()}-${selectedMediaFile.name.replace(/\s+/g, '_')}`;
+
+        const { data, error: uploadError } = await supabase.storage
             .from('post-images')
-            .upload(fileName, imageFile);
-        if (error) {
-            alert('Image upload failed: ' + error.message);
+            .upload(fileName, selectedMediaFile, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) {
+            console.error("Upload error:", uploadError);
+            alert('Failed to upload image: ' + uploadError.message);
             return;
         }
-        imageUrl = supabase.storage.from('post-images').getPublicUrl(fileName).data.publicUrl;
+
+        imageUrl = supabase.storage
+            .from('post-images')
+            .getPublicUrl(fileName).data.publicUrl;
     }
 
+    // Insert post into database
     const { data: post, error } = await supabase
         .from('posts')
         .insert({
             user_id: user.id,
-            content,
-            image: imageUrl
+            content: content || null,
+            image: imageUrl || null
         })
         .select(`
             id, content, image, created_at,
@@ -1585,20 +1701,20 @@ async function submitPost() {
 
     if (error) {
         console.error('Post creation failed:', error);
-        alert('Could not create post: ' + error.message);
+        alert('Could not create post: ' + (error.message || 'Unknown error'));
         return;
     }
 
-    // Close modal immediately
+    // Success: close modal
     closePostModal();
 
-    // Add to feed instantly (your existing logic)
+    // Add new post to feed instantly
     const newPost = {
         id: post.id,
         userId: user.id,
         username: post.users?.username || '@you',
         avatar: post.users?.avatar || 'pics/default-avatar.png',
-        content: post.content,
+        content: post.content || '',
         image: post.image,
         timestamp: 'just now',
         likeCount: 0,
@@ -1608,13 +1724,33 @@ async function submitPost() {
     };
 
     const postElement = createPostElement(newPost);
-    if (postElement) {
-        document.getElementById('flyer')?.prepend(postElement);
+    if (postElement && document.getElementById('flyer')) {
+        document.getElementById('flyer').prepend(postElement);
     }
 
-    // Optional success feedback
-    showToast?.("Posted!");
+    // Optional feedback
+    if (typeof showToast === 'function') {
+        showToast("Posted!");
+    } else {
+        alert("Posted successfully!");
+    }
 }
+
+// ───────────────────────────────────────────────
+// Attach event listeners once when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // File input change → preview
+    const imageInput = document.getElementById('postImageInput');
+    if (imageInput) {
+        imageInput.addEventListener('change', handleMediaSelect);
+    }
+
+    // Textarea input → update post button state
+    const textarea = document.getElementById('postContent');
+    if (textarea) {
+        textarea.addEventListener('input', updatePostButtonState);
+    }
+});
 
 let activeLongPressPost = null;
 
