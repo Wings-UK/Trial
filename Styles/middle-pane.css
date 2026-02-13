@@ -33,6 +33,10 @@ body {
   box-sizing: border-box;
 }
 
+/* ───────────────────────────────────────────────
+   Full-page blurred gradient post composer
+   ─────────────────────────────────────────────── */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -61,7 +65,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 580px;
-  height: 80dvh;
+  height: 80dvh;           /* ← kept your value */
   padding: 50px 16px;
   box-sizing: border-box;
   z-index: 2;
@@ -71,7 +75,7 @@ body {
 
 .composer-card {
   background: white;
-  border-radius: 20px;
+  border-radius: 20px;     /* ← kept your 20px (you can change back to 40px if preferred) */
   box-shadow: 0 20px 70px rgba(0,0,0,0.22);
   flex: 1;
   overflow: hidden;
@@ -80,6 +84,38 @@ body {
   position: relative;
 }
 
+/* ─── Header (close button area) ─── */
+.composer-header {
+  height: 54px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ─── Main content area (textarea + preview) ─── */
+.composer-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Footer (upload + post button) ─── */
+.composer-footer {
+  padding: 12px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  flex-shrink: 0;
+}
+
+.footer-left {
+  display: flex;
+  gap: 16px;
+}
+
+/* Close button */
 .close-composer {
   position: absolute;
   top: 22px;
@@ -101,9 +137,10 @@ body {
 }
 
 .close-composer:hover {
-  background: rgba(0,0,0,0.14);
+  background: rgba(0,0,0,0.45);
 }
 
+/* Textarea */
 .composer-textarea {
   flex: 1;
   width: 100%;
@@ -112,11 +149,15 @@ body {
   resize: none;
   font-size: 19px;
   line-height: 1.45;
-  font-family: 'Noto Sans JP';
+  font-family: 'Noto Sans JP', system-ui, sans-serif;
   background: transparent;
   color: #111;
   overflow-y: auto;
   scrollbar-width: none;
+}
+
+.composer-textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .composer-textarea:focus {
@@ -128,21 +169,16 @@ body {
   opacity: 0.9;
 }
 
-/* Makes text "grow upward" feeling by aligning to top after first line */
-.composer-textarea:empty {
+/* Center placeholder when empty */
+.composer-textarea:empty,
+.composer-textarea:placeholder-shown {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
 
-.composer-footer {
-  padding: 16px 28px;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-}
-
+/* Post button */
 .post-button {
   background: #f40752;
   color: white;
@@ -153,9 +189,10 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 100px;
 }
 
-.post-button:hover {
+.post-button:hover:not(:disabled) {
   background: #d30648;
   transform: translateY(-1px);
 }
@@ -163,13 +200,70 @@ body {
 .post-button:disabled {
   background: #ccc;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* Optional – small media preview if you add images later */
+/* ─── Photo upload button ─── */
+.media-btn {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-btn:hover {
+  background: rgba(244, 7, 82, 0.12);
+}
+
+/* ─── Media Preview ─── */
 .media-preview {
   padding: 0 28px 16px;
-  max-height: 220px;
+  max-height: 340px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.preview-item {
+  position: relative;
+  border-radius: 16px;
   overflow: hidden;
+  background: #f8f9fa;
+  margin-bottom: 12px;
+  max-width: 100%;
+}
+
+.preview-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  max-height: 320px;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.preview-remove:hover {
+  background: rgba(0,0,0,0.9);
 }
 
 .wallet-title, .notifications-body {
