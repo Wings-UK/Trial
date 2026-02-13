@@ -53,7 +53,7 @@ body {
   inset: 0;
   background: linear-gradient(135deg, #ff9aa2 0%, #ffc2d4 30%, #e0bbff 70%, #c7ceea 100%);
   filter: blur(90px) brightness(0.92) saturate(1.3);
-  opacity: 0.85;
+  opacity: 1;
   z-index: 1;
 }
 
