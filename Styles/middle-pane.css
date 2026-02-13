@@ -61,7 +61,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 580px;
-  height: 100dvh;
+  height: 80dvh;
   padding: 50px 16px;
   box-sizing: border-box;
   z-index: 2;
@@ -112,7 +112,7 @@ body {
   resize: none;
   font-size: 19px;
   line-height: 1.45;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Noto Sans JP';
   background: transparent;
   color: #111;
   overflow-y: auto;
@@ -147,9 +147,9 @@ body {
   background: #f40752;
   color: white;
   border: none;
-  padding: 12px 36px;
+  padding: 10px 30px;
   border-radius: 999px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
