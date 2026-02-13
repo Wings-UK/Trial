@@ -33,6 +33,141 @@ body {
   box-sizing: border-box;
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: hidden;
+}
+
+.composer-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ff9aa2 0%, #ffc2d4 30%, #e0bbff 70%, #c7ceea 100%);
+  filter: blur(90px) brightness(0.92) saturate(1.3);
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.composer-container {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: 100dvh;
+  padding: 50px 16px;
+  box-sizing: border-box;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.composer-card {
+  background: white;
+  border-radius: 40px;
+  box-shadow: 0 20px 70px rgba(0,0,0,0.22);
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.close-composer {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  background: rgba(0,0,0,0.07);
+  color: #333;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.close-composer:hover {
+  background: rgba(0,0,0,0.14);
+}
+
+.composer-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 32px 28px;
+  border: none;
+  resize: none;
+  font-size: 19px;
+  line-height: 1.45;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: transparent;
+  color: #111;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.composer-textarea:focus {
+  outline: none;
+}
+
+.composer-textarea::placeholder {
+  color: #aaa;
+  opacity: 0.9;
+}
+
+/* Makes text "grow upward" feeling by aligning to top after first line */
+.composer-textarea:empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.composer-footer {
+  padding: 16px 28px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.post-button {
+  background: #f40752;
+  color: white;
+  border: none;
+  padding: 12px 36px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-button:hover {
+  background: #d30648;
+  transform: translateY(-1px);
+}
+
+.post-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Optional – small media preview if you add images later */
+.media-preview {
+  padding: 0 28px 16px;
+  max-height: 220px;
+  overflow: hidden;
+}
+
 .wallet-title, .notifications-body {
   font-family: 'Noto Sans JP';
   text-align: center;
