@@ -1503,92 +1503,117 @@ async function showDetail(postId) {
     window.scrollTo(0, 0);
 }
 
+// Open composer
 function makePost() {
-  document.getElementById('createPostModal').classList.remove('hidden');
-}
-
-function closePostModal() {
-  document.getElementById('createPostModal').classList.add('hidden');
-  document.getElementById('postContent').value = '';
-  document.getElementById('postImage').value = '';
-}
-
-async function submitPost() {
-  const content = document.getElementById('postContent').value.trim();
-  const imageFile = document.getElementById('postImage').files[0];
-
-  if (!content && !imageFile) {
-    alert('Write something or add media');
-    return;
-  }
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert('You must be logged in');
-    return;
-  }
-
-  let imageUrl = null;
-
-  // OPTIONAL IMAGE UPLOAD
-  if (imageFile) {
-    const fileName = `${user.id}-${Date.now()}-${imageFile.name}`;
-
-    const { data, error } = await supabase
-      .storage
-      .from('post-images')
-      .upload(fileName, imageFile);
-
-    if (error) {
-      alert('Image upload failed');
-      return;
+    const modal = document.getElementById('createPostModal');
+    if (!modal) {
+        console.error("createPostModal not found in DOM");
+        return;
+    }
+    
+    modal.classList.remove('hidden');
+    
+    // Focus and clear textarea
+    const textarea = document.getElementById('postContent');
+    if (textarea) {
+        textarea.value = '';
+        textarea.focus();
     }
 
-    imageUrl = supabase
-      .storage
-      .from('post-images')
-      .getPublicUrl(fileName).data.publicUrl;
-  }
-
-  const { data: post, error } = await supabase
-    .from('posts')
-    .insert({
-      user_id: user.id,
-      content,
-      image: imageUrl
-    })
-    .select(`
-      id, content, image, created_at,
-      users ( username, avatar )
-    `)
-    .single();
-
-  if (error) {
-  console.error('Post error:', error);
-  alert(error.message);
-  return;
+    // Optional: reset any media preview if you add upload later
+    const preview = document.getElementById('mediaPreview');
+    if (preview) preview.innerHTML = '';
 }
 
-  closePostModal();
+// Close composer
+function closePostModal() {
+    const modal = document.getElementById('createPostModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    
+    // Clear content
+    const textarea = document.getElementById('postContent');
+    if (textarea) textarea.value = '';
+    
+    // Optional: clear media preview
+    const preview = document.getElementById('mediaPreview');
+    if (preview) preview.innerHTML = '';
+}
 
-  // 🔥 INSTANT UI UPDATE (homepage)
-  const newPost = {
-    id: post.id,
-    userId: user.id,
-    username: post.users.username,
-    avatar: post.users.avatar,
-    content: post.content,
-    image: post.image,
-    timestamp: 'just now',
-    likeCount: 0,
-    commentCount: 0,
-    repostCount: 0,
-    views: 0
-  };
+// Your existing submitPost() – just make sure it calls closePostModal() at the end
+async function submitPost() {
+    const content = document.getElementById('postContent')?.value?.trim();
+    const imageFile = document.getElementById('postImage')?.files?.[0];   // if you still have file input
 
-  const postElement = createPostElement(newPost);
-  document.getElementById('flyer').prepend(postElement);
+    if (!content && !imageFile) {
+        alert('Write something or add media');
+        return;
+    }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert('You must be logged in');
+        return;
+    }
+
+    let imageUrl = null;
+    if (imageFile) {
+        const fileName = `${user.id}-${Date.now()}-${imageFile.name}`;
+        const { data, error } = await supabase.storage
+            .from('post-images')
+            .upload(fileName, imageFile);
+        if (error) {
+            alert('Image upload failed: ' + error.message);
+            return;
+        }
+        imageUrl = supabase.storage.from('post-images').getPublicUrl(fileName).data.publicUrl;
+    }
+
+    const { data: post, error } = await supabase
+        .from('posts')
+        .insert({
+            user_id: user.id,
+            content,
+            image: imageUrl
+        })
+        .select(`
+            id, content, image, created_at,
+            users ( username, avatar )
+        `)
+        .single();
+
+    if (error) {
+        console.error('Post creation failed:', error);
+        alert('Could not create post: ' + error.message);
+        return;
+    }
+
+    // Close modal immediately
+    closePostModal();
+
+    // Add to feed instantly (your existing logic)
+    const newPost = {
+        id: post.id,
+        userId: user.id,
+        username: post.users?.username || '@you',
+        avatar: post.users?.avatar || 'pics/default-avatar.png',
+        content: post.content,
+        image: post.image,
+        timestamp: 'just now',
+        likeCount: 0,
+        commentCount: 0,
+        repostCount: 0,
+        views: 0
+    };
+
+    const postElement = createPostElement(newPost);
+    if (postElement) {
+        document.getElementById('flyer')?.prepend(postElement);
+    }
+
+    // Optional success feedback
+    showToast?.("Posted!");
 }
 
 let activeLongPressPost = null;
