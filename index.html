@@ -921,30 +921,52 @@
 </script>
    
    
-   <!-- CREATE POST MODAL -->
+ <!-- CREATE POST MODAL -->
 <div id="createPostModal" class="modal-overlay hidden">
   <div class="composer-background"></div>
 
   <div class="composer-container">
-    <!-- Close button -->
-    <button class="close-composer" onclick="closePostModal()">×</button>
-
-    <!-- Main white card -->
     <div class="composer-card">
-      <textarea
-        id="postContent"
-        class="composer-textarea"
-        placeholder="Share your thoughts..."
-        autofocus
-      ></textarea>
 
-      <!-- Optional: media preview area (you can expand later) -->
-      <div id="mediaPreview" class="media-preview"></div>
-
-      <!-- Bottom bar with Post button -->
-      <div class="composer-footer">
-        <button class="post-button" onclick="submitPost()">Post</button>
+      <!-- Top bar with close button -->
+      <div class="composer-header">
+        <button class="close-composer" onclick="closePostModal()">×</button>
       </div>
+
+      <!-- Scrollable content area: textarea + preview -->
+      <div class="composer-body">
+        <textarea
+          id="postContent"
+          class="composer-textarea"
+          placeholder="Share your thoughts..."
+          autofocus
+        ></textarea>
+
+        <!-- Media preview will appear here -->
+        <div id="mediaPreview" class="media-preview"></div>
+      </div>
+
+      <!-- Footer with upload button + Post button -->
+      <div class="composer-footer">
+        <div class="footer-left">
+          <!-- Gallery / photo upload trigger -->
+          <label for="postImageInput" class="media-btn" title="Add photo">
+            <img src="pics/gallery.svg" alt="Add photo" style="width:28px; height:28px;">
+            <!-- or use any icon you have: camera.svg, plus.svg, etc. -->
+          </label>
+
+          <!-- Hidden file input -->
+          <input
+            type="file"
+            id="postImageInput"
+            accept="image/*"
+            hidden
+          >
+        </div>
+
+        <button class="post-button" id="postBtn" onclick="submitPost()" disabled>Post</button>
+      </div>
+
     </div>
   </div>
 </div>
