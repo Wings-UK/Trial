@@ -44,6 +44,10 @@ body {
   overflow: hidden;
 }
 
+.modal-overlay.hidden {
+  display: none !important;
+}
+
 .composer-background {
   position: absolute;
   inset: 0;
