@@ -2457,3 +2457,213 @@ async function loadInitialNotificationCount() {
     unreadNotificationCount = count || 0;
     updateNotificationBadge();
 }
+
+// ═══════════════════════════════════════════════════════════
+// IMAGE UPLOAD FIX - Add this to your post creation code
+// ═══════════════════════════════════════════════════════════
+
+// 1. First, ensure you have a storage bucket called 'post-images' in Supabase
+// Go to Storage > Create new bucket > name it 'post-images' > make it PUBLIC
+
+// 2. Add this function to handle image uploads
+async function uploadImageToSupabase(file) {
+    try {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            throw new Error('File must be an image');
+        }
+
+        // Validate file size (max 5MB)
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > MAX_SIZE) {
+            throw new Error('Image must be less than 5MB');
+        }
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 9);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${timestamp}-${randomString}.${fileExt}`;
+        const filePath = `posts/${fileName}`;
+
+        console.log('Uploading image:', filePath);
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+            .from('post-images')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (error) {
+            console.error('Upload error:', error);
+            throw error;
+        }
+
+        console.log('Upload successful:', data);
+
+        // Get the public URL
+        const { data: urlData } = supabase.storage
+            .from('post-images')
+            .getPublicUrl(filePath);
+
+        if (!urlData || !urlData.publicUrl) {
+            throw new Error('Could not generate public URL');
+        }
+
+        console.log('Public URL:', urlData.publicUrl);
+        return urlData.publicUrl;
+
+    } catch (err) {
+        console.error('Image upload failed:', err);
+        throw err;
+    }
+}
+
+// 3. Update your post creation function to use this
+async function createPostWithImage(content, imageFile = null) {
+    if (!currentUserId) {
+        alert("Please sign in to post");
+        return;
+    }
+
+    try {
+        let imageUrl = null;
+
+        // Upload image if provided
+        if (imageFile) {
+            console.log('Starting image upload...');
+            imageUrl = await uploadImageToSupabase(imageFile);
+            console.log('Image uploaded, URL:', imageUrl);
+        }
+
+        // Create the post
+        const { data, error } = await supabase
+            .from('posts')
+            .insert({
+                user_id: currentUserId,
+                content: content,
+                image_url: imageUrl,
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        console.log('Post created successfully:', data);
+        return data;
+
+    } catch (err) {
+        console.error('Post creation failed:', err);
+        alert(`Failed to create post: ${err.message}`);
+        return null;
+    }
+}
+
+// 4. Example usage in your form submit handler:
+/*
+document.getElementById('post-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const content = document.getElementById('post-content').value;
+    const imageInput = document.getElementById('post-image');
+    const imageFile = imageInput.files[0] || null;
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+    
+    // Create the post
+    const post = await createPostWithImage(content, imageFile);
+    
+    if (post) {
+        // Clear form
+        document.getElementById('post-content').value = '';
+        imageInput.value = '';
+        
+        // Reload posts or add new post to UI
+        location.reload(); // or use your loadPosts() function
+    }
+    
+    // Reset button
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Post';
+});
+*/
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE BUCKET SETUP INSTRUCTIONS
+// ═══════════════════════════════════════════════════════════
+
+/*
+1. Go to your Supabase Dashboard
+2. Click "Storage" in the sidebar
+3. Click "Create a new bucket"
+4. Name: post-images
+5. Public bucket: YES (toggle on)
+6. Click "Create bucket"
+
+7. Set up RLS policies for the bucket:
+   - Click on the bucket
+   - Go to "Policies" tab
+   - Add this policy for uploads:
+     
+     Policy name: Allow authenticated users to upload
+     Policy definition:
+     
+     (bucket_id = 'post-images') AND (auth.role() = 'authenticated')
+     
+     Allowed operations: INSERT
+   
+   - Add this policy for public reads:
+   
+     Policy name: Allow public to view images
+     Policy definition:
+     
+     (bucket_id = 'post-images')
+     
+     Allowed operations: SELECT
+
+8. IMPORTANT: Make sure your posts table has an image_url column:
+   
+   ALTER TABLE posts ADD COLUMN image_url TEXT;
+*/
+
+// ═══════════════════════════════════════════════════════════
+// DEBUGGING HELPERS
+// ═══════════════════════════════════════════════════════════
+
+// Call this to test if storage is set up correctly
+async function testStorageConnection() {
+    try {
+        const { data: buckets, error } = await supabase.storage.listBuckets();
+        
+        if (error) {
+            console.error('❌ Cannot list buckets:', error);
+            return false;
+        }
+        
+        console.log('✅ Available buckets:', buckets);
+        
+        const postImagesBucket = buckets.find(b => b.name === 'post-images');
+        if (!postImagesBucket) {
+            console.error('❌ post-images bucket not found!');
+            console.log('Create it in Supabase Dashboard > Storage');
+            return false;
+        }
+        
+        console.log('✅ post-images bucket exists:', postImagesBucket);
+        return true;
+        
+    } catch (err) {
+        console.error('❌ Storage test failed:', err);
+        return false;
+    }
+}
+
+// Call this in your console to test:
+// testStorageConnection()
+
