@@ -1665,9 +1665,9 @@ async function submitPost() {
 
     // ─── IMAGE UPLOAD ───────────────────────────────────────
     if (selectedMediaFile) {
-        const fileExt    = selectedMediaFile.name.split('.').pop() || 'jpg';
-        const fileName   = `\( {user.id}_ \){Date.now()}.${fileExt}`;
-        const filePath   = fileName;   // or `private/${fileName}` if you want folders
+        const fileExt  = selectedMediaFile.name.split('.').pop() || 'jpg';
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        const filePath = fileName;
 
         console.log("Uploading to:", filePath);
 
@@ -1709,7 +1709,6 @@ async function submitPost() {
             user_id: user.id,
             content: content || null,
             image: imageUrl || null,
-            // video: null,    ← add later when you implement video
         })
         .select(`
             id, content, image, created_at,
