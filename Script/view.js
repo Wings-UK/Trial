@@ -430,14 +430,11 @@ function createPostElement(post) {
             </div>
         </div>
 
-        ${hasImage ? `
-        <div class="laptop1">
-            <div class="placeholder placeholder1" data-large="${post.image}">
-                <img src="pics/tt_2.png" class="laptop img-small placeholder1">
-                <div style="padding-bottom: 100%;"></div>
-            </div>
-        </div>
-        ` : ''}
+       ${hasImage ? 
+<div class="laptop1">
+    <img src="${post.image}" class="laptop" alt="Post image" loading="lazy">
+</div>
+ : ''}
 
         ${hasVideo ? `
         <div class="video-container laptop1" data-post-id="${post.id}">
