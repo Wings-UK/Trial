@@ -1168,7 +1168,8 @@ async function showMyProfile() {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
         userPosts.forEach((post, index) => {
-            const truncated = post.content.substring(0, 80) + (post.content.length > 80 ? '...' : '');
+            const content = post.content || '';   // ← null/undefined → empty string
+const truncated = content.substring(0, 80) + (content.length > 80 ? '...' : '');
 
             /* ───── WRAPPER (HOLDS NAVIGATION) ───── */
             const wrapper = document.createElement('div');
