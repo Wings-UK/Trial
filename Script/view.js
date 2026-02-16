@@ -888,8 +888,7 @@ async function showProfile(userId) {
                 ` : ''}  
                 <div class="contentma">  
     <p class="partner">
-        ${(post.content || '').substring(0, 80)}${(post.content || '').length > 80 ? '...' :''}
-    </p>  
+        ${(post.content || '').substring(0, 80)}${(post.content || '').length > 80 ? '...' :''}</p>  
 </div>
             `;  
 
