@@ -2323,13 +2323,17 @@ function createPostElement(post) {
     });
 
     // Repost button
-    const repostBtn = posterElement.querySelector('.repost-btn');
-    if (repostBtn) {
-        repostBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleRepostClick(post.id);
-        });
-    }
+   const repostBtn = posterElement.querySelector('.repost-btn');
+if (repostBtn) {
+    console.log("✅ Repost listener attached to post", post.id);   // <--- add this
+    repostBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log("🟢 Repost button clicked → post ID:", post.id);   // <--- add this
+        handleRepostClick(post.id);
+    });
+} else {
+    console.log("❌ No .repost-btn found in this post element", post.id);   // <--- add this
+}
 
     // Like (your existing logic — already good)
     const heartContainer = posterElement.querySelector('.heart-ai');
