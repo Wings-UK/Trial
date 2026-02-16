@@ -276,284 +276,6 @@ function shortenText(text, limit, showSeeMore = true) {
 // ─────────────────────────────────────────────────────────────
 // Updated loadMorePosts() – with users table join (Option A)
 // ─────────────────────────────────────────────────────────────
-// Paste this exactly as-is — replace your current loadMorePosts function
-async function loadMorePosts() {
-    if (isLoading) return;
-    isLoading = true;
-
-    const postContainer = document.getElementById("flyer");
-    if (!postContainer) {
-        console.error("Cannot find #flyer element");
-        isLoading = false;
-        return;
-    }
-
-    // Show skeletons immediately
-    addSkeletonStyles();
-    for (let i = 0; i < postsPerLoad; i++) {
-        postContainer.appendChild(createSkeletonPost());
-    }
-
-    try {
-        console.log("Trying to load posts from Supabase (with user join)...");
-
-        const { data: fetchedPosts, error } = await supabase
-            .from('posts')
-            .select(`
-                id,
-                content,
-                image,
-                video,
-                created_at,
-                like_count,
-                comment_count,
-                repost_count,
-                views,
-                user_id,
-                user:users (
-                    id,
-                    username,
-                    avatar
-                )
-            `)
-            .order('created_at', { ascending: false })
-            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
-
-        if (error) {
-            console.error("Supabase fetch error:", error.message);
-            alert("Failed to load posts: " + error.message);
-            isLoading = false;
-            return;
-        }
-
-        if (!fetchedPosts || fetchedPosts.length === 0) {
-            console.log("No more posts to load");
-            isLoading = false;
-            return;
-        }
-
-        console.log(`Loaded ${fetchedPosts.length} posts from Supabase`);
-
-        // Remove all skeletons before adding real posts
-        document.querySelectorAll('.skeleton').forEach(skel => skel.remove());
-
-        const adaptedPosts = fetchedPosts.map(p => ({
-    id: p.id,
-    userId: p.user_id || p.user?.id,
-    // prefer username, fall back to display name if available
-    username: p.user?.username || p.user?.name || '@unknown',
-    avatar: p.user?.avatar || 'pics/default-avatar.png',
-    content: p.content || '',
-    image: p.image || null,
-    video: p.video || null,
-    timestamp: formatTimeSince(p.created_at),
-    likeCount: p.like_count || 0,
-    commentCount: p.comment_count || 0,
-    repostCount: p.repost_count || 0,
-    views: p.views || 0
-}));
-
-        console.log("Adapted posts:", adaptedPosts);
-
-        adaptedPosts.forEach(post => {
-            loadedPostIds.add(post.id);
-            const postElement = createPostElement(post);
-            if (postElement) {
-                postContainer.appendChild(postElement);
-            }
-        });
-
-        
-
-    } catch (err) {
-        console.error("Unexpected error while loading posts:", err);
-        alert("Error loading posts. Check console.");
-    } finally {
-        isLoading = false;
-    }
-}
-
-function createPostElement(post) {
-    const user = {
-        username: post.username || 'new user',
-        avatar: post.avatar || 'pics/tt.jpg.jpg'
-    };
-
-    const textLimit = (post.image || post.video) ? 150 : 300;
-    const hasVideo = !!post.video;
-    const hasImage = !!post.image;
-
-    const isOwnPost = currentUserId && post.userId === currentUserId;
-
-    const posterElement = document.createElement('div');
-    posterElement.className = 'poster';
-    posterElement.setAttribute('data-post-id', post.id);
-
-    posterElement.innerHTML = `
-        <div class="cust-name">
-            <div class="heading">
-                <div class="small-photo1">
-                     <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
-                       <img class="small-photo" src="${post.avatar}">
-                    </a>
-                </div>
-                <div class="pos">
-                    <div>
-                        <div class="link-wrapper">
-                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
-                                <div class="post1">
-                                    <div class="jerr">
-                                        <p class="jerry">${user.username}</p>
-                                    </div>
-                                    <div>
-                                        <img class="verif" src="pics/very.svg">
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="comp1">
-                        <div class="cll">
-                            <p class="time">${post.timestamp}</p>
-                            <div class="tool">
-                                <p>7.23pm · Sept 23, 2024</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="dots">
-                <img class="dot" src="pics/dots.svg">
-                <div class="tool">
-                    <p>More</p>
-                </div>
-            </div>
-        </div>
-
-       ${hasImage ? `
-<div class="laptop1">
-    <img src="${post.image}" class="laptop" alt="Post image" loading="lazy">
-</div>
- `: ''}
-
-        ${hasVideo ? `
-        <div class="video-container laptop1" data-post-id="${post.id}">
-            <video class="video-thumbnail" preload="metadata">
-                <source src="${post.video}" type="video/mp4">
-            </video>
-            <div class="video-overlay">
-                <div class="play-button">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        ` : ''}
-
-        <div class="tir">
-            <p class="tired">${shortenText(post.content, textLimit, true)}</p>
-        </div>
-
-        <div class="lefto">
-            <div class="dick">
-                <div>
-                    <img class="lefti" src="pics/bounce.svg">
-                </div>
-                <div>
-                    <p class="viewe">View all ${post.commentCount || 142} discuss</p>
-                </div>
-            </div>
-            <div class="twits">
-                <div>
-                    <img class="leti" src="pics/stats.svg">
-                </div>
-                <div>
-                    <p class="viewe">${post.views || '96.8K'} views</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="reaction">
-            <div class="reaction-container">
-                <div class="call">
-                    <div class="mee">
-                        <div class="comment-btn" data-post-id="${post.id}">
-                            <img class="feeling" src="pics/comment.svg" alt="Comment">
-                            <span>${post.commentCount || 0}</span>
-                        </div>
-                        <div class="repost-btn">
-                            <img class="feeling" src="pics/retweet.svg" alt="Repost">
-                            <span>${post.repostCount || 0}</span>
-                        </div>
-                        <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                            <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
-                                <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                            </svg>
-                            <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
-                        </div>
-                    </div>
-                    <div class="mee">
-                        <div class="donate-btn">
-                            <img class="feeling" src="pics/bookmark.svg" alt="Donate">
-                        </div>
-                        <div class="donate-btn">
-                            <img class="feeling" src="pics/share.svg">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Attach click handlers for image/video/text → open detail
-    if (hasImage) {
-        const imageDiv = posterElement.querySelector(".laptop1");
-        imageDiv?.addEventListener("click", () => {
-            if (posterElement.dataset.blockNavigation === 'true') return;
-            showDetail(post.id);
-        });
-    }
-
-    if (hasVideo) {
-        const videoDiv = posterElement.querySelector(".video-container");
-        videoDiv?.addEventListener("click", () => {
-            if (posterElement.dataset.blockNavigation === 'true') return;
-            showDetail(post.id);
-        });
-    }
-
-    const textDiv = posterElement.querySelector(".tir");
-    textDiv?.addEventListener("click", () => {
-        if (posterElement.dataset.blockNavigation === 'true') return;
-        showDetail(post.id);
-    });
-
-    // ─── REAL LIKE INITIALIZATION ───
-    const heartContainer = posterElement.querySelector('.heart-ai');
-    if (heartContainer) {
-        // Check if current user already liked this post
-        isPostLikedByCurrentUser(post.id).then(liked => {
-            if (liked) {
-                heartContainer.setAttribute('data-liked', 'true');
-                heartContainer.querySelector('.heart-icon')?.classList.add('liked');
-                heartContainer.querySelector('.like-count')?.classList.add('liked');
-            }
-        });
-
-        // Click handler for like/unlike
-        heartContainer.querySelectorAll('.heart-clickable').forEach(el => {
-            el.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                await toggleLike(post.id, heartContainer);
-            });
-        });
-    }
-
-    enablePostLongPress(posterElement, post);
-    return posterElement;
-}
 
 
 // Start loading when homepage is shown
@@ -1643,107 +1365,7 @@ function handleMediaSelect(e) {
     reader.readAsDataURL(file);
 }
 
-// ───────────────────────────────────────────────
-// Submit the post (text + optional image)
-async function submitPost() {
-    const content = document.getElementById('postContent')?.value?.trim() || '';
-
-    if (!content && !selectedMediaFile) {
-        alert('Please write something or add a photo');
-        return;
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-        alert('You must be logged in to post');
-        return;
-    }
-
-    let imageUrl = null;
-
-    // ─── IMAGE UPLOAD ───────────────────────────────────────
-    if (selectedMediaFile) {
-        const fileExt  = selectedMediaFile.name.split('.').pop() || 'jpg';
-        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-        const filePath = fileName;
-
-        console.log("Uploading to:", filePath);
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('post-images')
-            .upload(filePath, selectedMediaFile, {
-                cacheControl: '3600',
-                upsert: false
-            });
-
-        if (uploadError) {
-            console.error("UPLOAD FAILED:", uploadError);
-            alert("Image upload failed:\n" + uploadError.message);
-            return;
-        }
-
-        console.log("Upload success → path:", uploadData.path);
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-            .from('post-images')
-            .getPublicUrl(filePath);
-
-        imageUrl = urlData.publicUrl;
-
-        if (!imageUrl || imageUrl.includes('403') || imageUrl.includes('not-found')) {
-            console.warn("Public URL looks broken:", imageUrl);
-            alert("Image uploaded but cannot be accessed publicly. Check bucket policies.");
-            return;
-        }
-
-        console.log("Public image URL:", imageUrl);
-    }
-
-    // ─── INSERT POST ────────────────────────────────────────
-    const { data: post, error: insertError } = await supabase
-        .from('posts')
-        .insert({
-            user_id: user.id,
-            content: content || null,
-            image: imageUrl || null,
-        })
-        .select(`
-            id, content, image, created_at,
-            users ( username, avatar )
-        `)
-        .single();
-
-    if (insertError) {
-        console.error("INSERT FAILED:", insertError);
-        alert("Could not create post:\n" + insertError.message);
-        return;
-    }
-
-    console.log("Post created successfully:", post);
-
-    // ─── UI success path ────────────────────────────────────
-    closePostModal();
-
-    const newPost = {
-        id: post.id,
-        userId: user.id,
-        username: post.users?.username || '@you',
-        avatar: post.users?.avatar || 'pics/default-avatar.png',
-        content: post.content || '',
-        image: post.image,
-        timestamp: 'just now',
-        likeCount: 0,
-        commentCount: 0,
-        repostCount: 0,
-        views: 0
-    };
-
-    const postElement = createPostElement(newPost);
-    document.getElementById('flyer')?.prepend(postElement);
-
-    showToast?.("Posted!") || alert("Posted successfully!");
-}
+g
 
 // ───────────────────────────────────────────────
 // Attach event listeners once when page loads
@@ -2454,4 +2076,517 @@ async function loadInitialNotificationCount() {
 
     unreadNotificationCount = count || 0;
     updateNotificationBadge();
+}
+
+
+// ───────────────────────────────────────────────
+//  REPOST HELPERS
+// ───────────────────────────────────────────────
+
+// Small helper to create repost indicator line
+function createRepostIndicator() {
+    const div = document.createElement('div');
+    div.className = 'repost-indicator';
+    div.innerHTML = `
+        <img src="pics/retweet.svg" alt="Repost" style="width:18px;height:18px;">
+        <span style="font-size:13px;color:#666;margin-left:6px;">Reposted</span>
+    `;
+    return div;
+}
+
+// ───────────────────────────────────────────────
+//  UPDATED: createPostElement — now supports reposts
+// ───────────────────────────────────────────────
+function createPostElement(post) {
+    const user = {
+        username: post.username || 'new user',
+        avatar: post.avatar || 'pics/tt.jpg.jpg'
+    };
+
+    const textLimit = (post.image || post.video) ? 150 : 300;
+    const hasVideo   = !!post.video;
+    const hasImage   = !!post.image;
+    const isOwnPost  = currentUserId && post.userId === currentUserId;
+
+    // ─── REPOST CHECK ───
+    const isRepost = !!post.reposted_post_id && post.reposted_post;
+    const original = isRepost ? post.reposted_post : null;
+    const originalUser = original ? {
+        username: original.user?.username || '@unknown',
+        avatar: original.user?.avatar || 'pics/default-avatar.png'
+    } : null;
+
+    const posterElement = document.createElement('div');
+    posterElement.className = 'poster';
+    if (isRepost) posterElement.classList.add('is-repost');
+    posterElement.setAttribute('data-post-id', post.id);
+
+    let mainContentHTML = '';
+
+    if (isRepost) {
+        // ─── REPOST LAYOUT ───
+        mainContentHTML = `
+            ${post.content ? `
+                <div class="tir repost-commentary">
+                    <p class="tired">${shortenText(post.content, textLimit, true)}</p>
+                </div>
+            ` : ''}
+
+            <div class="original-post-card" data-original-post-id="${original.id}">
+                <div class="repost-indicator">
+                    <img src="pics/retweet.svg" alt="Repost" style="width:18px;height:18px;">
+                    <span>Reposted from @${originalUser.username}</span>
+                </div>
+
+                <div class="cust-name">
+                    <div class="heading">
+                        <div class="small-photo1">
+                            <a class="lino" onclick="showProfile('${original.user_id}')">
+                                <img class="small-photo" src="${originalUser.avatar}">
+                            </a>
+                        </div>
+                        <div class="pos">
+                            <div class="link-wrapper">
+                                <a class="home-click" onclick="showProfile('${original.user_id}')">
+                                    <div class="post1">
+                                        <div class="jerr">
+                                            <p class="jerry">${originalUser.username}</p>
+                                        </div>
+                                        <div><img class="verif" src="pics/very.svg"></div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="comp1">
+                                <div class="cll">
+                                    <p class="time">${formatTimeSince(original.created_at)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${original.content ? `<div class="tir"><p class="tired">${shortenText(original.content, textLimit, true)}</p></div>` : ''}
+
+                ${original.image ? `
+                    <div class="laptop1">
+                        <img src="${original.image}" class="laptop" alt="Original post image" loading="lazy">
+                    </div>
+                ` : ''}
+
+                ${original.video ? `
+                    <div class="video-container laptop1" data-post-id="${original.id}">
+                        <video class="video-thumbnail" preload="metadata">
+                            <source src="${original.video}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay">
+                            <div class="play-button">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <div class="view-original" style="padding:8px 12px; color:#1d9bf0; font-size:14px; cursor:pointer;">
+                    View original post →
+                </div>
+            </div>
+        `;
+    } else {
+        // Normal post
+        mainContentHTML = `
+            ${hasImage ? `
+                <div class="laptop1">
+                    <img src="${post.image}" class="laptop" alt="Post image" loading="lazy">
+                </div>
+            ` : ''}
+
+            ${hasVideo ? `
+                <div class="video-container laptop1" data-post-id="${post.id}">
+                    <video class="video-thumbnail" preload="metadata">
+                        <source src="${post.video}" type="video/mp4">
+                    </video>
+                    <div class="video-overlay">
+                        <div class="play-button">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+
+            <div class="tir">
+                <p class="tired">${shortenText(post.content, textLimit, true)}</p>
+            </div>
+        `;
+    }
+
+    posterElement.innerHTML = `
+        <div class="cust-name">
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                        <img class="small-photo" src="${user.avatar}">
+                    </a>
+                </div>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry">${user.username}</p>
+                                    </div>
+                                    <div><img class="verif" src="pics/very.svg"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="comp1">
+                        <div class="cll">
+                            <p class="time">${post.timestamp}</p>
+                            <div class="tool"><p>7.23pm · Sept 23, 2024</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dots">
+                <img class="dot" src="pics/dots.svg">
+                <div class="tool"><p>More</p></div>
+            </div>
+        </div>
+
+        ${isRepost ? '<div class="repost-header-indicator" style="padding:0 12px 8px;color:#666;font-size:13px;">Reposted</div>' : ''}
+
+        ${mainContentHTML}
+
+        <div class="lefto">
+            <div class="dick">
+                <div>
+                    <img class="lefti" src="pics/bounce.svg">
+                </div>
+                <div>
+                    <p class="viewe">View all ${post.commentCount || 0} discuss</p>
+                </div>
+            </div>
+            <div class="twits">
+                <div><img class="lefti" src="pics/stats.svg"></div>
+                <div><p class="viewe">${post.views || '0'} views</p></div>
+            </div>
+        </div>
+
+        <div class="reaction">
+            <div class="reaction-container">
+                <div class="call">
+                    <div class="mee">
+                        <div class="comment-btn" data-post-id="${post.id}">
+                            <img class="feeling" src="pics/comment.svg" alt="Comment">
+                            <span>${post.commentCount || 0}</span>
+                        </div>
+                        <div class="repost-btn" data-post-id="${post.id}">
+                            <img class="feeling" src="pics/retweet.svg" alt="Repost">
+                            <span>${post.repostCount || 0}</span>
+                        </div>
+                        <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                            <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
+                                <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                        </div>
+                    </div>
+                    <div class="mee">
+                        <div class="donate-btn"><img class="feeling" src="pics/bookmark.svg" alt="Bookmark"></div>
+                        <div class="donate-btn"><img class="feeling" src="pics/share.svg"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // ─── Event listeners ──────────────────────────────────────
+
+    // Click anywhere on post → detail (except when long-press blocks)
+    posterElement.addEventListener('click', (e) => {
+        if (posterElement.dataset.blockNavigation === 'true') return;
+        if (e.target.closest('.repost-btn, .heart-ai, .comment-btn, .dots, a, button')) return;
+        showDetail(post.id);
+    });
+
+    // View original post click
+    posterElement.querySelector('.view-original')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (original?.id) showDetail(original.id);
+    });
+
+    // Repost button
+    const repostBtn = posterElement.querySelector('.repost-btn');
+    if (repostBtn) {
+        repostBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleRepostClick(post.id);
+        });
+    }
+
+    // Like (your existing logic — already good)
+    const heartContainer = posterElement.querySelector('.heart-ai');
+    if (heartContainer) {
+        isPostLikedByCurrentUser(post.id).then(liked => {
+            if (liked) {
+                heartContainer.setAttribute('data-liked', 'true');
+                heartContainer.querySelector('.heart-icon')?.classList.add('liked');
+                heartContainer.querySelector('.like-count')?.classList.add('liked');
+            }
+        });
+
+        heartContainer.querySelectorAll('.heart-clickable').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleLike(post.id, heartContainer);
+            });
+        });
+    }
+
+    enablePostLongPress(posterElement, post);
+    return posterElement;
+}
+
+// ───────────────────────────────────────────────
+//  REPOST MODAL OPENER (using your existing composer)
+// ───────────────────────────────────────────────
+async function handleRepostClick(postId) {
+    if (!currentUserId) {
+        alert("Please sign in to repost");
+        return;
+    }
+
+    try {
+        const { data: originalPost, error } = await supabase
+            .from('posts')
+            .select(`
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            `)
+            .eq('id', postId)
+            .single();
+
+        if (error) throw error;
+        if (!originalPost) {
+            alert("Cannot find original post");
+            return;
+        }
+
+        // Open your composer
+        makePost();
+
+        // Add visual repost preview
+        const preview = document.getElementById('mediaPreview');
+        if (preview) {
+            preview.innerHTML = '';
+
+            const card = document.createElement('div');
+            card.style.cssText = 'border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#f9f9f9; position:relative;';
+
+            card.innerHTML = `
+                <button class="remove-repost-preview" style="position:absolute; top:4px; right:8px; background:#aaa; color:white; border:none; border-radius:50%; width:22px; height:22px; line-height:18px; cursor:pointer;">×</button>
+                <small style="color:#666;">Reposting from @${originalPost.user?.username || 'user'}</small>
+                ${originalPost.content ? `<p style="margin:6px 0;font-size:14px;">${originalPost.content.substring(0,120)}${originalPost.content.length > 120 ? '...' : ''}</p>` : ''}
+                ${originalPost.image ? `<img src="${originalPost.image}" style="max-height:140px;border-radius:6px;" />` : ''}
+            `;
+
+            preview.appendChild(card);
+
+            // Remove repost preview
+            card.querySelector('.remove-repost-preview').onclick = () => {
+                card.remove();
+                delete document.getElementById('postBtn')?.dataset.repostingId;
+                updatePostButtonState();
+            };
+
+            // Store original post id
+            document.getElementById('postBtn').dataset.repostingId = originalPost.id;
+        }
+
+    } catch (err) {
+        console.error("Repost prepare failed", err);
+        alert("Could not prepare repost — please try again");
+    }
+}
+
+// ───────────────────────────────────────────────
+//  UPDATED submitPost — now supports reposts
+// ───────────────────────────────────────────────
+async function submitPost() {
+    const content = document.getElementById('postContent')?.value?.trim() || '';
+    const postBtn = document.getElementById('postBtn');
+    const repostedId = postBtn?.dataset.repostingId;
+
+    if (!content && !selectedMediaFile && !repostedId) {
+        alert('Please write something, add a photo, or repost something');
+        return;
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        alert('You must be logged in');
+        return;
+    }
+
+    let imageUrl = null;
+
+    if (selectedMediaFile) {
+        const fileExt  = selectedMediaFile.name.split('.').pop() || 'jpg';
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        const filePath = fileName;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('post-images')
+            .upload(filePath, selectedMediaFile, { upsert: false });
+
+        if (uploadError) {
+            alert("Image upload failed: " + uploadError.message);
+            return;
+        }
+
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
+        imageUrl = urlData.publicUrl;
+    }
+
+    const postData = {
+        user_id: user.id,
+        content: content || null,
+        image: imageUrl || null,
+        reposted_post_id: repostedId || null
+    };
+
+    const { data: newPost, error: insertError } = await supabase
+        .from('posts')
+        .insert([postData])
+        .select(`
+            id, content, image, created_at, reposted_post_id,
+            user:users ( username, avatar )
+        `)
+        .single();
+
+    if (insertError) {
+        alert("Could not create post: " + insertError.message);
+        return;
+    }
+
+    // Clear composer + repost state
+    closePostModal();
+    if (postBtn) delete postBtn.dataset.repostingId;
+    document.getElementById('mediaPreview').innerHTML = '';
+
+    // Insert new post into feed
+    const adapted = {
+        id: newPost.id,
+        userId: user.id,
+        username: newPost.user?.username || '@you',
+        avatar: newPost.user?.avatar || 'pics/default-avatar.png',
+        content: newPost.content || '',
+        image: newPost.image,
+        video: null,
+        timestamp: 'just now',
+        likeCount: 0,
+        commentCount: 0,
+        repostCount: 0,
+        views: 0,
+        reposted_post_id: newPost.reposted_post_id,
+        // Note: we don't have reposted_post here — it will be loaded on next refresh
+    };
+
+    const el = createPostElement(adapted);
+    document.getElementById('flyer')?.prepend(el);
+
+    showToast?.("Posted!") || alert("Posted!");
+}
+
+// ───────────────────────────────────────────────
+//  UPDATED loadMorePosts — must include reposted_post relation
+// ───────────────────────────────────────────────
+async function loadMorePosts() {
+    if (isLoading) return;
+    isLoading = true;
+
+    const postContainer = document.getElementById("flyer");
+    if (!postContainer) {
+        console.error("Cannot find #flyer");
+        isLoading = false;
+        return;
+    }
+
+    // Skeletons...
+    addSkeletonStyles();
+    for (let i = 0; i < postsPerLoad; i++) {
+        postContainer.appendChild(createSkeletonPost());
+    }
+
+    try {
+        const { data: fetchedPosts, error } = await supabase
+            .from('posts')
+            .select(`
+                id, content, image, video, created_at,
+                like_count, comment_count, repost_count, views, user_id,
+                reposted_post_id,
+                user:users ( id, username, avatar ),
+                reposted_post:reposted_post_id (
+                    id, content, image, video, created_at, user_id,
+                    user:users ( id, username, avatar )
+                )
+            `)
+            .order('created_at', { ascending: false })
+            .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
+
+        if (error) throw error;
+        if (!fetchedPosts?.length) {
+            console.log("No more posts");
+            isLoading = false;
+            return;
+        }
+
+        document.querySelectorAll('.skeleton').forEach(s => s.remove());
+
+        fetchedPosts.forEach(p => {
+            if (loadedPostIds.has(p.id)) return;
+            loadedPostIds.add(p.id);
+
+            const adapted = {
+                id: p.id,
+                userId: p.user_id,
+                username: p.user?.username || '@unknown',
+                avatar: p.user?.avatar || 'pics/default-avatar.png',
+                content: p.content || '',
+                image: p.image || null,
+                video: p.video || null,
+                timestamp: formatTimeSince(p.created_at),
+                likeCount: p.like_count || 0,
+                commentCount: p.comment_count || 0,
+                repostCount: p.repost_count || 0,
+                views: p.views || 0,
+                reposted_post_id: p.reposted_post_id,
+                reposted_post: p.reposted_post ? {
+                    id: p.reposted_post.id,
+                    content: p.reposted_post.content,
+                    image: p.reposted_post.image,
+                    video: p.reposted_post.video,
+                    created_at: p.reposted_post.created_at,
+                    user_id: p.reposted_post.user_id,
+                    user: p.reposted_post.user
+                } : null
+            };
+
+            const el = createPostElement(adapted);
+            if (el) postContainer.appendChild(el);
+        });
+
+    } catch (err) {
+        console.error("Load posts failed", err);
+        alert("Error loading posts");
+    } finally {
+        isLoading = false;
+    }
 }
