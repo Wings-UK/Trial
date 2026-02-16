@@ -1365,7 +1365,6 @@ function handleMediaSelect(e) {
     reader.readAsDataURL(file);
 }
 
-g
 
 // ───────────────────────────────────────────────
 // Attach event listeners once when page loads
