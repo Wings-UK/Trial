@@ -887,9 +887,8 @@ async function showProfile(userId) {
                     </div>  
                 ` : ''}  
                 <div class="contentma">  
-    <p class="partner">
-        ${(post.content || '').substring(0, 80)}${(post.content || '').length > 80 ? '...' :''}</p>  
-</div>
+                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>  
+                </div>  
             `;  
 
             /* ───── META BAR ───── */
