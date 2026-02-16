@@ -1231,11 +1231,11 @@ let selectedMediaFile = null;
 // Open composer (only from profile)
 function makePost() {
     // Optional safety: only allow from profile page
-    const profilePage = document.getElementById('profile');
-    if (!profilePage || !profilePage.classList.contains('active')) {
-        console.warn("Post composer can only be opened from your profile");
-        return;
-    }
+   // const profilePage = document.getElementById('profile');
+   // if (!profilePage || !profilePage.classList.contains('active')) {
+   //     console.warn("Post composer can only be opened from your profile");
+    //    return;
+   // }
 
     const modal = document.getElementById('createPostModal');
     if (!modal) {
