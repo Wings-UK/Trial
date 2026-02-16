@@ -2411,6 +2411,9 @@ async function handleRepostClick(postId) {
 // ───────────────────────────────────────────────
 //  UPDATED submitPost — now supports reposts
 // ───────────────────────────────────────────────
+// ───────────────────────────────────────────────
+//  FIXED submitPost — now properly fetches nested repost data
+// ───────────────────────────────────────────────
 async function submitPost() {
     const content = document.getElementById('postContent')?.value?.trim() || '';
     const postBtn = document.getElementById('postBtn');
@@ -2454,12 +2457,19 @@ async function submitPost() {
         reposted_post_id: repostedId || null
     };
 
+    // ═══════════════════════════════════════════════
+    // 🔥 THE FIX: Include reposted_post relation!
+    // ═══════════════════════════════════════════════
     const { data: newPost, error: insertError } = await supabase
         .from('posts')
         .insert([postData])
         .select(`
             id, content, image, created_at, reposted_post_id,
-            user:users ( username, avatar )
+            user:users ( username, avatar ),
+            reposted_post:reposted_post_id (
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            )
         `)
         .single();
 
@@ -2473,7 +2483,9 @@ async function submitPost() {
     if (postBtn) delete postBtn.dataset.repostingId;
     document.getElementById('mediaPreview').innerHTML = '';
 
-    // Insert new post into feed
+    // ═══════════════════════════════════════════════
+    // 🔥 THE FIX: Now we have the full reposted_post data!
+    // ═══════════════════════════════════════════════
     const adapted = {
         id: newPost.id,
         userId: user.id,
@@ -2488,14 +2500,24 @@ async function submitPost() {
         repostCount: 0,
         views: 0,
         reposted_post_id: newPost.reposted_post_id,
-        // Note: we don't have reposted_post here — it will be loaded on next refresh
+        reposted_post: newPost.reposted_post ? {
+            id: newPost.reposted_post.id,
+            content: newPost.reposted_post.content,
+            image: newPost.reposted_post.image,
+            video: newPost.reposted_post.video,
+            created_at: newPost.reposted_post.created_at,
+            user_id: newPost.reposted_post.user_id,
+            user: newPost.reposted_post.user
+        } : null
     };
 
+    // Now createPostElement will have all the data it needs!
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
     showToast?.("Posted!") || alert("Posted!");
 }
+
 
 // ───────────────────────────────────────────────
 //  UPDATED loadMorePosts — must include reposted_post relation
