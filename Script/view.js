@@ -2082,17 +2082,6 @@ async function loadInitialNotificationCount() {
 //  REPOST HELPERS
 // ───────────────────────────────────────────────
 
-// Small helper to create repost indicator line
-function createRepostIndicator() {
-    const div = document.createElement('div');
-    div.className = 'repost-indicator';
-    div.innerHTML = `
-        <img src="pics/retweet.svg" alt="Repost" style="width:18px;height:18px;">
-        <span style="font-size:13px;color:#666;margin-left:6px;">Reposted</span>
-    `;
-    return div;
-}
-
 // ───────────────────────────────────────────────
 //  UPDATED: createPostElement — now supports reposts
 // ───────────────────────────────────────────────
