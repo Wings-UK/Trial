@@ -2248,7 +2248,7 @@ function createPostElement(post) {
             </div>
         </div>
 
-        ${isRepost ? '<div class="repost-header-indicator" style="padding:0 12px 8px;color:#666;font-size:13px;">Reposted</div>' : ''}
+        
 
         ${mainContentHTML}
 
