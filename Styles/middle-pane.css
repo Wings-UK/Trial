@@ -3511,6 +3511,108 @@ body {
     }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   REPOST STYLES — Detail page card + Masonry badge
+   Add to your main stylesheet
+   ════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────
+   DETAIL PAGE — original post nested card
+   ────────────────────────────────────────────── */
+
+.detail-repost-wrap {
+    margin: 0;
+    padding: 0;
+}
+
+.detail-original-card {
+    position: relative;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 8px 0 16px;
+    overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.detail-original-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+    transform: translateY(-1px);
+}
+
+/* Purple left accent bar */
+.detail-original-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px 0 0 16px;
+}
+
+/* Decorative giant quote mark */
+.doc-quote-bg {
+    position: absolute;
+    top: 2px;
+    right: 10px;
+    font-size: 64px;
+    line-height: 1;
+    color: #667eea;
+    opacity: 0.06;
+    pointer-events: none;
+    user-select: none;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Author row inside the card */
+.doc-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+/* ──────────────────────────────────────────────
+   MASONRY GRID — repost badge overlay
+   ────────────────────────────────────────────── */
+
+/* The masonry tile needs relative positioning — already set inline,
+   but add this as a safety fallback */
+.masonry {
+    position: relative;
+}
+
+.masonry-repost-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    transition: transform 0.18s ease;
+}
+
+.masonry-repost-badge:hover {
+    transform: scale(1.1);
+}
+
+.masonry-repost-badge img {
+    width: 15px;
+    height: 15px;
+    opacity: 0.72;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    END OF REPOST STYLES
    ═══════════════════════════════════════════════════════════════ */
