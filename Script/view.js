@@ -996,42 +996,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
 async function showDetail(postId) {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
-    if (!detailPage) {
-        console.error('Detail page (#meal) not found');
-        return;
-    }
+    if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
     detailPage.classList.add('active');
 
     const nuba = document.getElementById('nuba');
-    if (!nuba) {
-        console.error('nuba container not found');
-        return;
-    }
+    if (!nuba) { console.error('nuba container not found'); return; }
     nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading post...</p>';
 
-    // Fetch the single post + author
+    // ── Fetch post + reposted_post in ONE query ──────────────────────────
     const { data: postData, error } = await supabase
         .from('posts')
         .select(`
-            id,
-            content,
-            image,
-            video,
-            created_at,
-            like_count,
-            comment_count,
-            repost_count,
-            views,
-            user_id,
-            user:users (
-                id,
-                username,
-                avatar
+            id, content, image, video, created_at,
+            like_count, comment_count, repost_count, views, user_id,
+            reposted_post_id,
+            user:users ( id, username, avatar ),
+            reposted_post:reposted_post_id (
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
             )
         `)
         .eq('id', postId)
@@ -1044,44 +1030,158 @@ async function showDetail(postId) {
     }
 
     const post = {
-        id: postData.id,
-        userId: postData.user_id,
-        username: postData.user?.username || '@unknown',
-        avatar: postData.user?.avatar || 'pics/default-avatar.png',
-        content: postData.content || '',
-        image: postData.image || null,
-        video: postData.video || null,
-        timestamp: formatTimeSince(postData.created_at),
-        date: new Date(postData.created_at).toLocaleString(),
-        likeCount: postData.like_count || 0,
-        commentCount: postData.comment_count || 0,
-        repostCount: postData.repost_count || 0,
-        views: postData.views || 0
+        id:           postData.id,
+        userId:       postData.user_id,
+        username:     postData.user?.username || '@unknown',
+        avatar:       postData.user?.avatar   || 'pics/default-avatar.png',
+        content:      postData.content        || '',
+        image:        postData.image          || null,
+        video:        postData.video          || null,
+        timestamp:    formatTimeSince(postData.created_at),
+        date:         new Date(postData.created_at).toLocaleString(),
+        likeCount:    postData.like_count     || 0,
+        commentCount: postData.comment_count  || 0,
+        repostCount:  postData.repost_count   || 0,
+        views:        postData.views          || 0,
     };
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
+    // ── Repost detection ─────────────────────────────────────────────────
+    const isRepost   = !!postData.reposted_post_id && !!postData.reposted_post;
+    const original   = isRepost ? postData.reposted_post : null;
+    const origUser   = original ? {
+        username: original.user?.username || '@unknown',
+        avatar:   original.user?.avatar   || 'pics/default-avatar.png',
+    } : null;
+
+    // ── Build the media / repost block that replaces the image slot ───────
+    //    This is the key idea: repost card sits exactly where a photo would
+    let mediaBlock = '';
+
+    if (isRepost) {
+        // ── The elegant nested repost card inside the image-slot area ─────
+        mediaBlock = `
+            <div class="swet detail-repost-wrap">
+
+                ${post.content ? `
+                    <div class="tir" style="margin-bottom: 14px;">
+                        <p class="tiri">${post.content}</p>
+                    </div>
+                ` : ''}
+
+                <div class="detail-original-card" data-original-id="${original.id}">
+
+                    <!-- left accent bar is via CSS ::before -->
+                    <div class="doc-quote-bg">"</div>
+
+                    <!-- Original author header -->
+                    <div class="doc-header">
+                        <div class="small-photo1" style="width:34px;height:34px;">
+                            <a class="lino" onclick="showProfile('${original.user_id}')">
+                                <img class="small-photo" src="${origUser.avatar}"
+                                     onerror="this.src='pics/default-avatar.png'">
+                            </a>
+                        </div>
+                        <div class="pos">
+                            <a class="home-click" onclick="showProfile('${original.user_id}')">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry" style="font-size:14px;">${origUser.username}</p>
+                                    </div>
+                                    <img class="verif" src="pics/very.svg">
+                                </div>
+                            </a>
+                            <p class="time" style="font-size:12px;">${formatTimeSince(original.created_at)}</p>
+                        </div>
+                    </div>
+
+                    <!-- Original content -->
+                    ${original.content ? `
+                        <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0;">
+                            ${original.content}
+                        </div>
+                    ` : ''}
+
+                    <!-- Original image (full width inside card) -->
+                    ${original.image ? `
+                        <div style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
+                            <img src="${original.image}" alt="Original image"
+                                 style="width:100%; display:block; max-height:300px; object-fit:cover;">
+                        </div>
+                    ` : ''}
+
+                    <!-- Original video -->
+                    ${original.video && !original.image ? `
+                        <div class="video-container" data-post-id="${original.id}"
+                             style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
+                            <video class="video-thumbnail" preload="metadata" style="width:100%;">
+                                <source src="${original.video}" type="video/mp4">
+                            </video>
+                            <div class="video-overlay">
+                                <div class="play-button">
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    } else {
+        // ── Normal post: same as before ───────────────────────────────────
+        mediaBlock = `
+            <div class="tir">
+                <p class="tiri">${post.content}<br></p>
+            </div>
+            ${post.image ? `
+                <div class="swet">
+                    <div class="laptop1">
+                        <img class="lapto" src="${post.image}">
+                    </div>
+                </div>
+            ` : ''}
+            ${post.video ? `
+                <div class="swet">
+                    <div class="video-container" data-post-id="${post.id}">
+                        <video class="video-thumbnail" preload="metadata">
+                            <source src="${post.video}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay">
+                            <div class="play-button">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        `;
+    }
+
+    // ── Build the full detail page HTML ───────────────────────────────────
     nuba.innerHTML = `
         <div class="cust-name" data-post-id="${post.id}">
             <div class="heading">
                 <div class="small-photo1">
-                   <a class="lino"
-   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
-    <img class="small-photo" src="${post.avatar}">
-</a>
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                        <img class="small-photo" src="${post.avatar}">
+                    </a>
                 </div>
                 <div class="pos">
                     <div>
                         <div class="link-wrapper">
-                            <a class="home-click"
-   onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
                                     <div class="jerr">
                                         <p class="jerry">${post.username}</p>
                                     </div>
-                                    <div>
-                                        <img class="verif" src="pics/very.svg">
-                                    </div>
+                                    <div><img class="verif" src="pics/very.svg"></div>
                                 </div>
                             </a>
                         </div>
@@ -1107,111 +1207,83 @@ async function showDetail(postId) {
             </div>
             <div class="dots">
                 <img class="dot" src="pics/dots.svg">
-                <div class="tool">
-                    <p>More</p>
-                </div>
+                <div class="tool"><p>More</p></div>
             </div>
         </div>
-        <div class="tir">
-            <p class="tiri">${post.content}<br></p>
-        </div>
-        ${post.image ? `
-        <div class="swet">
-            <div class="laptop1">
-                <img class="lapto" src="${post.image}">
-            </div>
-        </div>
-        ` : ''}
-        ${post.video ? `
-        <div class="swet">
-            <div class="video-container" data-post-id="${post.id}">
-                <video class="video-thumbnail" preload="metadata">
-                    <source src="${post.video}" type="video/mp4">
-                </video>
-                <div class="video-overlay">
-                    <div class="play-button">
-                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                            <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-        ` : ''}
+
+        ${mediaBlock}
+
         <div class="lefto">
             <div class="dick">
-                <div>
-                    <p class="viewe"><span class="werey">615</span> reactions</p>
-                </div>
-                <div>
-                    <p class="viewe"><span class="werey">9</span> echoes</p>
-                </div>
+                <div><p class="viewe"><span class="werey">${post.likeCount || 0}</span> reactions</p></div>
+                <div><p class="viewe"><span class="werey">${post.repostCount || 0}</span> echoes</p></div>
             </div>
             <div class="twits">
-                <div>
-                    <img class="lefti" src="pics/stats.svg">
-                </div>
-                <div>
-                    <p class="viewe">${post.views || '96.8K'} views</p>
-                </div>
+                <div><img class="lefti" src="pics/stats.svg"></div>
+                <div><p class="viewe">${post.views || '0'} views</p></div>
             </div>
         </div>
+
         <div class="reaction">
             <div class="small-photo1">
-                <a class="lino" href="Retail-Desktop-OtherUsers.html"><img class="hui" src="pics/16.jpg"></a>
-                <div class="vrea">
-                    <img class="luve" src="pics/lovv.png">
-                </div>
+                <a class="lino" href="Retail-Desktop-OtherUsers.html">
+                    <img class="hui" src="pics/16.jpg">
+                </a>
+                <div class="vrea"><img class="luve" src="pics/lovv.png"></div>
             </div>
-            <!-- Other reaction photos -->
         </div>
 
         <!-- Comment box -->
         <div class="comment-container">
             <div class="comment-wrapper">
-              <div class="comment-box">
-                <textarea
-                  class="comment-textarea"
-                  placeholder="Reply to @${post.username}..."
-                  rows="1"
-                ></textarea>
-              </div>
+                <div class="comment-box">
+                    <textarea class="comment-textarea"
+                        placeholder="Reply to @${post.username}..."
+                        rows="1"></textarea>
+                </div>
             </div>
             <div class="actions">
-              <div class="dil">
-                <div class="repost-btn sted buyt">
-                    <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
+                <div class="dil">
+                    <div class="repost-btn sted buyt">
+                        <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
+                    </div>
+                    <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                        <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+                            <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                    </div>
                 </div>
-                <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
-                  <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
-                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                  <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                <div class="isji">
+                    <img class="cinu" src="pics/at.svg">
+                    <img class="cinu" src="pics/emoji.svg">
+                    <img class="cinu" src="pics/gallery.svg">
+                    <img class="caun" src="pics/up.svg" onclick="submitComment()">
                 </div>
-              </div>
-              <div class="isji">
-                <img class="cinu" src="pics/at.svg">
-                <img class="cinu" src="pics/emoji.svg">
-                <img class="cinu" src="pics/gallery.svg">
-                <img class="caun" src="pics/up.svg" onclick="submitComment()">
-              </div>
             </div>
         </div>
     `;
 
-    // ─── Initialize REAL like functionality for detail page ───
+    // ── "View original" click on the card goes to original post ──────────
+    const origCard = nuba.querySelector('.detail-original-card');
+    if (origCard) {
+        origCard.style.cursor = 'pointer';
+        origCard.addEventListener('click', (e) => {
+            // Don't fire if clicking a nested link (profile)
+            if (e.target.closest('a')) return;
+            showDetail(original.id);
+        });
+    }
+
+    // ── Like functionality ────────────────────────────────────────────────
     const detailHeart = document.querySelector('#nuba .heart-ai');
     if (detailHeart) {
-        // Set initial liked state from database
         const alreadyLiked = await isPostLikedByCurrentUser(post.id);
         if (alreadyLiked) {
             detailHeart.setAttribute('data-liked', 'true');
             detailHeart.querySelector('.heart-icon')?.classList.add('liked');
             detailHeart.querySelector('.like-count')?.classList.add('liked');
         }
-
-        // Attach click handler
         detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
             el.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -1222,6 +1294,7 @@ async function showDetail(postId) {
 
     window.scrollTo(0, 0);
 }
+
 
 
 // Global variable to hold the currently selected image file
