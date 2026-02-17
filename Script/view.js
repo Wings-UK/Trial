@@ -763,9 +763,17 @@ async function showMyProfile() {
         return;
     }
 
+    // ── CHANGE 1: query now includes reposted_post relation ──────────────
     const { data: userPosts } = await supabase
         .from('posts')
-        .select('id, content, image, video, created_at, like_count')
+        .select(`
+            id, content, image, video, created_at, like_count,
+            reposted_post_id,
+            reposted_post:reposted_post_id (
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(12);
@@ -886,80 +894,11 @@ async function showMyProfile() {
     if (!userPosts || userPosts.length === 0) {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
+        // ── CHANGE 2: use buildMasonryTile() instead of the old manual block ──
         userPosts.forEach((post, index) => {
-            const content = post.content || '';   // ← null/undefined → empty string
-const truncated = content.substring(0, 80) + (content.length > 80 ? '...' : '');
-
-            /* ───── WRAPPER (HOLDS NAVIGATION) ───── */
-            const wrapper = document.createElement('div');
-            wrapper.className = 'masonry-wrapper';
-            wrapper.dataset.postId = post.id;
-
-            wrapper.addEventListener('click', () => {
-                showDetail(post.id);
-            });
-
-            const masonryDiv = document.createElement('div');
-            masonryDiv.className = 'masonry';
-
-            masonryDiv.innerHTML = `
-                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}
-                ${post.video ? `
-                    <div class="video-container power">
-                        <video class="video-thumbnail" preload="metadata">
-                            <source src="${post.video}" type="video/mp4">
-                        </video>
-                        <div class="video-overlay power">
-                            <div class="play-button power">
-                                <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                ` : ''}
-                <div class="contentma">
-                    <p class="partner">${truncated}</p>
-                </div>
-            `;
-
-            const metaDiv = document.createElement('div');
-            metaDiv.className = 'masonry-meta';
-
-            metaDiv.innerHTML = `
-                <div class="meta-left">
-                    <img class="meta-avatar" src="${profile.avatar || 'pics/default-avatar.png'}">
-                    <span class="meta-username">${profile.username}</span>
-                </div>
-                <div class="meta-right">
-                    <svg class="meta-heart" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-                        2 5.42 4.42 3 7.5 3
-                        c1.74 0 3.41.81 4.5 2.09
-                        C13.09 3.81 14.76 3 16.5 3
-                        19.58 3 22 5.42 22 8.5
-                        c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                    <span class="meta-likes">${post.like_count || ''}</span>
-                </div>
-            `;
-
-            /* 🔒 STOP HEART FROM TRIGGERING NAVIGATION */
-            metaDiv.querySelector('.meta-heart')
-                .addEventListener('click', e => e.stopPropagation());
-
-            metaDiv.querySelector('.meta-likes')
-                .addEventListener('click', e => e.stopPropagation());
-
-            wrapper.appendChild(masonryDiv);
-            wrapper.appendChild(metaDiv);
-
-            if (index % 2 === 0) {
-                leftColumn.appendChild(wrapper);
-            } else {
-                rightColumn.appendChild(wrapper);
-            }
+            const tile = buildMasonryTile(post, profile.avatar, profile.username);
+            if (index % 2 === 0) leftColumn.appendChild(tile);
+            else                 rightColumn.appendChild(tile);
         });
     }
 
@@ -969,6 +908,7 @@ const truncated = content.substring(0, 80) + (content.length > 80 ? '...' : '');
     document.querySelector('.edit-profile-btn')
         ?.addEventListener('click', openEditProfileModal);
 }
+
 
 // Paste this exactly as-is — add at the bottom
 document.addEventListener('DOMContentLoaded', () => {
@@ -2677,3 +2617,79 @@ async function loadMorePosts() {
         isLoading = false;
     }
 }
+
+function buildMasonryTile(post, ownerAvatar, ownerUsername) {
+    // For a repost: display the original's visual, fallback to reposter's content
+    const displayImage   = post.reposted_post?.image   || post.image   || null;
+    const displayVideo   = post.reposted_post?.video   || post.video   || null;
+    const displayContent = post.reposted_post?.content || post.content || '';
+    const isRepost       = !!post.reposted_post_id && !!post.reposted_post;
+
+    const truncated = displayContent.substring(0, 80) + (displayContent.length > 80 ? '…' : '');
+
+    /* ───── WRAPPER ───── */
+    const wrapper = document.createElement('div');
+    wrapper.className = 'masonry-wrapper';
+    wrapper.dataset.postId = post.id;  // Always the repost's own ID
+    wrapper.addEventListener('click', () => showDetail(post.id));
+
+    /* ───── MASONRY TILE ───── */
+    const masonryDiv = document.createElement('div');
+    masonryDiv.className = 'masonry';
+    masonryDiv.style.position = 'relative'; // so badge can be absolute
+
+    masonryDiv.innerHTML = `
+        ${displayImage ? `<img src="${displayImage}" loading="lazy" alt="">` : ''}
+        ${displayVideo ? `
+            <div class="video-container power">
+                <video class="video-thumbnail" preload="metadata">
+                    <source src="${displayVideo}" type="video/mp4">
+                </video>
+                <div class="video-overlay power">
+                    <div class="play-button power">
+                        <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                            <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        <div class="contentma">
+            <p class="partner">${truncated}</p>
+        </div>
+
+        ${isRepost ? `
+            <div class="masonry-repost-badge" title="Reposted">
+                <img src="pics/retweet.svg" alt="Repost">
+            </div>
+        ` : ''}
+    `;
+
+    /* ───── META BAR ───── */
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'masonry-meta';
+    metaDiv.innerHTML = `
+        <div class="meta-left">
+            <img class="meta-avatar" src="${ownerAvatar || 'pics/default-avatar.png'}"
+                 onerror="this.src='pics/default-avatar.png'">
+            <span class="meta-username">${ownerUsername}</span>
+        </div>
+        <div class="meta-right">
+            <svg class="meta-heart" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="meta-likes">${post.like_count || ''}</span>
+        </div>
+    `;
+
+    // Stop heart tap from triggering navigation
+    metaDiv.querySelector('.meta-heart').addEventListener('click', e => e.stopPropagation());
+    metaDiv.querySelector('.meta-likes').addEventListener('click', e => e.stopPropagation());
+
+    wrapper.appendChild(masonryDiv);
+    wrapper.appendChild(metaDiv);
+
+    return wrapper;
+}
+
