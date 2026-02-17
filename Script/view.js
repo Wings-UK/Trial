@@ -975,10 +975,10 @@ async function showDetail(postId) {
 
                     <!-- Original content -->
                     ${original.content ? `
-                        <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0;">
-                            ${original.content}
-                        </div>
-                    ` : ''}
+    <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">
+        ${original.content}
+    </div>
+` : ''}
 
                     <!-- Original image (full width inside card) -->
                     ${original.image ? `
