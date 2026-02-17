@@ -467,15 +467,23 @@ async function fetchUserProfile(userId) {
         return null;
     }
 
+    // ── Include reposted_post in query ────────────────────────────────────
     const { data: userPosts, error: postsError } = await supabase
         .from('posts')
-        .select('id, content, image, video, created_at, like_count')
+        .select(`
+            id, content, image, video, created_at, like_count,
+            reposted_post_id,
+            reposted_post:reposted_post_id (
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(12); // show first 12 posts in grid
+        .limit(12);
 
     if (postsError) {
-        console.error('User posts error:', postsError);
+        console.error('Posts fetch error:', postsError);
     }
 
     return {
@@ -576,82 +584,11 @@ async function showProfile(userId) {
     if (!userData.posts || userData.posts.length === 0) {  
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';  
     } else {  
-        userData.posts.forEach((post, index) => {  
-
-            /* ───── WRAPPER (HOLDS NAVIGATION) ───── */
-            const wrapper = document.createElement('div');
-            wrapper.className = 'masonry-wrapper';
-            wrapper.dataset.postId = post.id;
-
-            wrapper.addEventListener('click', () => {
-                showDetail(post.id);
-            });
-
-            /* ───── MASONRY CONTENT ───── */
-            const masonryDiv = document.createElement('div');  
-            masonryDiv.className = 'masonry';  
-
-            masonryDiv.innerHTML = `  
-                ${post.image ? `<img src="${post.image}" loading="lazy">` : ''}  
-                ${post.video ? `  
-                    <div class="video-container power">  
-                        <video class="video-thumbnail" preload="metadata">  
-                            <source src="${post.video}" type="video/mp4">  
-                        </video>  
-                        <div class="video-overlay power">  
-                            <div class="play-button power">  
-                                <svg width="30" height="30" viewBox="0 0 48 48" fill="none">  
-                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>  
-                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>  
-                                </svg>  
-                            </div>  
-                        </div>  
-                    </div>  
-                ` : ''}  
-                <div class="contentma">  
-                    <p class="partner">${post.content.substring(0, 80)}${post.content.length > 80 ? '...' : ''}</p>  
-                </div>  
-            `;  
-
-            /* ───── META BAR ───── */
-            const metaDiv = document.createElement('div');  
-            metaDiv.className = 'masonry-meta';  
-
-            metaDiv.innerHTML = `  
-                <div class="meta-left">  
-                    <img class="meta-avatar" src="${userData.avatar || 'pics/default-avatar.png'}">  
-                    <span class="meta-username">${userData.username}</span>  
-                </div>  
-                <div class="meta-right">  
-                    <svg class="meta-heart" viewBox="0 0 24 24">  
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5  
-                        2 5.42 4.42 3 7.5 3  
-                        c1.74 0 3.41.81 4.5 2.09  
-                        C13.09 3.81 14.76 3 16.5 3  
-                        19.58 3 22 5.42 22 8.5  
-                        c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>  
-                    </svg>  
-                    <span class="meta-likes">${post.like_count || ''}</span>  
-                </div>  
-            `;  
-
-            /* 🔒 STOP HEART FROM TRIGGERING NAVIGATION */
-            const heart = metaDiv.querySelector('.meta-heart');
-            heart.addEventListener('click', e => e.stopPropagation());
-
-            const likes = metaDiv.querySelector('.meta-likes');
-            likes.addEventListener('click', e => e.stopPropagation());
-
-            /* ───── ASSEMBLE ───── */
-            wrapper.appendChild(masonryDiv);  
-            wrapper.appendChild(metaDiv);  
-
-            if (index % 2 === 0) {  
-                leftColumn.appendChild(wrapper);  
-            } else {  
-                rightColumn.appendChild(wrapper);  
-            }  
-        });  
+        userData.posts.forEach((post, index) => {
+            const tile = buildMasonryTile(post, userData.avatar, userData.username);
+            if (index % 2 === 0) leftColumn.appendChild(tile);
+            else                 rightColumn.appendChild(tile);
+        });
     }  
 
     initializeMasonryHeartReactions();
