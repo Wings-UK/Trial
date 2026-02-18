@@ -2046,6 +2046,33 @@ async function getMyRepostOfPost(originalPostId) {
     }
     return data?.id || null;  // returns the repost's own id, or null
 }
+
+
+// Apply the green "reposted" visual state to every repost button
+// on the page that belongs to this originalPostId.
+// Called after checking the DB — mirrors how syncLikeUI works.
+function syncRepostUI(originalPostId, isReposted, count) {
+    // Feed buttons
+    document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"]`).forEach(btn => {
+        const img  = btn.querySelector('img');
+        const span = btn.querySelector('span');
+        btn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
+        if (img)  img.style.filter  = isReposted ? 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)' : '';
+        if (img)  img.style.opacity = isReposted ? '1' : '';
+        if (span) span.style.color  = isReposted ? '#10b981' : '';
+        if (span && count !== undefined) span.textContent = count > 0 ? count : '';
+    });
+
+    // Detail page repost button — it has class 'sted buyt' and no data-post-id,
+    // so we target it by its container and the stored data attribute we add below.
+    const detailRepostBtn = document.querySelector('#nuba .repost-btn[data-original-id="${originalPostId}"]');
+    if (detailRepostBtn) {
+        const img  = detailRepostBtn.querySelector('img');
+        detailRepostBtn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
+        if (img) img.style.filter = isReposted ? 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)' : '';
+    }
+}
+
 // ───────────────────────────────────────────────
 //  UPDATED: createPostElement — now supports reposts
 // ───────────────────────────────────────────────
