@@ -2577,7 +2577,10 @@ async function submitPost() {
         .select(`
             id, content, image, created_at, reposted_post_id,
             user:users ( username, avatar ),
-            reposted_post:reposted_post_id ( id, content, image, video, created_at, user_id )
+            reposted_post:reposted_post_id (
+    id, content, image, video, created_at, user_id,
+    user:users ( id, username, avatar )
+)
         `)
         .single();
 
