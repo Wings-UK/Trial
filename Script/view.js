@@ -406,6 +406,7 @@ function addMinimalReactionStyles() {
 // Call it once after the page loads
 document.addEventListener('DOMContentLoaded', () => {
     addMinimalReactionStyles();
+    addRepostStyles();
     addMasonryHeartAnimationStyles();
 });
 
@@ -939,11 +940,6 @@ async function showDetail(postId) {
         avatar:   original.user?.avatar   || 'pics/default-avatar.png',
     } : null;
 
-    // The post id that the repost button should toggle against.
-    // If this detail page is showing a repost, the button toggles the ORIGINAL.
-    // If it's a normal post, the button toggles this post itself.
-    const repostTargetId = isRepost ? original.id : post.id;
-
     let mediaBlock = '';
 
     if (isRepost) {
@@ -979,8 +975,8 @@ async function showDetail(postId) {
                     </div>
 
                     ${original.content ? `
-    <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
-` : ''}
+                        <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
+                    ` : ''}
 
                     ${original.image ? `
                         <div style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
@@ -1119,9 +1115,9 @@ async function showDetail(postId) {
             </div>
             <div class="actions">
                 <div class="dil">
-                    <!-- UPDATED: data-original-id lets syncRepostUI find this button -->
+                    <!-- KEY FIX: data-post-id="${post.id}" so updateCurrentUserRepostButtons finds it -->
                     <div class="repost-btn sted buyt"
-                         data-original-id="${repostTargetId}"
+                         data-post-id="${post.id}"
                          data-reposted="false">
                         <img class="feeling spoil repost-icon" src="pics/retweet.svg" alt="Repost">
                     </div>
@@ -1153,20 +1149,22 @@ async function showDetail(postId) {
     }
 
     // ── Detail repost button ──
+    // KEY FIX: targets post.id (not repostTargetId / original.id)
+    // This post's own button reflects whether THIS post was reposted by you.
     const detailRepostBtn = nuba.querySelector('.repost-btn');
     if (detailRepostBtn) {
-        // Check if user already reposted this post
-        getMyRepostOfPost(repostTargetId).then(myRepostId => {
+        const targetPostId = post.id;
+
+        getMyRepostOfPost(targetPostId).then(myRepostId => {
             if (myRepostId) {
                 detailRepostBtn.setAttribute('data-reposted', 'true');
-                const img = detailRepostBtn.querySelector('img');
-                if (img) img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+                detailRepostBtn.classList.add('reposted');
             }
         });
 
         detailRepostBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleRepost(repostTargetId, detailRepostBtn);
+            toggleRepost(targetPostId, detailRepostBtn);
         });
     }
 
@@ -1189,7 +1187,6 @@ async function showDetail(postId) {
 
     window.scrollTo(0, 0);
 }
-
 
 
 // Global variable to hold the currently selected image file
@@ -2045,40 +2042,21 @@ async function loadInitialNotificationCount() {
     updateNotificationBadge();
 }
 
-function updateCurrentUserRepostButtons(originalPostId, isReposted) {
-    // Feed / list view buttons
-    document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"]`).forEach(btn => {
-        const img = btn.querySelector('img.repost-icon');
-        const countSpan = btn.querySelector('span');
+function updateCurrentUserRepostButtons(postId, isReposted) {
+    // Finds buttons in BOTH feed and detail page using one selector.
+    // This works because both now use data-post-id (see functions 3 & 4).
+    document.querySelectorAll(`.repost-btn[data-post-id="${postId}"]`)
+        .forEach(btn => {
+            btn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
 
-        btn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
-
-        if (img) {
             if (isReposted) {
-                img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+                btn.classList.add('reposted');
             } else {
-                img.style.filter = '';
+                btn.classList.remove('reposted');
             }
-        }
-
-        // Optional: you can also change opacity, add class, etc.
-    });
-
-    // Detail view button
-    const detailBtn = document.querySelector(`#nuba .repost-btn[data-original-id="${originalPostId}"]`);
-    if (detailBtn) {
-        const img = detailBtn.querySelector('img.repost-icon');
-        detailBtn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
-
-        if (img) {
-            if (isReposted) {
-                img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
-            } else {
-                img.style.filter = '';
-            }
-        }
-    }
+        });
 }
+
 // ───────────────────────────────────────────────
 //  REPOST HELPERS
 // ───────────────────────────────────────────────
@@ -2108,7 +2086,6 @@ async function toggleRepost(originalPostId, repostBtnEl) {
         return;
     }
 
-    const img = repostBtnEl.querySelector('img.repost-icon');
     const countSpan = repostBtnEl.querySelector('span');
     const currentlyReposted = repostBtnEl.getAttribute('data-reposted') === 'true';
 
@@ -2117,15 +2094,15 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 
     if (currentlyReposted) {
         // ── UNREPOST ────────────────────────────────────────
-        // Optimistic UI: remove green immediately (personal)
+        // Optimistic UI: remove green immediately
         repostBtnEl.setAttribute('data-reposted', 'false');
-        if (img) img.style.filter = '';
+        repostBtnEl.classList.remove('reposted');
 
         try {
             const myRepostId = await getMyRepostOfPost(originalPostId);
             if (!myRepostId) return;
 
-            // Delete your repost
+            // Delete your repost post
             const { error: deleteError } = await supabase
                 .from('posts')
                 .delete()
@@ -2134,7 +2111,7 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 
             if (deleteError) throw deleteError;
 
-            // Decrease count on original
+            // Decrease repost_count on the original post
             const { data: current } = await supabase
                 .from('posts')
                 .select('repost_count')
@@ -2148,17 +2125,16 @@ async function toggleRepost(originalPostId, repostBtnEl) {
                 .update({ repost_count: newCount })
                 .eq('id', originalPostId);
 
-            // Update only YOUR visible buttons
+            // Remove green from all of the current user's buttons for this post
             updateCurrentUserRepostButtons(originalPostId, false);
 
-            // Update count display everywhere (public info)
-            document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"] span,
-                                       #nuba .repost-btn[data-original-id="${originalPostId}"] span`)
+            // Update the public count display everywhere
+            document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"] span`)
                 .forEach(el => {
                     el.textContent = newCount > 0 ? newCount : '';
                 });
 
-            // Remove your repost card if visible
+            // Remove the repost card from the feed if visible
             const repostEl = document.querySelector(`.poster[data-post-id="${myRepostId}"]`);
             if (repostEl) repostEl.remove();
 
@@ -2166,18 +2142,19 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 
         } catch (err) {
             console.error('Un-repost failed:', err.message);
-            // Revert optimistic UI
+            // Revert optimistic UI on failure
             repostBtnEl.setAttribute('data-reposted', 'true');
-            if (img) img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+            repostBtnEl.classList.add('reposted');
             alert("Couldn't remove repost. Try again.");
         }
 
     } else {
         // ── REPOST (open composer) ──────────────────────────
-        // We don't turn green yet — only after successful submit
+        // Green is applied only after successful submit in submitPost()
         handleRepostClick(originalPostId, repostBtnEl);
     }
 }
+
 
 // ───────────────────────────────────────────────
 //  UPDATED: createPostElement — now supports reposts
@@ -2192,7 +2169,6 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 //      instead of handleRepostClick().
 // Everything else is identical to your current version.
 // ───────────────────────────────────────────────────────────────
-
 function createPostElement(post) {
     const user = {
         username: post.username || 'new user',
@@ -2380,8 +2356,6 @@ function createPostElement(post) {
                             <span>${post.commentCount || 0}</span>
                         </div>
 
-                        <!-- UPDATED: data-post-id is now the ORIGINAL post's id for reposts,
-                             so the toggle always targets the correct post's count -->
                         <div class="repost-btn"
                              data-post-id="${post.id}"
                              data-reposted="false">
@@ -2418,20 +2392,19 @@ function createPostElement(post) {
         if (original?.id) showDetail(original.id);
     });
 
-    // ── UPDATED repost button listener ──
+    // ── Repost button ──
+    // KEY FIX: targetPostId is always post.id.
+    // Post A card → targets Post A. Post B card → targets Post B.
+    // Never original.id — that was the bug.
     const repostBtn = posterElement.querySelector('.repost-btn');
     if (repostBtn) {
-        // The target post id for toggling (the original if this is a repost card)
-        const targetPostId = isRepost ? original.id : post.id;
+        const targetPostId = post.id;
 
-        // Check initial repost state from DB
+        // Check DB: did the current user already repost this specific post?
         getMyRepostOfPost(targetPostId).then(myRepostId => {
             if (myRepostId) {
                 repostBtn.setAttribute('data-reposted', 'true');
-                const img  = repostBtn.querySelector('img');
-                const span = repostBtn.querySelector('span');
-                if (img)  img.style.filter  = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
-                if (span) span.style.color  = '#10b981';
+                repostBtn.classList.add('reposted');
             }
         });
 
@@ -2441,7 +2414,7 @@ function createPostElement(post) {
         });
     }
 
-    // Like
+    // ── Like ──
     const heartContainer = posterElement.querySelector('.heart-ai');
     if (heartContainer) {
         isPostLikedByCurrentUser(post.id).then(liked => {
@@ -2546,7 +2519,6 @@ async function handleRepostClick(postId, repostBtnEl) {
 // The only additions are: turning the repost button green after
 // a successful repost, and syncing the repost count.
 // ───────────────────────────────────────────────────────────────
-
 async function submitPost() {
     const content = document.getElementById('postContent')?.value?.trim() || '';
     const postBtn = document.getElementById('postBtn');
@@ -2633,7 +2605,6 @@ async function submitPost() {
     // If this was a repost → update count & turn YOUR buttons green
     if (repostedId) {
         try {
-            // Increase repost_count
             const { data: current } = await supabase
                 .from('posts')
                 .select('repost_count')
@@ -2647,9 +2618,8 @@ async function submitPost() {
                 .update({ repost_count: newCount })
                 .eq('id', repostedId);
 
-            // Update count display everywhere (public)
-            document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span,
-                                       #nuba .repost-btn[data-original-id="${repostedId}"] span`)
+            // Update public count on all visible buttons for this post
+            document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span`)
                 .forEach(el => {
                     el.textContent = newCount > 0 ? newCount : '';
                 });
@@ -2827,3 +2797,36 @@ function buildMasonryTile(post, ownerAvatar, ownerUsername) {
     return wrapper;
 }
 
+
+// ─────────────────────────────────────────────────────────────────
+// FUNCTION 1 of 6 — addRepostStyles()
+// This is a NEW function. Add it anywhere in view.js, then add
+// addRepostStyles(); inside your DOMContentLoaded block.
+// ─────────────────────────────────────────────────────────────────
+
+function addRepostStyles() {
+    if (document.getElementById('repost-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'repost-styles';
+    style.textContent = `
+        .repost-icon {
+            transition: filter 0.2s ease;
+        }
+
+        /* Dark green + bolder look when reposted */
+        .repost-btn.reposted .repost-icon {
+            filter:
+                invert(29%) sepia(89%) saturate(400%) hue-rotate(110deg)
+                brightness(90%) contrast(130%)
+                drop-shadow(0 0 0.6px #065f46);
+        }
+
+        /* Count text turns dark green too */
+        .repost-btn.reposted span {
+            color: #065f46;
+            font-weight: 600;
+        }
+    `;
+    document.head.appendChild(style);
+}
