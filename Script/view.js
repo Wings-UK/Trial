@@ -2575,38 +2575,43 @@ async function handleRepostClick(postId, repostBtnEl) {
 // ───────────────────────────────────────────────────────────────
 
 async function submitPost() {
-    const content    = document.getElementById('postContent')?.value?.trim() || '';
-    const postBtn    = document.getElementById('postBtn');
+    const content = document.getElementById('postContent')?.value?.trim() || '';
+    const postBtn = document.getElementById('postBtn');
     const repostedId = postBtn?.dataset.repostingId;
 
     if (!content && !selectedMediaFile && !repostedId) {
-        alert('Please write something, add a photo, or repost something');
+        alert('Write something, add photo, or repost something');
         return;
     }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) { alert('You must be logged in'); return; }
+    if (authError || !user) {
+        alert('You must be logged in');
+        return;
+    }
 
     let imageUrl = null;
-
     if (selectedMediaFile) {
-        const fileExt  = selectedMediaFile.name.split('.').pop() || 'jpg';
+        const fileExt = selectedMediaFile.name.split('.').pop() || 'jpg';
         const fileName = `${user.id}_${Date.now()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
             .from('post-images')
             .upload(fileName, selectedMediaFile, { upsert: false });
 
-        if (uploadError) { alert('Image upload failed: ' + uploadError.message); return; }
+        if (uploadError) {
+            alert('Image upload failed: ' + uploadError.message);
+            return;
+        }
 
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
         imageUrl = urlData.publicUrl;
     }
 
     const postData = {
-        user_id:          user.id,
-        content:          content || null,
-        image:            imageUrl || null,
+        user_id: user.id,
+        content: content || null,
+        image: imageUrl || null,
         reposted_post_id: repostedId || null
     };
 
@@ -2616,72 +2621,71 @@ async function submitPost() {
         .select(`
             id, content, image, created_at, reposted_post_id,
             user:users ( username, avatar ),
-            reposted_post:reposted_post_id (
-                id, content, image, video, created_at, user_id,
-                user:users ( id, username, avatar )
-            )
+            reposted_post:reposted_post_id ( id, content, image, video, created_at, user_id )
         `)
         .single();
 
-    if (insertError) { alert('Could not create post: ' + insertError.message); return; }
+    if (insertError) {
+        alert('Could not create post: ' + insertError.message);
+        return;
+    }
 
-    // Close modal and clear state
     closePostModal();
     if (postBtn) {
         delete postBtn.dataset.repostingId;
-        delete postBtn.dataset.repostBtnSource;
     }
     document.getElementById('mediaPreview').innerHTML = '';
 
-    // Build the new post element and prepend to feed
+    // Add new post to feed
     const adapted = {
-        id:               newPost.id,
-        userId:           user.id,
-        username:         newPost.user?.username || '@you',
-        avatar:           newPost.user?.avatar   || 'pics/default-avatar.png',
-        content:          newPost.content        || '',
-        image:            newPost.image,
-        video:            null,
-        timestamp:        'just now',
-        likeCount:        0,
-        commentCount:     0,
-        repostCount:      0,
-        views:            0,
+        id: newPost.id,
+        userId: user.id,
+        username: newPost.user?.username || '@you',
+        avatar: newPost.user?.avatar || 'pics/default-avatar.png',
+        content: newPost.content || '',
+        image: newPost.image,
+        video: null,
+        timestamp: 'just now',
+        likeCount: 0,
+        commentCount: 0,
+        repostCount: 0,
+        views: 0,
         reposted_post_id: newPost.reposted_post_id,
-        reposted_post:    newPost.reposted_post ? {
-            id:         newPost.reposted_post.id,
-            content:    newPost.reposted_post.content,
-            image:      newPost.reposted_post.image,
-            video:      newPost.reposted_post.video,
-            created_at: newPost.reposted_post.created_at,
-            user_id:    newPost.reposted_post.user_id,
-            user:       newPost.reposted_post.user
-        } : null
+        reposted_post: newPost.reposted_post || null
     };
 
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    // ── If this was a repost: increment count + turn icon green ──
+    // If this was a repost → update count & turn YOUR buttons green
     if (repostedId) {
         try {
-            // Increment repost_count on the original post
+            // Increase repost_count
             const { data: current } = await supabase
-                .from('posts').select('repost_count').eq('id', repostedId).single();
+                .from('posts')
+                .select('repost_count')
+                .eq('id', repostedId)
+                .single();
+
+            const newCount = (current?.repost_count || 0) + 1;
 
             await supabase
                 .from('posts')
-                .update({ repost_count: (current?.repost_count || 0) + 1 })
+                .update({ repost_count: newCount })
                 .eq('id', repostedId);
 
-            // Get authoritative count and sync all repost buttons for this post
-            const { data: fresh } = await supabase
-                .from('posts').select('repost_count').eq('id', repostedId).single();
+            // Update count display everywhere (public)
+            document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span,
+                                       #nuba .repost-btn[data-original-id="${repostedId}"] span`)
+                .forEach(el => {
+                    el.textContent = newCount > 0 ? newCount : '';
+                });
 
-            syncRepostUI(repostedId, true, fresh?.repost_count ?? 1);
+            // Turn green ONLY for current user
+            updateCurrentUserRepostButtons(repostedId, true);
 
         } catch (err) {
-            console.error('Failed to update repost count after posting:', err.message);
+            console.error('Failed to update repost count:', err.message);
         }
     }
 
