@@ -2489,9 +2489,17 @@ async function handleRepostClick(postId, repostBtnEl) {
 // ───────────────────────────────────────────────
 //  FIXED submitPost — now properly fetches nested repost data
 // ───────────────────────────────────────────────
+
+// ───────────────────────────────────────────────────────────────
+// SECTION 3 — REPLACE submitPost()
+// Find your existing submitPost() and replace the whole function.
+// The only additions are: turning the repost button green after
+// a successful repost, and syncing the repost count.
+// ───────────────────────────────────────────────────────────────
+
 async function submitPost() {
-    const content = document.getElementById('postContent')?.value?.trim() || '';
-    const postBtn = document.getElementById('postBtn');
+    const content    = document.getElementById('postContent')?.value?.trim() || '';
+    const postBtn    = document.getElementById('postBtn');
     const repostedId = postBtn?.dataset.repostingId;
 
     if (!content && !selectedMediaFile && !repostedId) {
@@ -2500,41 +2508,31 @@ async function submitPost() {
     }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-        alert('You must be logged in');
-        return;
-    }
+    if (authError || !user) { alert('You must be logged in'); return; }
 
     let imageUrl = null;
 
     if (selectedMediaFile) {
         const fileExt  = selectedMediaFile.name.split('.').pop() || 'jpg';
         const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-        const filePath = fileName;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
             .from('post-images')
-            .upload(filePath, selectedMediaFile, { upsert: false });
+            .upload(fileName, selectedMediaFile, { upsert: false });
 
-        if (uploadError) {
-            alert("Image upload failed: " + uploadError.message);
-            return;
-        }
+        if (uploadError) { alert('Image upload failed: ' + uploadError.message); return; }
 
-        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
         imageUrl = urlData.publicUrl;
     }
 
     const postData = {
-        user_id: user.id,
-        content: content || null,
-        image: imageUrl || null,
+        user_id:          user.id,
+        content:          content || null,
+        image:            imageUrl || null,
         reposted_post_id: repostedId || null
     };
 
-    // ═══════════════════════════════════════════════
-    // 🔥 THE FIX: Include reposted_post relation!
-    // ═══════════════════════════════════════════════
     const { data: newPost, error: insertError } = await supabase
         .from('posts')
         .insert([postData])
@@ -2548,49 +2546,69 @@ async function submitPost() {
         `)
         .single();
 
-    if (insertError) {
-        alert("Could not create post: " + insertError.message);
-        return;
-    }
+    if (insertError) { alert('Could not create post: ' + insertError.message); return; }
 
-    // Clear composer + repost state
+    // Close modal and clear state
     closePostModal();
-    if (postBtn) delete postBtn.dataset.repostingId;
+    if (postBtn) {
+        delete postBtn.dataset.repostingId;
+        delete postBtn.dataset.repostBtnSource;
+    }
     document.getElementById('mediaPreview').innerHTML = '';
 
-    // ═══════════════════════════════════════════════
-    // 🔥 THE FIX: Now we have the full reposted_post data!
-    // ═══════════════════════════════════════════════
+    // Build the new post element and prepend to feed
     const adapted = {
-        id: newPost.id,
-        userId: user.id,
-        username: newPost.user?.username || '@you',
-        avatar: newPost.user?.avatar || 'pics/default-avatar.png',
-        content: newPost.content || '',
-        image: newPost.image,
-        video: null,
-        timestamp: 'just now',
-        likeCount: 0,
-        commentCount: 0,
-        repostCount: 0,
-        views: 0,
+        id:               newPost.id,
+        userId:           user.id,
+        username:         newPost.user?.username || '@you',
+        avatar:           newPost.user?.avatar   || 'pics/default-avatar.png',
+        content:          newPost.content        || '',
+        image:            newPost.image,
+        video:            null,
+        timestamp:        'just now',
+        likeCount:        0,
+        commentCount:     0,
+        repostCount:      0,
+        views:            0,
         reposted_post_id: newPost.reposted_post_id,
-        reposted_post: newPost.reposted_post ? {
-            id: newPost.reposted_post.id,
-            content: newPost.reposted_post.content,
-            image: newPost.reposted_post.image,
-            video: newPost.reposted_post.video,
+        reposted_post:    newPost.reposted_post ? {
+            id:         newPost.reposted_post.id,
+            content:    newPost.reposted_post.content,
+            image:      newPost.reposted_post.image,
+            video:      newPost.reposted_post.video,
             created_at: newPost.reposted_post.created_at,
-            user_id: newPost.reposted_post.user_id,
-            user: newPost.reposted_post.user
+            user_id:    newPost.reposted_post.user_id,
+            user:       newPost.reposted_post.user
         } : null
     };
 
-    // Now createPostElement will have all the data it needs!
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    showToast?.("Posted!") || alert("Posted!");
+    // ── If this was a repost: increment count + turn icon green ──
+    if (repostedId) {
+        try {
+            // Increment repost_count on the original post
+            const { data: current } = await supabase
+                .from('posts').select('repost_count').eq('id', repostedId).single();
+
+            await supabase
+                .from('posts')
+                .update({ repost_count: (current?.repost_count || 0) + 1 })
+                .eq('id', repostedId);
+
+            // Get authoritative count and sync all repost buttons for this post
+            const { data: fresh } = await supabase
+                .from('posts').select('repost_count').eq('id', repostedId).single();
+
+            syncRepostUI(repostedId, true, fresh?.repost_count ?? 1);
+
+        } catch (err) {
+            console.error('Failed to update repost count after posting:', err.message);
+        }
+    }
+
+    showToast('Posted!');
 }
 
 
