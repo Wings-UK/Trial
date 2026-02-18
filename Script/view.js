@@ -2421,9 +2421,17 @@ if (repostBtn) {
 // ───────────────────────────────────────────────
 //  REPOST MODAL OPENER (using your existing composer)
 // ───────────────────────────────────────────────
-async function handleRepostClick(postId) {
+
+// ───────────────────────────────────────────────────────────────
+// SECTION 2 — REPLACE handleRepostClick()
+// Find your existing handleRepostClick() and replace the whole
+// function with this one. It now accepts the button element so
+// it can turn green after the post is submitted.
+// ───────────────────────────────────────────────────────────────
+
+async function handleRepostClick(postId, repostBtnEl) {
     if (!currentUserId) {
-        alert("Please sign in to repost");
+        alert('Please sign in to repost');
         return;
     }
 
@@ -2438,45 +2446,40 @@ async function handleRepostClick(postId) {
             .single();
 
         if (error) throw error;
-        if (!originalPost) {
-            alert("Cannot find original post");
-            return;
-        }
+        if (!originalPost) { alert('Cannot find original post'); return; }
 
-        // Open your composer
+        // Open composer
         makePost();
 
-        // Add visual repost preview
+        // Store the button ref so submitPost can green it after success
+        document.getElementById('postBtn').dataset.repostingId    = originalPost.id;
+        document.getElementById('postBtn').dataset.repostBtnSource = 'feed'; // track origin
+
+        // Add visual repost preview in the composer
         const preview = document.getElementById('mediaPreview');
         if (preview) {
             preview.innerHTML = '';
-
             const card = document.createElement('div');
             card.style.cssText = 'border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#f9f9f9; position:relative;';
-
             card.innerHTML = `
                 <button class="remove-repost-preview" style="position:absolute; top:4px; right:8px; background:#aaa; color:white; border:none; border-radius:50%; width:22px; height:22px; line-height:18px; cursor:pointer;">×</button>
                 <small style="color:#666;">Reposting from @${originalPost.user?.username || 'user'}</small>
-                ${originalPost.content ? `<p style="margin:6px 0;font-size:14px;">${originalPost.content.substring(0,120)}${originalPost.content.length > 120 ? '...' : ''}</p>` : ''}
-                ${originalPost.image ? `<img src="${originalPost.image}" style="max-height:140px;border-radius:6px;" />` : ''}
+                ${originalPost.content ? `<p style="margin:6px 0;font-size:14px;">${originalPost.content.substring(0, 120)}${originalPost.content.length > 120 ? '...' : ''}</p>` : ''}
+                ${originalPost.image   ? `<img src="${originalPost.image}" style="max-height:140px;border-radius:6px;" />` : ''}
             `;
-
             preview.appendChild(card);
 
-            // Remove repost preview
             card.querySelector('.remove-repost-preview').onclick = () => {
                 card.remove();
                 delete document.getElementById('postBtn')?.dataset.repostingId;
+                delete document.getElementById('postBtn')?.dataset.repostBtnSource;
                 updatePostButtonState();
             };
-
-            // Store original post id
-            document.getElementById('postBtn').dataset.repostingId = originalPost.id;
         }
 
     } catch (err) {
-        console.error("Repost prepare failed", err);
-        alert("Could not prepare repost — please try again");
+        console.error('Repost prepare failed', err);
+        alert('Could not prepare repost — please try again');
     }
 }
 
