@@ -2135,25 +2135,24 @@ async function toggleRepost(originalPostId, repostBtnEl) {
         return;
     }
 
-    const img      = repostBtnEl.querySelector('img');
-    const span     = repostBtnEl.querySelector('span');
+    const img = repostBtnEl.querySelector('img.repost-icon');
+    const countSpan = repostBtnEl.querySelector('span');
     const currentlyReposted = repostBtnEl.getAttribute('data-reposted') === 'true';
-    let   count    = parseInt(span?.textContent?.trim() || '0', 10);
+
+    let count = parseInt(countSpan?.textContent?.trim() || '0', 10);
     if (isNaN(count)) count = 0;
 
     if (currentlyReposted) {
-        // ── UN-REPOST ──────────────────────────────────────────
-        // Optimistic UI: go green → black immediately
+        // ── UNREPOST ────────────────────────────────────────
+        // Optimistic UI: remove green immediately (personal)
         repostBtnEl.setAttribute('data-reposted', 'false');
-        if (img)  img.style.filter  = '';
-        if (span) { span.style.color = ''; span.textContent = count - 1 > 0 ? count - 1 : ''; }
+        if (img) img.style.filter = '';
 
         try {
-            // Find the user's repost post row
             const myRepostId = await getMyRepostOfPost(originalPostId);
-            if (!myRepostId) return; // already deleted somehow
+            if (!myRepostId) return;
 
-            // Delete the repost post from posts table
+            // Delete your repost
             const { error: deleteError } = await supabase
                 .from('posts')
                 .delete()
@@ -2162,46 +2161,47 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 
             if (deleteError) throw deleteError;
 
-            // Decrement repost_count on the original post
-            const { data: updated, error: rpcError } = await supabase
-                .rpc('decrement_repost_count', { post_id: originalPostId });
+            // Decrease count on original
+            const { data: current } = await supabase
+                .from('posts')
+                .select('repost_count')
+                .eq('id', originalPostId)
+                .single();
 
-            if (rpcError) {
-                console.warn('decrement_repost_count rpc failed, trying manual update');
-                // Fallback: manual update if RPC not set up yet
-                const { data: current } = await supabase
-                    .from('posts').select('repost_count').eq('id', originalPostId).single();
-                await supabase
-                    .from('posts')
-                    .update({ repost_count: Math.max(0, (current?.repost_count || 1) - 1) })
-                    .eq('id', originalPostId);
-            }
+            const newCount = Math.max(0, (current?.repost_count || 1) - 1);
 
-            // Get the authoritative count and sync all buttons
-            const { data: fresh } = await supabase
-                .from('posts').select('repost_count').eq('id', originalPostId).single();
-            const finalCount = fresh?.repost_count ?? Math.max(0, count - 1);
+            await supabase
+                .from('posts')
+                .update({ repost_count: newCount })
+                .eq('id', originalPostId);
 
-            syncRepostUI(originalPostId, false, finalCount);
+            // Update only YOUR visible buttons
+            updateCurrentUserRepostButtons(originalPostId, false);
 
-            // Remove the repost element from the feed if visible
+            // Update count display everywhere (public info)
+            document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"] span,
+                                       #nuba .repost-btn[data-original-id="${originalPostId}"] span`)
+                .forEach(el => {
+                    el.textContent = newCount > 0 ? newCount : '';
+                });
+
+            // Remove your repost card if visible
             const repostEl = document.querySelector(`.poster[data-post-id="${myRepostId}"]`);
             if (repostEl) repostEl.remove();
+
+            console.log(`Un-reposted ${originalPostId}`);
 
         } catch (err) {
             console.error('Un-repost failed:', err.message);
             // Revert optimistic UI
             repostBtnEl.setAttribute('data-reposted', 'true');
-            if (img)  img.style.filter  = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
-            if (span) { span.style.color = '#10b981'; span.textContent = count > 0 ? count : ''; }
-            alert("Couldn't remove repost. Please try again.");
+            if (img) img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+            alert("Couldn't remove repost. Try again.");
         }
 
     } else {
-        // ── REPOST ─────────────────────────────────────────────
-        // Don't toggle immediately — open the compose modal so
-        // they can add commentary, same as before.
-        // The green state is applied AFTER submitPost() succeeds.
+        // ── REPOST (open composer) ──────────────────────────
+        // We don't turn green yet — only after successful submit
         handleRepostClick(originalPostId, repostBtnEl);
     }
 }
