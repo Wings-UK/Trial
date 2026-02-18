@@ -3616,3 +3616,17 @@ body {
 /* ═══════════════════════════════════════════════════════════════
    END OF REPOST STYLES
    ═══════════════════════════════════════════════════════════════ */
+
+.repost-icon {
+    transition: filter 0.25s ease;
+}
+
+.repost-btn[data-reposted="true"] img {
+    filter: invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+
+.repost-btn[data-reposted="true"] span {
+    color: #10b981;
+}
+
+*/
