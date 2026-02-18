@@ -873,6 +873,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+
+// ───────────────────────────────────────────────────────────────
+// SECTION 5 — REPLACE showDetail()
+// The repost button in the comment bar now has data-original-id
+// so syncRepostUI can find it, and it wires up toggleRepost().
+// Everything else is identical to your current showDetail().
+// ───────────────────────────────────────────────────────────────
+
 async function showDetail(postId) {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -884,7 +893,6 @@ async function showDetail(postId) {
     if (!nuba) { console.error('nuba container not found'); return; }
     nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading post...</p>';
 
-    // ── Fetch post + reposted_post in ONE query ──────────────────────────
     const { data: postData, error } = await supabase
         .from('posts')
         .select(`
@@ -924,35 +932,32 @@ async function showDetail(postId) {
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
-    // ── Repost detection ─────────────────────────────────────────────────
-    const isRepost   = !!postData.reposted_post_id && !!postData.reposted_post;
-    const original   = isRepost ? postData.reposted_post : null;
-    const origUser   = original ? {
+    const isRepost = !!postData.reposted_post_id && !!postData.reposted_post;
+    const original = isRepost ? postData.reposted_post : null;
+    const origUser = original ? {
         username: original.user?.username || '@unknown',
         avatar:   original.user?.avatar   || 'pics/default-avatar.png',
     } : null;
 
-    // ── Build the media / repost block that replaces the image slot ───────
-    //    This is the key idea: repost card sits exactly where a photo would
+    // The post id that the repost button should toggle against.
+    // If this detail page is showing a repost, the button toggles the ORIGINAL.
+    // If it's a normal post, the button toggles this post itself.
+    const repostTargetId = isRepost ? original.id : post.id;
+
     let mediaBlock = '';
 
     if (isRepost) {
-        // ── The elegant nested repost card inside the image-slot area ─────
         mediaBlock = `
             <div class="swet detail-repost-wrap">
-
                 ${post.content ? `
                     <div class="tir" style="margin-bottom: 14px;">
-                        <p class="tiri">${post.content}</p>
+                        <p class="tiri" style="white-space:pre-wrap;">${post.content}</p>
                     </div>
                 ` : ''}
 
                 <div class="detail-original-card" data-original-id="${original.id}">
-
-                    <!-- left accent bar is via CSS ::before -->
                     <div class="doc-quote-bg">"</div>
 
-                    <!-- Original author header -->
                     <div class="doc-header">
                         <div class="small-photo1" style="width:34px;height:34px;">
                             <a class="lino" onclick="showProfile('${original.user_id}')">
@@ -973,13 +978,10 @@ async function showDetail(postId) {
                         </div>
                     </div>
 
-                    <!-- Original content -->
                     ${original.content ? `
-    <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}
-    </div>
+    <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
 ` : ''}
 
-                    <!-- Original image (full width inside card) -->
                     ${original.image ? `
                         <div style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
                             <img src="${original.image}" alt="Original image"
@@ -987,7 +989,6 @@ async function showDetail(postId) {
                         </div>
                     ` : ''}
 
-                    <!-- Original video -->
                     ${original.video && !original.image ? `
                         <div class="video-container" data-post-id="${original.id}"
                              style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
@@ -1008,10 +1009,9 @@ async function showDetail(postId) {
             </div>
         `;
     } else {
-        // ── Normal post: same as before ───────────────────────────────────
         mediaBlock = `
             <div class="tir">
-                <p class="tiri">${post.content}<br></p>
+                <p class="tiri" style="white-space:pre-wrap;">${post.content}<br></p>
             </div>
             ${post.image ? `
                 <div class="swet">
@@ -1040,7 +1040,6 @@ async function showDetail(postId) {
         `;
     }
 
-    // ── Build the full detail page HTML ───────────────────────────────────
     nuba.innerHTML = `
         <div class="cust-name" data-post-id="${post.id}">
             <div class="heading">
@@ -1092,7 +1091,7 @@ async function showDetail(postId) {
         <div class="lefto">
             <div class="dick">
                 <div><p class="viewe"><span class="werey">${post.likeCount || 0}</span> reactions</p></div>
-                <div><p class="viewe"><span class="werey">${post.repostCount || 0}</span> echoes</p></div>
+                <div><p class="viewe"><span class="werey repost-count-display">${post.repostCount || 0}</span> echoes</p></div>
             </div>
             <div class="twits">
                 <div><img class="lefti" src="pics/stats.svg"></div>
@@ -1120,8 +1119,11 @@ async function showDetail(postId) {
             </div>
             <div class="actions">
                 <div class="dil">
-                    <div class="repost-btn sted buyt">
-                        <img class="feeling spoil" src="pics/retweet.svg" alt="Repost">
+                    <!-- UPDATED: data-original-id lets syncRepostUI find this button -->
+                    <div class="repost-btn sted buyt"
+                         data-original-id="${repostTargetId}"
+                         data-reposted="false">
+                        <img class="feeling spoil repost-icon" src="pics/retweet.svg" alt="Repost">
                     </div>
                     <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
                         <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
@@ -1140,18 +1142,35 @@ async function showDetail(postId) {
         </div>
     `;
 
-    // ── "View original" click on the card goes to original post ──────────
+    // ── Original card tap → go to original post ──
     const origCard = nuba.querySelector('.detail-original-card');
     if (origCard) {
         origCard.style.cursor = 'pointer';
         origCard.addEventListener('click', (e) => {
-            // Don't fire if clicking a nested link (profile)
             if (e.target.closest('a')) return;
             showDetail(original.id);
         });
     }
 
-    // ── Like functionality ────────────────────────────────────────────────
+    // ── Detail repost button ──
+    const detailRepostBtn = nuba.querySelector('.repost-btn');
+    if (detailRepostBtn) {
+        // Check if user already reposted this post
+        getMyRepostOfPost(repostTargetId).then(myRepostId => {
+            if (myRepostId) {
+                detailRepostBtn.setAttribute('data-reposted', 'true');
+                const img = detailRepostBtn.querySelector('img');
+                if (img) img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+            }
+        });
+
+        detailRepostBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRepost(repostTargetId, detailRepostBtn);
+        });
+    }
+
+    // ── Like functionality ──
     const detailHeart = document.querySelector('#nuba .heart-ai');
     if (detailHeart) {
         const alreadyLiked = await isPostLikedByCurrentUser(post.id);
