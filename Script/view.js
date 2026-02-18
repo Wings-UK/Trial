@@ -2518,41 +2518,45 @@ async function handleRepostClick(postId, repostBtnEl) {
             .eq('id', postId)
             .single();
 
-        if (error) throw error;
-        if (!originalPost) { alert('Cannot find original post'); return; }
+        if (error || !originalPost) {
+            alert('Cannot find original post');
+            return;
+        }
 
-        // Open composer
         makePost();
 
-        // Store the button ref so submitPost can green it after success
-        document.getElementById('postBtn').dataset.repostingId    = originalPost.id;
-        document.getElementById('postBtn').dataset.repostBtnSource = 'feed'; // track origin
+        const postBtn = document.getElementById('postBtn');
+        if (postBtn) {
+            postBtn.dataset.repostingId = originalPost.id;
+            postBtn.dataset.repostBtnElementId = repostBtnEl.id || 'unknown'; // optional tracking
+        }
 
-        // Add visual repost preview in the composer
         const preview = document.getElementById('mediaPreview');
         if (preview) {
             preview.innerHTML = '';
             const card = document.createElement('div');
             card.style.cssText = 'border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#f9f9f9; position:relative;';
             card.innerHTML = `
-                <button class="remove-repost-preview" style="position:absolute; top:4px; right:8px; background:#aaa; color:white; border:none; border-radius:50%; width:22px; height:22px; line-height:18px; cursor:pointer;">×</button>
+                <button class="remove-repost-preview" style="position:absolute;top:4px;right:8px;background:#aaa;color:white;border:none;border-radius:50%;width:22px;height:22px;line-height:18px;cursor:pointer;">×</button>
                 <small style="color:#666;">Reposting from @${originalPost.user?.username || 'user'}</small>
-                ${originalPost.content ? `<p style="margin:6px 0;font-size:14px;">${originalPost.content.substring(0, 120)}${originalPost.content.length > 120 ? '...' : ''}</p>` : ''}
-                ${originalPost.image   ? `<img src="${originalPost.image}" style="max-height:140px;border-radius:6px;" />` : ''}
+                ${originalPost.content ? `<p style="margin:6px 0;font-size:14px;">${originalPost.content.substring(0,120)}${originalPost.content.length > 120 ? '...' : ''}</p>` : ''}
+                ${originalPost.image ? `<img src="${originalPost.image}" style="max-height:140px;border-radius:6px;" />` : ''}
             `;
             preview.appendChild(card);
 
             card.querySelector('.remove-repost-preview').onclick = () => {
                 card.remove();
-                delete document.getElementById('postBtn')?.dataset.repostingId;
-                delete document.getElementById('postBtn')?.dataset.repostBtnSource;
+                if (postBtn) {
+                    delete postBtn.dataset.repostingId;
+                    delete postBtn.dataset.repostBtnElementId;
+                }
                 updatePostButtonState();
             };
         }
 
     } catch (err) {
         console.error('Repost prepare failed', err);
-        alert('Could not prepare repost — please try again');
+        alert('Could not prepare repost');
     }
 }
 
