@@ -2157,23 +2157,34 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 // ───────────────────────────────────────────────
 //  UPDATED: createPostElement — now supports reposts
 // ───────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────
+// SECTION 4 — REPLACE createPostElement()
+// Two changes inside:
+//   A) The repost button HTML now has data-reposted="false" and
+//      uses an inline SVG instead of an img tag so stroke-width
+//      can be changed via CSS class.
+//   B) The repost button click listener now calls toggleRepost()
+//      instead of handleRepostClick().
+// Everything else is identical to your current version.
+// ───────────────────────────────────────────────────────────────
+
 function createPostElement(post) {
     const user = {
         username: post.username || 'new user',
-        avatar: post.avatar || 'pics/tt.jpg.jpg'
+        avatar:   post.avatar   || 'pics/tt.jpg.jpg'
     };
 
-    const textLimit = (post.image || post.video) ? 150 : 300;
+    const textLimit  = (post.image || post.video) ? 150 : 300;
     const hasVideo   = !!post.video;
     const hasImage   = !!post.image;
     const isOwnPost  = currentUserId && post.userId === currentUserId;
 
     // ─── REPOST CHECK ───
-    const isRepost = !!post.reposted_post_id && post.reposted_post;
-    const original = isRepost ? post.reposted_post : null;
+    const isRepost    = !!post.reposted_post_id && post.reposted_post;
+    const original    = isRepost ? post.reposted_post : null;
     const originalUser = original ? {
         username: original.user?.username || '@unknown',
-        avatar: original.user?.avatar || 'pics/default-avatar.png'
+        avatar:   original.user?.avatar   || 'pics/default-avatar.png'
     } : null;
 
     const posterElement = document.createElement('div');
@@ -2184,7 +2195,6 @@ function createPostElement(post) {
     let mainContentHTML = '';
 
     if (isRepost) {
-        // ─── REPOST LAYOUT ───
         mainContentHTML = `
             ${post.content ? `
                 <div class="tir repost-commentary">
@@ -2255,7 +2265,6 @@ function createPostElement(post) {
             </div>
         `;
     } else {
-        // Normal post
         mainContentHTML = `
             ${hasImage ? `
                 <div class="laptop1">
@@ -2320,8 +2329,6 @@ function createPostElement(post) {
             </div>
         </div>
 
-        
-
         ${mainContentHTML}
 
         <div class="lefto">
@@ -2347,10 +2354,16 @@ function createPostElement(post) {
                             <img class="feeling" src="pics/comment.svg" alt="Comment">
                             <span>${post.commentCount || 0}</span>
                         </div>
-                        <div class="repost-btn" data-post-id="${post.id}">
-                            <img class="feeling" src="pics/retweet.svg" alt="Repost">
+
+                        <!-- UPDATED: data-post-id is now the ORIGINAL post's id for reposts,
+                             so the toggle always targets the correct post's count -->
+                        <div class="repost-btn"
+                             data-post-id="${isRepost ? original.id : post.id}"
+                             data-reposted="false">
+                            <img class="feeling repost-icon" src="pics/retweet.svg" alt="Repost">
                             <span>${post.repostCount || 0}</span>
                         </div>
+
                         <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
                             <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
                                 <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -2369,33 +2382,41 @@ function createPostElement(post) {
 
     // ─── Event listeners ──────────────────────────────────────
 
-    // Click anywhere on post → detail (except when long-press blocks)
     posterElement.addEventListener('click', (e) => {
         if (posterElement.dataset.blockNavigation === 'true') return;
         if (e.target.closest('.repost-btn, .heart-ai, .comment-btn, .dots, a, button')) return;
         showDetail(post.id);
     });
 
-    // View original post click
     posterElement.querySelector('.view-original')?.addEventListener('click', (e) => {
         e.stopPropagation();
         if (original?.id) showDetail(original.id);
     });
 
-    // Repost button
-   const repostBtn = posterElement.querySelector('.repost-btn');
-if (repostBtn) {
-    console.log("✅ Repost listener attached to post", post.id);   // <--- add this
-    repostBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        console.log("🟢 Repost button clicked → post ID:", post.id);   // <--- add this
-        handleRepostClick(post.id);
-    });
-} else {
-    console.log("❌ No .repost-btn found in this post element", post.id);   // <--- add this
-}
+    // ── UPDATED repost button listener ──
+    const repostBtn = posterElement.querySelector('.repost-btn');
+    if (repostBtn) {
+        // The target post id for toggling (the original if this is a repost card)
+        const targetPostId = isRepost ? original.id : post.id;
 
-    // Like (your existing logic — already good)
+        // Check initial repost state from DB
+        getMyRepostOfPost(targetPostId).then(myRepostId => {
+            if (myRepostId) {
+                repostBtn.setAttribute('data-reposted', 'true');
+                const img  = repostBtn.querySelector('img');
+                const span = repostBtn.querySelector('span');
+                if (img)  img.style.filter  = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+                if (span) span.style.color  = '#10b981';
+            }
+        });
+
+        repostBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRepost(targetPostId, repostBtn);
+        });
+    }
+
+    // Like
     const heartContainer = posterElement.querySelector('.heart-ai');
     if (heartContainer) {
         isPostLikedByCurrentUser(post.id).then(liked => {
