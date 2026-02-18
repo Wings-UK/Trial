@@ -2030,7 +2030,22 @@ async function loadInitialNotificationCount() {
 // ───────────────────────────────────────────────
 //  REPOST HELPERS
 // ───────────────────────────────────────────────
+async function getMyRepostOfPost(originalPostId) {
+    if (!currentUserId) return null;
 
+    const { data, error } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('reposted_post_id', originalPostId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('getMyRepostOfPost failed:', error.message);
+        return null;
+    }
+    return data?.id || null;  // returns the repost's own id, or null
+}
 // ───────────────────────────────────────────────
 //  UPDATED: createPostElement — now supports reposts
 // ───────────────────────────────────────────────
