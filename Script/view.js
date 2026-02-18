@@ -2080,6 +2080,7 @@ async function getMyRepostOfPost(originalPostId) {
 // The main toggle — mirrors toggleLike() exactly in structure.
 // originalPostId  = the post being reposted
 // repostBtnEl     = the .repost-btn DOM element that was clicked
+
 async function toggleRepost(originalPostId, repostBtnEl) {
     if (!currentUserId) {
         alert('Please sign in to repost');
@@ -2111,28 +2112,37 @@ async function toggleRepost(originalPostId, repostBtnEl) {
 
             if (deleteError) throw deleteError;
 
-            // Decrease repost_count on the original post
-            const { data: current } = await supabase
-                .from('posts')
-                .select('repost_count')
-                .eq('id', originalPostId)
-                .single();
+            // Decrement count via RPC (bypasses RLS)
+            const { error: rpcError } = await supabase
+                .rpc('decrement_repost_count', { post_id: originalPostId });
 
-            const newCount = Math.max(0, (current?.repost_count || 1) - 1);
+            if (rpcError) {
+                console.error('decrement_repost_count RPC failed:', rpcError.message);
+            } else {
+                // Fetch real count from DB
+                const { data: updated } = await supabase
+                    .from('posts')
+                    .select('repost_count')
+                    .eq('id', originalPostId)
+                    .single();
 
-            await supabase
-                .from('posts')
-                .update({ repost_count: newCount })
-                .eq('id', originalPostId);
+                const newCount = updated?.repost_count || 0;
 
-            // Remove green from all of the current user's buttons for this post
+                // Update public count everywhere
+                document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"] span`)
+                    .forEach(span => {
+                        span.textContent = newCount > 0 ? newCount : '';
+                    });
+
+                // Also update detail page stat display if visible
+                document.querySelectorAll('.repost-count-display')
+                    .forEach(el => {
+                        el.textContent = newCount;
+                    });
+            }
+
+            // Remove green from all of current user's buttons for this post
             updateCurrentUserRepostButtons(originalPostId, false);
-
-            // Update the public count display everywhere
-            document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"] span`)
-                .forEach(el => {
-                    el.textContent = newCount > 0 ? newCount : '';
-                });
 
             // Remove the repost card from the feed if visible
             const repostEl = document.querySelector(`.poster[data-post-id="${myRepostId}"]`);
@@ -2519,6 +2529,7 @@ async function handleRepostClick(postId, repostBtnEl) {
 // The only additions are: turning the repost button green after
 // a successful repost, and syncing the repost count.
 // ───────────────────────────────────────────────────────────────
+
 async function submitPost() {
     const content = document.getElementById('postContent')?.value?.trim() || '';
     const postBtn = document.getElementById('postBtn');
@@ -2576,9 +2587,7 @@ async function submitPost() {
     }
 
     closePostModal();
-    if (postBtn) {
-        delete postBtn.dataset.repostingId;
-    }
+    if (postBtn) delete postBtn.dataset.repostingId;
     document.getElementById('mediaPreview').innerHTML = '';
 
     // Add new post to feed
@@ -2602,29 +2611,39 @@ async function submitPost() {
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    // If this was a repost → update count & turn YOUR buttons green
+    // If this was a repost → increment count via RPC (bypasses RLS)
     if (repostedId) {
         try {
-            const { data: current } = await supabase
-                .from('posts')
-                .select('repost_count')
-                .eq('id', repostedId)
-                .single();
+            // Use RPC so we can update any post's count regardless of ownership
+            const { error: rpcError } = await supabase
+                .rpc('increment_repost_count', { post_id: repostedId });
 
-            const newCount = (current?.repost_count || 0) + 1;
+            if (rpcError) {
+                console.error('increment_repost_count RPC failed:', rpcError.message);
+            } else {
+                // Fetch the real new count from DB to display accurately
+                const { data: updated } = await supabase
+                    .from('posts')
+                    .select('repost_count')
+                    .eq('id', repostedId)
+                    .single();
 
-            await supabase
-                .from('posts')
-                .update({ repost_count: newCount })
-                .eq('id', repostedId);
+                const newCount = updated?.repost_count || 0;
 
-            // Update public count on all visible buttons for this post
-            document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span`)
-                .forEach(el => {
-                    el.textContent = newCount > 0 ? newCount : '';
-                });
+                // Update the public count on all visible buttons for this post
+                document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span`)
+                    .forEach(span => {
+                        span.textContent = newCount > 0 ? newCount : '';
+                    });
 
-            // Turn green ONLY for current user
+                // Also update the detail page stat display if visible
+                document.querySelectorAll('.repost-count-display')
+                    .forEach(el => {
+                        el.textContent = newCount;
+                    });
+            }
+
+            // Turn green ONLY for current user regardless of RPC result
             updateCurrentUserRepostButtons(repostedId, true);
 
         } catch (err) {
@@ -2634,6 +2653,7 @@ async function submitPost() {
 
     showToast('Posted!');
 }
+
 
 
 // ───────────────────────────────────────────────
