@@ -2148,6 +2148,15 @@ async function toggleRepost(originalPostId, repostBtnEl) {
             const repostEl = document.querySelector(`.poster[data-post-id="${myRepostId}"]`);
             if (repostEl) repostEl.remove();
 
+            // If the user is currently viewing the deleted repost's detail page, go back
+            const detailPage = document.getElementById('meal');
+            if (detailPage?.classList.contains('active')) {
+                const currentDetailId = document.querySelector('#nuba .cust-name')?.dataset.postId;
+                if (currentDetailId === myRepostId.toString()) {
+                    goBackFromDetail();
+                }
+            }
+
             console.log(`Un-reposted ${originalPostId}`);
 
         } catch (err) {
