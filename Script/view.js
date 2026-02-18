@@ -2045,7 +2045,40 @@ async function loadInitialNotificationCount() {
     updateNotificationBadge();
 }
 
+function updateCurrentUserRepostButtons(originalPostId, isReposted) {
+    // Feed / list view buttons
+    document.querySelectorAll(`.repost-btn[data-post-id="${originalPostId}"]`).forEach(btn => {
+        const img = btn.querySelector('img.repost-icon');
+        const countSpan = btn.querySelector('span');
 
+        btn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
+
+        if (img) {
+            if (isReposted) {
+                img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+            } else {
+                img.style.filter = '';
+            }
+        }
+
+        // Optional: you can also change opacity, add class, etc.
+    });
+
+    // Detail view button
+    const detailBtn = document.querySelector(`#nuba .repost-btn[data-original-id="${originalPostId}"]`);
+    if (detailBtn) {
+        const img = detailBtn.querySelector('img.repost-icon');
+        detailBtn.setAttribute('data-reposted', isReposted ? 'true' : 'false');
+
+        if (img) {
+            if (isReposted) {
+                img.style.filter = 'invert(48%) sepia(79%) saturate(476%) hue-rotate(86deg) brightness(118%) contrast(119%)';
+            } else {
+                img.style.filter = '';
+            }
+        }
+    }
+}
 // ───────────────────────────────────────────────
 //  REPOST HELPERS
 // ───────────────────────────────────────────────
