@@ -2377,7 +2377,7 @@ function createPostElement(post) {
                         <!-- UPDATED: data-post-id is now the ORIGINAL post's id for reposts,
                              so the toggle always targets the correct post's count -->
                         <div class="repost-btn"
-                             data-post-id="${isRepost ? original.id : post.id}"
+                             data-post-id="${post.id}"
                              data-reposted="false">
                             <img class="feeling repost-icon" src="pics/retweet.svg" alt="Repost">
                             <span>${post.repostCount || 0}</span>
