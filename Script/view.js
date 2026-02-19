@@ -2379,7 +2379,7 @@ function createPostElement(post) {
                              data-post-id="${post.id}"
                              data-reposted="false">
                             <img class="feeling repost-icon" src="pics/retweet.svg" alt="Repost">
-                            <span>${post.repostCount || 0}</span>
+                            <span>${post.repostCount > 0 ? post.repostCount : ''}</span>
                         </div>
 
                         <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
