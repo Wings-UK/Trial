@@ -1087,7 +1087,7 @@ async function showDetail(postId) {
         <div class="lefto">
             <div class="dick">
                 <div><p class="viewe"><span class="werey">${post.likeCount || 0}</span> reactions</p></div>
-                <div><p class="viewe"><span class="werey repost-count-display">${post.repostCount || 0}</span> echoes</p></div>
+                <div><p class="viewe"><span class="werey repost-count-display">${post.repostCount || 0}</span> reposts</p></div>
             </div>
             <div class="twits">
                 <div><img class="lefti" src="pics/stats.svg"></div>
@@ -1785,7 +1785,7 @@ function createNotificationElement(notif) {
     const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const timeAgo = formatTimeSince(notif.created_at);
 
-    const message = notif.type === 'repost' ? 'reposted your note' : 'liked your note';
+    const message = notif.type === 'repost' ? 'reposted your note' : 'loved your note';
 
     const div = document.createElement('div');
     div.className = 'notification-item';
