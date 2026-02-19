@@ -2550,7 +2550,6 @@ async function handleRepostClick(postId, repostBtnEl) {
 // The only additions are: turning the repost button green after
 // a successful repost, and syncing the repost count.
 // ───────────────────────────────────────────────────────────────
-
 async function submitPost() {
     const content = document.getElementById('postContent')?.value?.trim() || '';
     const postBtn = document.getElementById('postBtn');
@@ -2599,9 +2598,9 @@ async function submitPost() {
             id, content, image, created_at, reposted_post_id,
             user:users ( username, avatar ),
             reposted_post:reposted_post_id (
-    id, content, image, video, created_at, user_id,
-    user:users ( id, username, avatar )
-)
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            )
         `)
         .single();
 
@@ -2635,7 +2634,7 @@ async function submitPost() {
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    // If this was a repost → increment count via RPC (bypasses RLS)
+    // If this was a repost → update count + send notification
     if (repostedId) {
         try {
             // Use RPC so we can update any post's count regardless of ownership
@@ -2670,6 +2669,32 @@ async function submitPost() {
             // Turn green ONLY for current user regardless of RPC result
             updateCurrentUserRepostButtons(repostedId, true);
 
+            // ── SEND REPOST NOTIFICATION ──────────────────────────
+            // Fetch the original post's owner so we know who to notify
+            const { data: originalPost } = await supabase
+                .from('posts')
+                .select('user_id')
+                .eq('id', repostedId)
+                .single();
+
+            // Only notify if reposter is not the post owner
+            if (originalPost && originalPost.user_id !== user.id) {
+                const { error: notifError } = await supabase
+                    .from('notifications')
+                    .insert({
+                        user_id:  originalPost.user_id,  // who receives the notification
+                        actor_id: user.id,               // who did the reposting
+                        post_id:  repostedId,            // the original post
+                        type:     'repost',
+                        read:     false
+                    });
+
+                if (notifError) {
+                    console.error('Repost notification failed:', notifError.message);
+                }
+            }
+            // ─────────────────────────────────────────────────────
+
         } catch (err) {
             console.error('Failed to update repost count:', err.message);
         }
@@ -2678,7 +2703,95 @@ async function submitPost() {
     showToast('Posted!');
 }
 
+async function loadRepostNotifications() {
+    if (!currentUserId) return [];
 
+    const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+            id,
+            created_at,
+            read,
+            actor_id,
+            post_id,
+            users!actor_id (
+                username,
+                avatar
+            ),
+            posts!fk_notifications_post_id (
+                id,
+                image,
+                user_id,
+                users!user_id (
+                    username,
+                    avatar
+                )
+            )
+        `)
+        .eq('user_id', currentUserId)
+        .eq('type', 'repost')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) {
+        console.error("Repost notifications fetch failed:", error);
+        return [];
+    }
+
+    return (data || []).map(row => ({
+        id: row.id,
+        created_at: row.created_at,
+        read: row.read,
+        actor_id: row.actor_id,
+        type: 'repost',
+        actor: {
+            username: row.users?.username || '@unknown',
+            avatar: row.users?.avatar || 'pics/default-avatar.png'
+        },
+        post: {
+            id: row.posts?.id || row.post_id,
+            image: row.posts?.image,
+            author: {
+                username: row.posts?.users?.username || '@unknown',
+                avatar: row.posts?.users?.avatar || 'pics/default-avatar.png'
+            }
+        }
+    }));
+}
+
+async function renderNotifications() {
+    const container = document.querySelector('#notifications .notifications-body');
+    if (!container) return;
+
+    container.innerHTML = '<div class="skeleton" style="height:120px; margin:16px;"></div><p>Loading...</p>';
+
+    // Load both types in parallel
+    const [likeNotifs, repostNotifs] = await Promise.all([
+        loadLikeNotifications(),
+        loadRepostNotifications()
+    ]);
+
+    // Merge and sort by newest first
+    const allNotifs = [...likeNotifs, ...repostNotifs]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    container.innerHTML = '';
+
+    if (allNotifs.length === 0) {
+        container.innerHTML = `
+            <div style="padding:60px 20px; text-align:center; color:#777;">
+                <h3>No notifications yet</h3>
+                <p style="margin-top:12px;">When someone likes or reposts your note, you'll see it here.</p>
+            </div>
+        `;
+        return;
+    }
+
+    allNotifs.forEach(notif => {
+        const item = createLikeNotificationElement(notif);
+        container.appendChild(item);
+    });
+}
 
 // ───────────────────────────────────────────────
 //  UPDATED loadMorePosts — must include reposted_post relation
