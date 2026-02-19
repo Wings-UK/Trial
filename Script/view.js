@@ -1785,15 +1785,7 @@ function createNotificationElement(notif) {
     const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const timeAgo = formatTimeSince(notif.created_at);
 
-    // Message changes based on type
     const message = notif.type === 'repost' ? 'reposted your note' : 'liked your note';
-
-    const rightAvatar = `
-        <img src="${author.avatar}" 
-             style="width:42px; height:42px; object-fit:cover; border-radius:10px;"
-             onerror="this.src='pics/default-avatar.png';"
-             alt="${author.username}'s avatar">
-    `;
 
     const div = document.createElement('div');
     div.className = 'notification-item';
@@ -1811,14 +1803,17 @@ function createNotificationElement(notif) {
 
     div.innerHTML = `
         <div class="notification-left" style="display:flex; align-items:center; gap:12px; flex:1;">
-            <div class="actor-avatar" style="cursor: pointer;">
+
+            <!-- Avatar ONLY → goes to profile -->
+            <div class="actor-avatar" style="cursor:pointer; flex-shrink:0;">
                 <img src="${actor.avatar}" 
                      style="width:42px; height:42px; border-radius:50%; object-fit:cover;"
                      onerror="this.src='pics/default-avatar.png';"
                      alt="${actor.username}">
             </div>
 
-            <div class="actor-info" style="text-align: left; flex:1; cursor: pointer;">
+            <!-- Username + message → goes to post detail -->
+            <div class="actor-info" style="text-align:left; flex:1; cursor:pointer;">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
                     ${message} · ${timeAgo}
@@ -1826,32 +1821,24 @@ function createNotificationElement(notif) {
             </div>
         </div>
 
-        <div class="post-preview" style="cursor: pointer;">
-            ${rightAvatar}
+        <!-- Right avatar → goes to post detail -->
+        <div class="post-preview" style="cursor:pointer;">
+            <img src="${author.avatar}" 
+                 style="width:42px; height:42px; object-fit:cover; border-radius:10px;"
+                 onerror="this.src='pics/default-avatar.png';"
+                 alt="${author.username}'s avatar">
         </div>
     `;
 
-    // Actor avatar → profile
-    const avatarEl = div.querySelector('.actor-avatar');
-    if (avatarEl && notif.actor_id) {
-        avatarEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showProfile(notif.actor_id);
-        });
-    }
+    // Avatar ONLY → profile
+    div.querySelector('.actor-avatar')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (notif.actor_id) showProfile(notif.actor_id);
+    });
 
-    // Actor username + message → profile
-    const infoEl = div.querySelector('.actor-info');
-    if (infoEl && notif.actor_id) {
-        infoEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showProfile(notif.actor_id);
-        });
-    }
-
-    // Whole notification → post detail
+    // Everything else → post detail
     div.addEventListener('click', (e) => {
-        if (e.target.closest('.actor-avatar, .actor-info')) return;
+        if (e.target.closest('.actor-avatar')) return;
         if (notif.post?.id) showDetail(notif.post.id);
     });
 
