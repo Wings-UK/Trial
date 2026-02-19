@@ -2973,474 +2973,577 @@ function addRepostStyles() {
     document.head.appendChild(style);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// COMMENTS SYSTEM — Drop this entire block into view.js
-// Replaces: showDetail(), submitComment() (new), adds loadComments(),
-//           renderComment(), submitComment(), addCommentStyles()
-// ═══════════════════════════════════════════════════════════════════
 
-// ── Comment realtime channel (cleaned up on nav away) ──
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STAIRCASE COMMENT SYSTEM — Drop this entire file into your project
+//
+// HOW TO USE:
+//   1. Run SUPABASE_SETUP.sql in your Supabase SQL Editor first.
+//   2. Replace / remove your old comment functions in view.js:
+//        • loadComments()
+//        • renderComment()
+//        • submitComment()
+//        • subscribeToComments()
+//        • addCommentStyles()
+//        • autoResizeCibTextarea()
+//        • updateCibSendBtn()
+//   3. Paste this entire file at the bottom of view.js (or as its own
+//      <script src="comment_system.js"> tag loaded AFTER view.js).
+//   4. The showDetail() function already renders  #comments-list and
+//      .comment-input-bar — this file handles everything inside them.
+//
+// WHAT'S NEW vs your old system:
+//   • Replies are stored in DB with parent_id
+//   • Tapping "Reply" on comment A animates the list so A's replies
+//     slide open between A and the next top-level comment (staircase).
+//   • Tapping "Reply" again collapses them with a smooth slide.
+//   • Comment likes are persisted to comment_likes table via RPC.
+//   • Realtime: new top-level comments AND replies appear live.
+//   • Verified badge, avatar, heart with count, reply count, timestamps.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Realtime channel ──────────────────────────────────────────────────────
 let commentChannel = null;
 
-// ── Add all comment + detail UI styles once ──
+// ── Active reply target { commentId, username } ──────────────────────────
+let activeReplyTarget = null;
+
+// ── Inject all styles once ───────────────────────────────────────────────
 function addCommentStyles() {
     if (document.getElementById('comment-system-styles')) return;
     const style = document.createElement('style');
     style.id = 'comment-system-styles';
     style.textContent = `
-        /* ── Detail page overhaul ── */
-        #nuba {
-            padding-bottom: 120px;
-        }
+/* ════════════════════════════════════════════
+   DETAIL PAGE PADDING
+   ════════════════════════════════════════════ */
+#nuba { padding-bottom: 130px; }
 
-        /* Post stats row */
-        .detail-stats-row {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 10px 16px;
-            border-top: 1px solid #f0f0f0;
-            border-bottom: 1px solid #f0f0f0;
-            margin: 4px 0 0;
-        }
-        .detail-stat {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #888;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-        }
-        .detail-stat .stat-num {
-            font-weight: 600;
-            color: #111;
-            font-size: 14px;
-        }
-        .detail-stat svg {
-            width: 15px;
-            height: 15px;
-            opacity: 0.55;
-        }
+/* ════════════════════════════════════════════
+   COMMENT SECTION LABEL
+   ════════════════════════════════════════════ */
+.comments-heading {
+    padding: 16px 16px 10px;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: -0.2px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.comments-heading-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: #aaa;
+}
 
-        /* ── Reaction bar (like + repost, unchanged in behaviour) ── */
-        .detail-reaction-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 16px;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        .detail-reaction-left {
-            display: flex;
-            align-items: center;
-            gap: 22px;
-        }
-        .detail-reaction-right {
-            display: flex;
-            align-items: center;
-        }
+/* ════════════════════════════════════════════
+   COMMENT LIST WRAPPER
+   ════════════════════════════════════════════ */
+#comments-list {
+    padding: 0 0 12px;
+}
 
-        /* ── Comments heading ── */
-        .comments-heading {
-            padding: 16px 16px 8px;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            color: #111;
-            letter-spacing: -0.3px;
-            border-bottom: 1px solid #f0f0f0;
-        }
+/* ════════════════════════════════════════════
+   TOP-LEVEL COMMENT BLOCK
+   Each block = the comment + its replies pocket
+   ════════════════════════════════════════════ */
+.comment-block {
+    /* No overflow hidden here — replies animate height */
+}
 
-        /* ── Comment list ── */
-        #comments-list {
-            padding: 0 0 8px;
-        }
+/* ════════════════════════════════════════════
+   SINGLE COMMENT ROW
+   ════════════════════════════════════════════ */
+.comment-item {
+    display: flex;
+    gap: 11px;
+    padding: 13px 16px 10px;
+    border-bottom: 1px solid #f5f5f5;
+    animation: commentFadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    position: relative;
+}
+@keyframes commentFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-        /* ── Single comment ── */
-        .comment-item {
-            display: flex;
-            gap: 10px;
-            padding: 12px 16px;
-            border-bottom: 1px solid #f7f7f7;
-            animation: commentSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-        }
-        @keyframes commentSlideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .comment-avatar-wrap {
-            flex-shrink: 0;
-            position: relative;
-        }
-        .comment-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-            border: 1.5px solid #f0f0f0;
-        }
-        .comment-thread-line {
-            position: absolute;
-            left: 50%;
-            top: 40px;
-            bottom: -12px;
-            width: 1.5px;
-            background: #eee;
-            transform: translateX(-50%);
-        }
-        .comment-body {
-            flex: 1;
-            min-width: 0;
-        }
-        .comment-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 3px;
-        }
-        .comment-username {
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            font-size: 13.5px;
-            font-weight: 700;
-            color: #0f0f0f;
-        }
-        .comment-verif {
-            width: 13px;
-            height: 13px;
-            opacity: 0.9;
-        }
-        .comment-time {
-            font-size: 12px;
-            color: #aaa;
-            margin-left: auto;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            white-space: nowrap;
-        }
-        .comment-text {
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            font-size: 14px;
-            color: #222;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin: 0;
-        }
-        .comment-actions-row {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-top: 7px;
-        }
-        .comment-like-btn {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 12px;
-            color: #999;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            transition: color 0.2s;
-        }
-        .comment-like-btn svg {
-            width: 14px;
-            height: 14px;
-            transition: all 0.25s ease;
-        }
-        .comment-like-btn.liked {
-            color: rgb(244,7,82);
-        }
-        .comment-like-btn.liked svg path {
-            fill: rgb(244,7,82);
-            stroke: rgb(244,7,82);
-        }
-        @keyframes commentHeartPop {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.6); }
-            100% { transform: scale(1); }
-        }
-        .comment-like-btn.pop svg {
-            animation: commentHeartPop 0.3s ease;
-        }
-        .comment-reply-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 12px;
-            color: #aaa;
-            cursor: pointer;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            transition: color 0.2s;
-        }
-        .comment-reply-btn:hover { color: #555; }
+/* Reply indent */
+.comment-item.is-reply {
+    padding-left: 56px;
+    background: #fafafa;
+    border-bottom-color: #f0f0f0;
+}
+.comment-item.is-reply:last-child {
+    border-bottom: none;
+}
 
-        /* Empty state */
-        .comments-empty {
-            text-align: center;
-            padding: 40px 20px;
-            color: #bbb;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-        }
-        .comments-empty svg {
-            width: 40px;
-            height: 40px;
-            opacity: 0.3;
-            margin-bottom: 10px;
-        }
-        .comments-empty p {
-            font-size: 14px;
-            margin: 0;
-        }
-        .comments-empty span {
-            font-size: 12px;
-            color: #ccc;
-        }
+/* ════════════════════════════════════════════
+   AVATAR COLUMN
+   ════════════════════════════════════════════ */
+.comment-avatar-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 36px;
+}
+.comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 1.5px solid #f0f0f0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.comment-item.is-reply .comment-avatar {
+    width: 28px;
+    height: 28px;
+}
 
-        /* Comments loading skeleton */
-        .comment-skeleton {
-            display: flex;
-            gap: 10px;
-            padding: 12px 16px;
-            border-bottom: 1px solid #f7f7f7;
-        }
-        .comment-skel-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #eee;
-            flex-shrink: 0;
-        }
-        .comment-skel-body {
-            flex: 1;
-        }
-        .comment-skel-line {
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
-            margin-bottom: 7px;
-        }
-        .comment-skel-line.w60 { width: 60%; }
-        .comment-skel-line.w90 { width: 90%; }
-        .comment-skel-line.w75 { width: 75%; }
-        @keyframes skelShimmer {
-            0%   { background-position: -400px 0; }
-            100% { background-position: 400px 0; }
-        }
-        .comment-skeleton .comment-skel-avatar,
-        .comment-skeleton .comment-skel-line {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
-            background-size: 800px 100%;
-            animation: skelShimmer 1.4s infinite ease-in-out;
-        }
+/* Thread connector line (visible on top-level when replies are open) */
+.comment-thread-line {
+    width: 2px;
+    flex: 1;
+    margin-top: 5px;
+    min-height: 12px;
+    background: linear-gradient(to bottom, #e8e8e8, transparent);
+    border-radius: 1px;
+    transition: opacity 0.25s;
+    opacity: 0;
+}
+.comment-block.replies-open > .comment-item .comment-thread-line {
+    opacity: 1;
+}
 
-        /* ── Fixed comment input bar at bottom ── */
-        .comment-input-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 200;
-            background: #fff;
-            border-top: 1px solid #ebebeb;
-            padding: 8px 12px 12px;
-            /* Safe area for iPhones */
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
-        }
+/* ════════════════════════════════════════════
+   COMMENT BODY
+   ════════════════════════════════════════════ */
+.comment-body {
+    flex: 1;
+    min-width: 0;
+}
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+    flex-wrap: nowrap;
+}
+.comment-username {
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f0f0f;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+.comment-username:hover { text-decoration: underline; }
 
-        /* Top micro-row: repost + like (unchanged behaviour) */
-        .cib-reactions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 4px 8px;
-            border-bottom: 1px solid #f3f3f3;
-            margin-bottom: 8px;
-        }
-        .cib-reactions-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+.comment-verif {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+.comment-time {
+    font-size: 11.5px;
+    color: #bbb;
+    margin-left: auto;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
-        /* Text input row */
-        .cib-input-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-        }
-        .cib-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-            margin-bottom: 2px;
-            border: 1.5px solid #f0f0f0;
-        }
-        .cib-input-wrap {
-            flex: 1;
-            background: #f7f7f7;
-            border-radius: 22px;
-            display: flex;
-            align-items: flex-end;
-            padding: 6px 10px 6px 14px;
-            gap: 6px;
-            min-height: 40px;
-            border: 1.5px solid transparent;
-            transition: border-color 0.2s, background 0.2s;
-        }
-        .cib-input-wrap:focus-within {
-            border-color: #f40752;
-            background: #fff;
-        }
-        .cib-textarea {
-            flex: 1;
-            background: none;
-            border: none;
-            outline: none;
-            resize: none;
-            font-size: 14px;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            color: #111;
-            line-height: 1.45;
-            max-height: 100px;
-            overflow-y: auto;
-            padding: 0;
-            /* Single line by default, grows */
-            min-height: 20px;
-        }
-        .cib-textarea::placeholder { color: #bbb; }
-        .cib-extras {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            flex-shrink: 0;
-            margin-bottom: 1px;
-        }
-        .cib-icon-btn {
-            width: 28px;
-            height: 28px;
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.15s;
-        }
-        .cib-icon-btn:hover { background: #f0f0f0; }
-        .cib-icon-btn img {
-            width: 18px;
-            height: 18px;
-            opacity: 0.5;
-        }
-        .cib-send-btn {
-            width: 38px;
-            height: 38px;
-            background: #f40752;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.15s, background 0.2s, opacity 0.2s;
-            opacity: 0.35;
-            pointer-events: none;
-        }
-        .cib-send-btn.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .cib-send-btn:active { transform: scale(0.9); }
-        .cib-send-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: #fff;
-        }
-        /* Sending spinner */
-        .cib-send-btn.sending {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        .cib-send-btn.sending svg {
-            animation: spinSend 0.7s linear infinite;
-        }
-        @keyframes spinSend {
-            to { transform: rotate(360deg); }
-        }
+.comment-text {
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0 0 8px;
+}
+.comment-mention {
+    color: #f40752;
+    font-weight: 600;
+}
 
-        /* Reply-to indicator */
-        .cib-reply-indicator {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            background: #fff5f8;
-            border-radius: 8px;
-            margin-bottom: 6px;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            font-size: 12px;
-            color: #f40752;
-        }
-        .cib-reply-indicator.visible { display: flex; }
-        .cib-reply-indicator span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cib-reply-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            color: #f40752;
-            padding: 0 2px;
-        }
+/* ════════════════════════════════════════════
+   ACTION ROW  (heart · reply · view replies)
+   ════════════════════════════════════════════ */
+.comment-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
 
-        /* "Load more comments" button */
-        .load-more-comments-btn {
-            display: block;
-            width: calc(100% - 32px);
-            margin: 8px 16px 12px;
-            padding: 10px;
-            background: #f7f7f7;
-            border: none;
-            border-radius: 10px;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
-            font-size: 13px;
-            color: #555;
-            cursor: pointer;
-            text-align: center;
-            transition: background 0.15s;
-        }
-        .load-more-comments-btn:hover { background: #f0f0f0; }
+/* ── Heart ── */
+.comment-like-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: #bbb;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+.comment-like-btn svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.comment-like-btn.liked {
+    color: rgb(244, 7, 82);
+}
+.comment-like-btn.liked svg path {
+    fill: rgb(244, 7, 82);
+    stroke: rgb(244, 7, 82);
+}
+.comment-like-btn.pop svg {
+    animation: commentHeartPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes commentHeartPop {
+    0%  { transform: scale(1); }
+    45% { transform: scale(1.7); }
+    100%{ transform: scale(1); }
+}
+.comment-like-count { min-width: 8px; }
+
+/* ── Reply text button ── */
+.comment-reply-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: #bbb;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    font-weight: 500;
+}
+.comment-reply-btn:hover,
+.comment-reply-btn.active { color: #f40752; }
+
+/* ── "View N replies" button ── */
+.comment-view-replies-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: #888;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-weight: 600;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    margin-left: auto;  /* push to far right */
+}
+.comment-view-replies-btn:hover { color: #111; }
+.comment-view-replies-btn svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+.comment-view-replies-btn.open svg {
+    transform: rotate(180deg);
+}
+.comment-view-replies-btn .replies-line {
+    display: inline-block;
+    width: 18px;
+    height: 1.5px;
+    background: #bbb;
+    border-radius: 1px;
+    margin-right: 2px;
+}
+
+/* ════════════════════════════════════════════
+   REPLIES POCKET  (staircase animation)
+   ════════════════════════════════════════════ */
+.replies-pocket {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.3s ease;
+    opacity: 0;
+    background: #fafafa;
+    border-bottom: 1px solid #ececec;
+}
+.replies-pocket.open {
+    /* max-height is set dynamically by JS to scrollHeight */
+    opacity: 1;
+}
+
+.replies-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px 12px 56px;
+    font-size: 12px;
+    color: #bbb;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+}
+.replies-loading .spin {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #eee;
+    border-top-color: #f40752;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.load-more-replies-btn {
+    display: block;
+    margin: 4px 16px 10px 56px;
+    background: none;
+    border: none;
+    padding: 6px 0;
+    font-size: 12px;
+    color: #f40752;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    cursor: pointer;
+}
+
+/* ════════════════════════════════════════════
+   EMPTY STATE
+   ════════════════════════════════════════════ */
+.comments-empty {
+    text-align: center;
+    padding: 50px 20px 30px;
+    color: #bbb;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+}
+.comments-empty svg {
+    width: 44px;
+    height: 44px;
+    opacity: 0.25;
+    margin-bottom: 12px;
+}
+.comments-empty p { font-size: 15px; font-weight: 600; color: #ccc; margin: 0 0 4px; }
+.comments-empty span { font-size: 12.5px; color: #d5d5d5; }
+
+/* ════════════════════════════════════════════
+   SKELETON LOADER
+   ════════════════════════════════════════════ */
+.comment-skeleton {
+    display: flex;
+    gap: 11px;
+    padding: 13px 16px;
+    border-bottom: 1px solid #f5f5f5;
+}
+.comment-skel-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.comment-skel-body { flex: 1; }
+.comment-skel-line {
+    height: 11px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.comment-skel-line.w40 { width: 40%; }
+.comment-skel-line.w80 { width: 80%; }
+.comment-skel-line.w65 { width: 65%; }
+
+.comment-skeleton .comment-skel-avatar,
+.comment-skeleton .comment-skel-line {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
+    background-size: 600px 100%;
+    animation: skelShimmer 1.3s infinite ease-in-out;
+}
+@keyframes skelShimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+}
+
+/* ════════════════════════════════════════════
+   LOAD MORE (top-level)
+   ════════════════════════════════════════════ */
+.load-more-comments-btn {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 6px 16px 10px;
+    padding: 11px;
+    background: #f7f7f7;
+    border: none;
+    border-radius: 10px;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+}
+.load-more-comments-btn:hover { background: #efefef; }
+
+/* ════════════════════════════════════════════
+   FIXED COMMENT INPUT BAR
+   ════════════════════════════════════════════ */
+.comment-input-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 200;
+    background: #fff;
+    border-top: 1px solid #ebebeb;
+    padding: 8px 12px 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Reply indicator */
+.cib-reply-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: #fff5f8;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    font-size: 12px;
+    color: #f40752;
+    border-left: 3px solid #f40752;
+}
+.cib-reply-indicator.visible { display: flex; }
+.cib-reply-indicator span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cib-reply-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; line-height: 1; color: #f40752; padding: 0 2px;
+}
+
+/* Reaction micro-row above input */
+.cib-reactions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 8px;
+    border-bottom: 1px solid #f3f3f3;
+    margin-bottom: 8px;
+}
+.cib-reactions-left { display: flex; align-items: center; gap: 20px; }
+
+/* Input row */
+.cib-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+.cib-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+    border: 1.5px solid #f0f0f0;
+}
+.cib-input-wrap {
+    flex: 1;
+    background: #f7f7f7;
+    border-radius: 22px;
+    display: flex;
+    align-items: flex-end;
+    padding: 6px 10px 6px 14px;
+    gap: 6px;
+    min-height: 40px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+}
+.cib-input-wrap:focus-within {
+    border-color: #f40752;
+    background: #fff;
+}
+.cib-textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 14px;
+    font-family: 'IBM Plex Sans', Roboto, sans-serif;
+    color: #111;
+    line-height: 1.45;
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 0;
+    min-height: 20px;
+}
+.cib-textarea::placeholder { color: #bbb; }
+
+.cib-send-btn {
+    width: 38px; height: 38px;
+    background: #f40752;
+    border: none; border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s, opacity 0.2s;
+    opacity: 0.35;
+    pointer-events: none;
+}
+.cib-send-btn.active { opacity: 1; pointer-events: auto; }
+.cib-send-btn:active { transform: scale(0.88); }
+.cib-send-btn svg { width: 18px; height: 18px; fill: #fff; }
+.cib-send-btn.sending { opacity: 0.7; pointer-events: none; }
+.cib-send-btn.sending svg { animation: spinSend 0.6s linear infinite; }
+@keyframes spinSend { to { transform: rotate(360deg); } }
     `;
     document.head.appendChild(style);
 }
 
-// ── Load comments from Supabase ──────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// LOAD TOP-LEVEL COMMENTS
+// ════════════════════════════════════════════════════════════════════════════
+
 async function loadComments(postId, container, offset = 0) {
-    const limit = 15;
+    const LIMIT = 15;
+
+    // Show skeletons on first load
+    if (offset === 0) {
+        container.innerHTML = '';
+        for (let i = 0; i < 3; i++) container.appendChild(makeCommentSkeleton());
+    }
+
     const { data, error } = await supabase
         .from('comments')
         .select(`
-            id, content, created_at, like_count, post_id, user_id,
+            id, content, created_at, like_count, post_id, user_id, parent_id,
             user:users ( id, username, avatar )
         `)
         .eq('post_id', postId)
+        .is('parent_id', null)   // top-level only
         .order('created_at', { ascending: true })
-        .range(offset, offset + limit - 1);
+        .range(offset, offset + LIMIT - 1);
+
+    if (offset === 0) container.innerHTML = '';
 
     if (error) {
         console.error('Comments fetch error:', error);
+        container.innerHTML = `<p style="text-align:center;padding:30px;color:#bbb;font-size:14px;">
+            Couldn't load comments</p>`;
         return 0;
     }
-
-    if (offset === 0) container.innerHTML = '';
 
     if (!data || data.length === 0) {
         if (offset === 0) {
@@ -3456,23 +3559,48 @@ async function loadComments(postId, container, offset = 0) {
         return 0;
     }
 
-    // Remove "load more" btn if it exists before appending new items
+    // Fetch reply counts for all top-level comments in one query
+    const commentIds = data.map(c => c.id);
+    const { data: replyCounts } = await supabase
+        .from('comments')
+        .select('parent_id')
+        .in('parent_id', commentIds);
+
+    const replyCountMap = {};
+    (replyCounts || []).forEach(r => {
+        replyCountMap[r.parent_id] = (replyCountMap[r.parent_id] || 0) + 1;
+    });
+
+    // Check which comments the current user liked
+    let likedSet = new Set();
+    if (currentUserId) {
+        const { data: liked } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', currentUserId)
+            .in('comment_id', commentIds);
+        (liked || []).forEach(l => likedSet.add(l.comment_id));
+    }
+
     container.querySelector('.load-more-comments-btn')?.remove();
 
     data.forEach((comment, idx) => {
-        const el = renderComment(comment, idx < data.length - 1);
-        container.appendChild(el);
+        const replyCount = replyCountMap[comment.id] || 0;
+        const isLiked    = likedSet.has(comment.id);
+        const block = buildCommentBlock(comment, replyCount, isLiked, postId);
+        block.style.animationDelay = `${idx * 35}ms`;
+        container.appendChild(block);
     });
 
-    // If full page returned, show "load more"
-    if (data.length === limit) {
+    if (data.length === LIMIT) {
         const btn = document.createElement('button');
         btn.className = 'load-more-comments-btn';
         btn.textContent = 'Load more replies';
         btn.addEventListener('click', async () => {
             btn.textContent = 'Loading…';
             btn.disabled = true;
-            await loadComments(postId, container, offset + limit);
+            container.removeChild(btn);
+            await loadComments(postId, container, offset + LIMIT);
         });
         container.appendChild(btn);
     }
@@ -3480,89 +3608,354 @@ async function loadComments(postId, container, offset = 0) {
     return data.length;
 }
 
-// ── Render a single comment element ─────────────────────────────────
-function renderComment(comment, showThreadLine = false) {
+// ════════════════════════════════════════════════════════════════════════════
+// BUILD COMMENT BLOCK (top-level comment + collapsible replies pocket)
+// ════════════════════════════════════════════════════════════════════════════
+
+function buildCommentBlock(comment, replyCount, isLiked, postId) {
+    const block = document.createElement('div');
+    block.className = 'comment-block';
+    block.dataset.commentId = comment.id;
+
+    const commentEl = buildCommentItem(comment, false, isLiked, postId);
+    block.appendChild(commentEl);
+
+    // Replies pocket (hidden by default)
+    const pocket = document.createElement('div');
+    pocket.className = 'replies-pocket';
+    block.appendChild(pocket);
+
+    const actionsRow = commentEl.querySelector('.comment-actions-row');
+    const replyBtn   = commentEl.querySelector('.comment-reply-btn');
+
+    // Inject "View N replies" button if there are existing replies
+    let viewBtn = null;
+    if (replyCount > 0 && actionsRow) {
+        viewBtn = document.createElement('button');
+        viewBtn.className = 'comment-view-replies-btn';
+        viewBtn.dataset.count = replyCount;
+        viewBtn.innerHTML = `
+            <span class="replies-line"></span>
+            <span class="reply-count-label">${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"/>
+            </svg>`;
+        viewBtn.addEventListener('click', () => toggleRepliesPocket(block, pocket, comment.id, postId, viewBtn));
+        actionsRow.appendChild(viewBtn);
+    }
+
+    // Reply button: sets active reply target, shows indicator, focuses input
+    if (replyBtn) {
+        replyBtn.addEventListener('click', () => {
+            setReplyTarget(comment.id, comment.user?.username || '@unknown');
+            // Also open the replies pocket so user sees context
+            if (replyCount > 0 && !block.classList.contains('replies-open')) {
+                toggleRepliesPocket(block, pocket, comment.id, postId, viewBtn);
+            }
+        });
+    }
+
+    return block;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BUILD SINGLE COMMENT ITEM ELEMENT
+// ════════════════════════════════════════════════════════════════════════════
+
+function buildCommentItem(comment, isReply, isLiked, postId) {
     const div = document.createElement('div');
-    div.className = 'comment-item';
+    div.className = 'comment-item' + (isReply ? ' is-reply' : '');
     div.dataset.commentId = comment.id;
 
-    const avatar = comment.user?.avatar || 'pics/default-avatar.png';
+    const avatar   = comment.user?.avatar || 'pics/default-avatar.png';
     const username = comment.user?.username || '@unknown';
+    const timeStr  = formatTimeSince(comment.created_at);
     const likeCount = comment.like_count || 0;
-    const timeStr = formatTimeSince(comment.created_at);
+
+    // Colorize @mentions in text
+    const coloredText = (comment.content || '').replace(
+        /(@[\w.]+)/g,
+        '<span class="comment-mention">$1</span>'
+    );
 
     div.innerHTML = `
-        <div class="comment-avatar-wrap">
+        <div class="comment-avatar-col">
             <img class="comment-avatar"
                  src="${avatar}"
                  onerror="this.src='pics/default-avatar.png'"
                  onclick="showProfile('${comment.user_id}')">
-            ${showThreadLine ? '<div class="comment-thread-line"></div>' : ''}
+            ${!isReply ? '<div class="comment-thread-line"></div>' : ''}
         </div>
         <div class="comment-body">
             <div class="comment-header">
                 <span class="comment-username" onclick="showProfile('${comment.user_id}')">${username}</span>
-                <img class="comment-verif" src="pics/very.svg" alt="">
+                <img class="comment-verif" src="pics/very.svg" alt="verified">
                 <span class="comment-time">${timeStr}</span>
             </div>
-            <p class="comment-text">${comment.content}</p>
+            <p class="comment-text">${coloredText}</p>
             <div class="comment-actions-row">
-                <button class="comment-like-btn" data-comment-id="${comment.id}" data-liked="false">
+                <button class="comment-like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        <path class="heart-path"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                              fill="${isLiked ? 'rgb(244,7,82)' : 'none'}"
+                              stroke="${isLiked ? 'rgb(244,7,82)' : 'currentColor'}"/>
                     </svg>
                     <span class="comment-like-count">${likeCount > 0 ? likeCount : ''}</span>
                 </button>
                 <button class="comment-reply-btn" data-username="${username}">Reply</button>
+                ${!isReply ? '' /* view-replies btn injected below for blocks */ : ''}
             </div>
         </div>
     `;
 
-    // Comment like button (client-side only, no DB write for simplicity)
+    // Like button handler
     const likeBtn = div.querySelector('.comment-like-btn');
     likeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const liked = likeBtn.dataset.liked === 'true';
-        const countEl = likeBtn.querySelector('.comment-like-count');
-        const currentCount = parseInt(countEl.textContent || '0', 10);
-        const newLiked = !liked;
-
-        likeBtn.dataset.liked = newLiked ? 'true' : 'false';
-        likeBtn.classList.toggle('liked', newLiked);
-        likeBtn.classList.add('pop');
-        setTimeout(() => likeBtn.classList.remove('pop'), 350);
-
-        const newCount = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
-        countEl.textContent = newCount > 0 ? newCount : '';
-    });
-
-    // Reply button – fills textarea with mention
-    div.querySelector('.comment-reply-btn').addEventListener('click', () => {
-        const textarea = document.querySelector('.cib-textarea');
-        const indicator = document.querySelector('.cib-reply-indicator');
-        if (textarea) {
-            textarea.focus();
-            if (!textarea.value.startsWith(`@${username}`)) {
-                textarea.value = `@${username} `;
-            }
-            autoResizeCibTextarea(textarea);
-            updateCibSendBtn(textarea);
-        }
-        if (indicator) {
-            indicator.querySelector('span').textContent = `Replying to ${username}`;
-            indicator.classList.add('visible');
-        }
+        toggleCommentLike(comment.id, likeBtn);
     });
 
     return div;
 }
 
-// ── Submit a new comment ──────────────────────────────────────────────
-async function submitComment() {
+// ════════════════════════════════════════════════════════════════════════════
+// TOGGLE REPLIES POCKET (staircase animation)
+// ════════════════════════════════════════════════════════════════════════════
+
+async function toggleRepliesPocket(block, pocket, commentId, postId, viewBtn) {
+    const isOpen = block.classList.contains('replies-open');
+
+    if (isOpen) {
+        // ── CLOSE ──────────────────────────────────────────
+        pocket.style.maxHeight = pocket.scrollHeight + 'px';
+        // Force reflow so transition fires
+        pocket.offsetHeight; // eslint-disable-line no-unused-expressions
+        requestAnimationFrame(() => {
+            pocket.style.maxHeight = '0';
+            pocket.style.opacity   = '0';
+        });
+        block.classList.remove('replies-open');
+        viewBtn?.classList.remove('open');
+
+        pocket.addEventListener('transitionend', () => {
+            pocket.classList.remove('open');
+        }, { once: true });
+
+    } else {
+        // ── OPEN ───────────────────────────────────────────
+        block.classList.add('replies-open');
+        viewBtn?.classList.add('open');
+        pocket.classList.add('open');
+
+        if (!pocket.dataset.loaded) {
+            // First open: load from DB
+            pocket.innerHTML = `
+                <div class="replies-loading">
+                    <div class="spin"></div>
+                    Loading replies…
+                </div>`;
+            pocket.style.maxHeight = '80px';
+            pocket.style.opacity   = '1';
+
+            const count = await loadReplies(commentId, postId, pocket);
+            pocket.dataset.loaded = '1';
+            pocket.dataset.replyCount = count;
+        }
+
+        // Animate to full height
+        pocket.style.maxHeight = pocket.scrollHeight + 'px';
+        pocket.style.opacity   = '1';
+
+        // After transition, set to 'none' so dynamic content can expand
+        pocket.addEventListener('transitionend', () => {
+            if (block.classList.contains('replies-open')) {
+                pocket.style.maxHeight = 'none';
+            }
+        }, { once: true });
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// LOAD REPLIES FOR A COMMENT
+// ════════════════════════════════════════════════════════════════════════════
+
+async function loadReplies(commentId, postId, pocket, offset = 0) {
+    const LIMIT = 10;
+
+    const { data, error } = await supabase
+        .from('comments')
+        .select(`
+            id, content, created_at, like_count, post_id, user_id, parent_id,
+            user:users ( id, username, avatar )
+        `)
+        .eq('parent_id', commentId)
+        .order('created_at', { ascending: true })
+        .range(offset, offset + LIMIT - 1);
+
+    if (offset === 0) pocket.innerHTML = '';
+
+    if (error) {
+        pocket.innerHTML = `<p style="padding:12px 16px 12px 56px;font-size:12px;color:#bbb;">
+            Couldn't load replies</p>`;
+        return 0;
+    }
+
+    if (!data || data.length === 0) {
+        if (offset === 0) {
+            pocket.innerHTML = `<p style="padding:12px 16px 12px 56px;font-size:12px;color:#ccc;">
+                No replies yet</p>`;
+        }
+        return 0;
+    }
+
+    // Check likes
+    let likedSet = new Set();
+    if (currentUserId) {
+        const { data: liked } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', currentUserId)
+            .in('comment_id', data.map(r => r.id));
+        (liked || []).forEach(l => likedSet.add(l.comment_id));
+    }
+
+    pocket.querySelector('.load-more-replies-btn')?.remove();
+
+    data.forEach((reply, idx) => {
+        const isLiked = likedSet.has(reply.id);
+        const el = buildCommentItem(reply, true, isLiked, postId);
+        el.style.animationDelay = `${idx * 30}ms`;
+
+        // Reply → reply: sets same parent comment as target so all replies nest under same parent
+        const replyBtn = el.querySelector('.comment-reply-btn');
+        if (replyBtn) {
+            replyBtn.addEventListener('click', () => {
+                setReplyTarget(commentId, reply.user?.username || '@unknown');
+            });
+        }
+
+        pocket.appendChild(el);
+    });
+
+    if (data.length === LIMIT) {
+        const btn = document.createElement('button');
+        btn.className = 'load-more-replies-btn';
+        btn.textContent = `Load more replies`;
+        btn.addEventListener('click', async () => {
+            btn.remove();
+            await loadReplies(commentId, postId, pocket, offset + LIMIT);
+            // Re-open animation
+            const parentPocket = pocket;
+            parentPocket.style.maxHeight = parentPocket.scrollHeight + 'px';
+        });
+        pocket.appendChild(btn);
+    }
+
+    return data.length;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TOGGLE COMMENT LIKE (persistent via RPC)
+// ════════════════════════════════════════════════════════════════════════════
+
+async function toggleCommentLike(commentId, btn) {
     if (!currentUserId) {
-        alert('Please sign in to reply');
+        alert('Please sign in to like comments');
         return;
     }
+
+    const countEl   = btn.querySelector('.comment-like-count');
+    const heartPath = btn.querySelector('.heart-path');
+    const isLiked   = btn.classList.contains('liked');
+    const curCount  = parseInt(countEl?.textContent || '0', 10) || 0;
+
+    // Optimistic UI
+    const newLiked = !isLiked;
+    const newCount = newLiked ? curCount + 1 : Math.max(0, curCount - 1);
+    btn.classList.toggle('liked', newLiked);
+    if (heartPath) {
+        heartPath.setAttribute('fill', newLiked ? 'rgb(244,7,82)' : 'none');
+        heartPath.setAttribute('stroke', newLiked ? 'rgb(244,7,82)' : 'currentColor');
+    }
+    if (countEl) countEl.textContent = newCount > 0 ? newCount : '';
+    btn.classList.add('pop');
+    setTimeout(() => btn.classList.remove('pop'), 400);
+
+    try {
+        const { data, error } = await supabase
+            .rpc('toggle_comment_like', { p_comment_id: commentId, p_user_id: currentUserId });
+
+        if (error) throw error;
+
+        // Sync with real server values
+        if (data && data[0]) {
+            const serverLiked = data[0].liked;
+            const serverCount = data[0].like_count;
+            btn.classList.toggle('liked', serverLiked);
+            if (heartPath) {
+                heartPath.setAttribute('fill', serverLiked ? 'rgb(244,7,82)' : 'none');
+                heartPath.setAttribute('stroke', serverLiked ? 'rgb(244,7,82)' : 'currentColor');
+            }
+            if (countEl) countEl.textContent = serverCount > 0 ? serverCount : '';
+        }
+    } catch (err) {
+        console.error('Comment like failed:', err);
+        // Revert
+        btn.classList.toggle('liked', isLiked);
+        if (heartPath) {
+            heartPath.setAttribute('fill', isLiked ? 'rgb(244,7,82)' : 'none');
+            heartPath.setAttribute('stroke', isLiked ? 'rgb(244,7,82)' : 'currentColor');
+        }
+        if (countEl) countEl.textContent = curCount > 0 ? curCount : '';
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// REPLY TARGET MANAGEMENT
+// ════════════════════════════════════════════════════════════════════════════
+
+function setReplyTarget(commentId, username) {
+    activeReplyTarget = { commentId, username };
+
+    const indicator = document.querySelector('.cib-reply-indicator');
+    const textarea  = document.querySelector('.cib-textarea');
+
+    if (indicator) {
+        indicator.querySelector('span').textContent = `Replying to ${username}`;
+        indicator.classList.add('visible');
+    }
+
+    if (textarea) {
+        // Prefill mention if not already there
+        if (!textarea.value.startsWith(`@${username}`)) {
+            textarea.value = `@${username} `;
+        }
+        textarea.focus();
+        autoResizeCibTextarea(textarea);
+        updateCibSendBtn(textarea);
+    }
+}
+
+function clearReplyTarget() {
+    activeReplyTarget = null;
+    const indicator = document.querySelector('.cib-reply-indicator');
+    if (indicator) indicator.classList.remove('visible');
+
+    const textarea = document.querySelector('.cib-textarea');
+    if (textarea) {
+        textarea.value = '';
+        autoResizeCibTextarea(textarea);
+        updateCibSendBtn(textarea);
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SUBMIT COMMENT OR REPLY
+// ════════════════════════════════════════════════════════════════════════════
+
+async function submitComment() {
+    if (!currentUserId) { alert('Please sign in to reply'); return; }
 
     const textarea = document.querySelector('.cib-textarea');
     const sendBtn  = document.querySelector('.cib-send-btn');
@@ -3572,10 +3965,9 @@ async function submitComment() {
     if (!content) return;
 
     const postId = document.querySelector('#nuba [data-post-id]')?.dataset?.postId;
-    if (!postId) {
-        console.error('Cannot find postId for comment submit');
-        return;
-    }
+    if (!postId) { console.error('No postId for comment submit'); return; }
+
+    const parentId = activeReplyTarget?.commentId || null;
 
     // Loading state
     sendBtn?.classList.add('sending');
@@ -3586,12 +3978,13 @@ async function submitComment() {
         const { data: inserted, error } = await supabase
             .from('comments')
             .insert({
-                post_id:  postId,
-                user_id:  currentUserId,
-                content:  content
+                post_id:   postId,
+                user_id:   currentUserId,
+                parent_id: parentId,
+                content:   content
             })
             .select(`
-                id, content, created_at, like_count, post_id, user_id,
+                id, content, created_at, like_count, post_id, user_id, parent_id,
                 user:users ( id, username, avatar )
             `)
             .single();
@@ -3604,40 +3997,28 @@ async function submitComment() {
         sendBtn?.classList.remove('sending');
         textarea.disabled = false;
         updateCibSendBtn(textarea);
+        clearReplyTarget();
 
-        // Hide reply indicator
-        const indicator = document.querySelector('.cib-reply-indicator');
-        if (indicator) indicator.classList.remove('visible');
-
-        // Append new comment to list
-        const list = document.getElementById('comments-list');
-        if (list) {
-            // Remove empty state if visible
-            list.querySelector('.comments-empty')?.remove();
-            const el = renderComment(inserted, false);
-            el.style.animationDelay = '0ms';
-            list.appendChild(el);
-            // Scroll the new comment into view
-            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (parentId) {
+            // It's a reply — append to the replies pocket
+            appendReplyToBlock(parentId, inserted, postId);
+        } else {
+            // Top-level comment — prepend to list
+            const list = document.getElementById('comments-list');
+            if (list) {
+                list.querySelector('.comments-empty')?.remove();
+                const block = buildCommentBlock(inserted, 0, false, postId);
+                block.style.animationDelay = '0ms';
+                list.appendChild(block);
+                // Add view-replies button (0 replies, hidden)
+                block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
-        // Bump comment_count in DB (fire-and-forget)
-        supabase.rpc('increment_comment_count', { p_post_id: postId }).catch(() => {
-            // Fallback: manual increment
-            supabase.from('posts')
-                .select('comment_count')
-                .eq('id', postId)
-                .single()
-                .then(({ data }) => {
-                    if (data) {
-                        supabase.from('posts')
-                            .update({ comment_count: (data.comment_count || 0) + 1 })
-                            .eq('id', postId);
-                    }
-                });
-        });
+        // Increment comment_count on the post
+        supabase.rpc('increment_comment_count', { p_post_id: postId }).catch(() => {});
 
-        // Update the comment count display in detail stats
+        // Update count display in detail stats
         const commentStatEl = document.querySelector('.detail-comment-count');
         if (commentStatEl) {
             const cur = parseInt(commentStatEl.textContent || '0', 10);
@@ -3653,9 +4034,80 @@ async function submitComment() {
     }
 }
 
-// ── Realtime comment subscription ────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// APPEND REPLY TO CORRECT BLOCK  (after submit)
+// ════════════════════════════════════════════════════════════════════════════
+
+function appendReplyToBlock(parentId, reply, postId) {
+    const block = document.querySelector(`.comment-block[data-comment-id="${parentId}"]`);
+    if (!block) return;
+
+    let pocket = block.querySelector('.replies-pocket');
+    if (!pocket) return;
+
+    // Remove "no replies yet" placeholder
+    pocket.querySelector('p')?.remove();
+
+    // Build reply item
+    const el = buildCommentItem(reply, true, false, postId);
+    pocket.appendChild(el);
+
+    // If pocket is closed, open it
+    if (!block.classList.contains('replies-open')) {
+        const viewBtn = block.querySelector('.comment-view-replies-btn');
+        // If no viewBtn yet (0 replies before), inject one
+        if (!viewBtn) {
+            injectViewRepliesBtn(block, pocket, parentId, postId, 1);
+        }
+        toggleRepliesPocket(block, pocket, parentId, postId, block.querySelector('.comment-view-replies-btn'));
+        pocket.dataset.loaded = '1';
+    } else {
+        // Already open — update height
+        pocket.style.maxHeight = 'none';
+    }
+
+    // Update view-replies btn count
+    updateViewRepliesCount(block, 1);
+
+    // Scroll reply into view
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function injectViewRepliesBtn(block, pocket, commentId, postId, count) {
+    const commentItem  = block.querySelector('.comment-item');
+    if (!commentItem) return;
+
+    const actionsRow = commentItem.querySelector('.comment-actions-row');
+    if (!actionsRow || actionsRow.querySelector('.comment-view-replies-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'comment-view-replies-btn';
+    btn.dataset.count = count;
+    btn.innerHTML = `
+        <span class="replies-line"></span>
+        <span class="reply-count-label">${count} repl${count === 1 ? 'y' : 'ies'}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+        </svg>`;
+    btn.addEventListener('click', () => toggleRepliesPocket(block, pocket, commentId, postId, btn));
+    actionsRow.appendChild(btn);
+}
+
+function updateViewRepliesCount(block, delta) {
+    const btn = block.querySelector('.comment-view-replies-btn');
+    if (!btn) return;
+    const cur = parseInt(btn.dataset.count || '0', 10);
+    const next = Math.max(0, cur + delta);
+    btn.dataset.count = next;
+    const label = btn.querySelector('.reply-count-label');
+    if (label) label.textContent = `${next} repl${next === 1 ? 'y' : 'ies'}`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// REALTIME SUBSCRIPTION
+// ════════════════════════════════════════════════════════════════════════════
+
 function subscribeToComments(postId, listEl) {
-    // Unsubscribe any previous channel
     if (commentChannel) {
         supabase.removeChannel(commentChannel);
         commentChannel = null;
@@ -3664,19 +4116,19 @@ function subscribeToComments(postId, listEl) {
     commentChannel = supabase
         .channel(`comments:post:${postId}`)
         .on('postgres_changes', {
-            event: 'INSERT',
+            event:  'INSERT',
             schema: 'public',
-            table: 'comments',
+            table:  'comments',
             filter: `post_id=eq.${postId}`
         }, async (payload) => {
-            // Skip if it's my own comment (already added optimistically)
+            // Skip own inserts (already added optimistically)
             if (payload.new.user_id === currentUserId) return;
 
             // Fetch full comment with user
             const { data: full } = await supabase
                 .from('comments')
                 .select(`
-                    id, content, created_at, like_count, post_id, user_id,
+                    id, content, created_at, like_count, post_id, user_id, parent_id,
                     user:users ( id, username, avatar )
                 `)
                 .eq('id', payload.new.id)
@@ -3684,21 +4136,49 @@ function subscribeToComments(postId, listEl) {
 
             if (!full) return;
 
-            listEl.querySelector('.comments-empty')?.remove();
-            const el = renderComment(full, false);
-            listEl.appendChild(el);
+            if (full.parent_id) {
+                // It's a reply — if the parent block is loaded and open, append
+                appendReplyToBlock(full.parent_id, full, postId);
+                // Update view-replies count even if closed
+                const block = document.querySelector(`.comment-block[data-comment-id="${full.parent_id}"]`);
+                if (block) updateViewRepliesCount(block, 1);
+            } else {
+                // Top-level — append to list
+                listEl.querySelector('.comments-empty')?.remove();
+                const block = buildCommentBlock(full, 0, false, postId);
+                listEl.appendChild(block);
 
-            // Update count display
-            const commentStatEl = document.querySelector('.detail-comment-count');
-            if (commentStatEl) {
-                const cur = parseInt(commentStatEl.textContent || '0', 10);
-                commentStatEl.textContent = cur + 1;
+                const commentStatEl = document.querySelector('.detail-comment-count');
+                if (commentStatEl) {
+                    const cur = parseInt(commentStatEl.textContent || '0', 10);
+                    commentStatEl.textContent = cur + 1;
+                }
             }
         })
         .subscribe();
 }
 
-// ── Helpers for the input bar ─────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// HELPER: Skeleton
+// ════════════════════════════════════════════════════════════════════════════
+
+function makeCommentSkeleton() {
+    const div = document.createElement('div');
+    div.className = 'comment-skeleton';
+    div.innerHTML = `
+        <div class="comment-skel-avatar"></div>
+        <div class="comment-skel-body">
+            <div class="comment-skel-line w40"></div>
+            <div class="comment-skel-line w80"></div>
+            <div class="comment-skel-line w65"></div>
+        </div>`;
+    return div;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// HELPERS: textarea resize + send button state
+// ════════════════════════════════════════════════════════════════════════════
+
 function autoResizeCibTextarea(ta) {
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
@@ -3707,10 +4187,201 @@ function autoResizeCibTextarea(ta) {
 function updateCibSendBtn(ta) {
     const btn = document.querySelector('.cib-send-btn');
     if (!btn) return;
-    if (ta.value.trim().length > 0) {
-        btn.classList.add('active');
-    } else {
-        btn.classList.remove('active');
-    }
+    btn.classList.toggle('active', ta.value.trim().length > 0);
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// INIT: inject styles on load
+// ════════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+    addCommentStyles();
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// PATCH showDetail() to wire up the staircase comment system
+//
+// After your existing showDetail() call finishes setting innerHTML on #nuba,
+// it already creates  #comments-list  and  .comment-input-bar.
+// This function finishes the wiring. Call it INSIDE or AFTER showDetail().
+//
+// HOW: At the very end of your showDetail() function, replace the line:
+//   window.scrollTo(0, 0);
+// with:
+//   await initCommentSection(post.id);
+//   window.scrollTo(0, 0);
+// ════════════════════════════════════════════════════════════════════════════
+
+async function initCommentSection(postId) {
+    const list   = document.getElementById('comments-list');
+    const bar    = document.querySelector('.comment-input-bar');
+    const nuba   = document.getElementById('nuba');
+
+    if (!list) {
+        console.warn('initCommentSection: #comments-list not found. Make sure showDetail() renders it.');
+        return;
+    }
+
+    // ── Load and render top-level comments ──
+    await loadComments(postId, list);
+
+    // ── Wire up textarea events ──
+    const textarea = bar?.querySelector('.cib-textarea');
+    if (textarea) {
+        textarea.addEventListener('input', () => {
+            autoResizeCibTextarea(textarea);
+            updateCibSendBtn(textarea);
+        });
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitComment();
+            }
+        });
+    }
+
+    // ── Wire up send button ──
+    const sendBtn = bar?.querySelector('.cib-send-btn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => submitComment());
+    }
+
+    // ── Wire up reply indicator close ──
+    const replyClose = bar?.querySelector('.cib-reply-close');
+    if (replyClose) {
+        replyClose.addEventListener('click', () => clearReplyTarget());
+    }
+
+    // ── Start realtime subscription ──
+    subscribeToComments(postId, list);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// UPDATED showDetail() BOTTOM SECTION
+//
+// Copy-paste this block to REPLACE the bottom of your existing showDetail()
+// (from the "window.scrollTo(0, 0);" line onwards).
+// It rebuilds the comment input bar and boots the staircase system.
+//
+// NOTE: The post detail HTML above (nuba.innerHTML = `...`) stays EXACTLY
+// the same — only these two additions at the very end of showDetail() change:
+//
+//    1.  Replace the old:
+//           <!-- Comment box -->
+//           <div class="comment-container">…</div>
+//        with the new comment-input-bar below (already a separate element
+//        appended to #nuba, not inside the post card).
+//
+//    2.  Add the new comments heading + list block.
+//
+// Paste AFTER the last nuba.innerHTML = `...` block and BEFORE the closing
+// brace of showDetail().
+// ════════════════════════════════════════════════════════════════════════════
+
+/*
+    ─── ADD THIS AT THE END OF showDetail(), AFTER nuba.innerHTML = `...` ───
+
+    // ── Fetch current user avatar for input bar ──
+    let myAvatar = 'pics/default-avatar.png';
+    if (currentUserId) {
+        const { data: me } = await supabase
+            .from('users')
+            .select('avatar')
+            .eq('id', currentUserId)
+            .maybeSingle();
+        if (me?.avatar) myAvatar = me.avatar;
+    }
+
+    // ── Inject comments heading + list ──
+    const commentsSection = document.createElement('div');
+    commentsSection.innerHTML = `
+        <div class="comments-heading">
+            Replies
+            <span class="comments-heading-count">${post.commentCount > 0 ? post.commentCount : ''}</span>
+        </div>
+        <div id="comments-list"></div>
+    `;
+    nuba.appendChild(commentsSection);
+
+    // ── Inject fixed comment input bar ──
+    // Remove any old bar first
+    document.querySelector('.comment-input-bar')?.remove();
+
+    const inputBar = document.createElement('div');
+    inputBar.className = 'comment-input-bar';
+    inputBar.innerHTML = `
+        <div class="cib-reply-indicator">
+            <span>Replying to …</span>
+            <button class="cib-reply-close">×</button>
+        </div>
+        <div class="cib-reactions">
+            <div class="cib-reactions-left">
+                <div class="repost-btn sted buyt" data-post-id="${post.id}" data-reposted="false">
+                    <img class="feeling spoil repost-icon" src="pics/retweet.svg" alt="Repost">
+                </div>
+                <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
+                    <svg class="heart-icon heart-clickable" width="24" height="24" viewBox="0 0 24 24">
+                        <path class="heart-path"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                              fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                </div>
+            </div>
+        </div>
+        <div class="cib-input-row">
+            <img class="cib-avatar" src="${myAvatar}" onerror="this.src='pics/default-avatar.png'">
+            <div class="cib-input-wrap">
+                <textarea class="cib-textarea"
+                    placeholder="Reply to @${post.username}…"
+                    rows="1"></textarea>
+            </div>
+            <button class="cib-send-btn" title="Send">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    `;
+    document.body.appendChild(inputBar);
+
+    // Re-wire detail repost + like buttons (same as before)
+    const detailRepostBtn = inputBar.querySelector('.repost-btn');
+    if (detailRepostBtn) {
+        const targetPostId = post.id;
+        getMyRepostOfPost(targetPostId).then(myRepostId => {
+            if (myRepostId) {
+                detailRepostBtn.setAttribute('data-reposted', 'true');
+                detailRepostBtn.classList.add('reposted');
+            }
+        });
+        detailRepostBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRepost(targetPostId, detailRepostBtn);
+        });
+    }
+
+    const detailHeart = inputBar.querySelector('.heart-ai');
+    if (detailHeart) {
+        const alreadyLiked = await isPostLikedByCurrentUser(post.id);
+        if (alreadyLiked) {
+            detailHeart.setAttribute('data-liked', 'true');
+            detailHeart.querySelector('.heart-icon')?.classList.add('liked');
+            detailHeart.querySelector('.like-count')?.classList.add('liked');
+        }
+        detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleLike(post.id, detailHeart);
+            });
+        });
+    }
+
+    // ── Boot the staircase comment system ──
+    await initCommentSection(post.id);
+    window.scrollTo(0, 0);
+
+    ─── END OF ADDITION ───
+*/
+
 
