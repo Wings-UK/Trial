@@ -1780,10 +1780,13 @@ async function loadLikeNotifications() {
     }));
 }
 
-function createLikeNotificationElement(notif) {
+function createNotificationElement(notif) {
     const actor = notif.actor || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const timeAgo = formatTimeSince(notif.created_at);
+
+    // Message changes based on type
+    const message = notif.type === 'repost' ? 'reposted your note' : 'liked your note';
 
     const rightAvatar = `
         <img src="${author.avatar}" 
@@ -1818,7 +1821,7 @@ function createLikeNotificationElement(notif) {
             <div class="actor-info" style="text-align: left; flex:1; cursor: pointer;">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
-                    liked your note · ${timeAgo}
+                    ${message} · ${timeAgo}
                 </div>
             </div>
         </div>
@@ -1827,8 +1830,6 @@ function createLikeNotificationElement(notif) {
             ${rightAvatar}
         </div>
     `;
-
-    // ─── Add click listeners after innerHTML is set ───
 
     // Actor avatar → profile
     const avatarEl = div.querySelector('.actor-avatar');
@@ -1848,16 +1849,10 @@ function createLikeNotificationElement(notif) {
         });
     }
 
-    // Whole notification → post detail (unless click was on avatar or info)
+    // Whole notification → post detail
     div.addEventListener('click', (e) => {
-        // Skip if click originated from profile areas
-        if (e.target.closest('.actor-avatar, .actor-info')) {
-            return;
-        }
-
-        if (notif.post?.id) {
-            showDetail(notif.post.id);
-        }
+        if (e.target.closest('.actor-avatar, .actor-info')) return;
+        if (notif.post?.id) showDetail(notif.post.id);
     });
 
     return div;
@@ -1885,7 +1880,7 @@ async function renderNotifications() {
     }
 
     notifs.forEach(notif => {
-        const item = createLikeNotificationElement(notif);
+        const item = createNotificationElement(notif);
         container.appendChild(item);
     });
 }
@@ -2771,8 +2766,11 @@ async function renderNotifications() {
         loadRepostNotifications()
     ]);
 
+    // Tag like notifications with their type (repost ones already have type set)
+    const taggedLikes = likeNotifs.map(n => ({ ...n, type: 'like' }));
+
     // Merge and sort by newest first
-    const allNotifs = [...likeNotifs, ...repostNotifs]
+    const allNotifs = [...taggedLikes, ...repostNotifs]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     container.innerHTML = '';
@@ -2788,7 +2786,7 @@ async function renderNotifications() {
     }
 
     allNotifs.forEach(notif => {
-        const item = createLikeNotificationElement(notif);
+        const item = createNotificationElement(notif);
         container.appendChild(item);
     });
 }
