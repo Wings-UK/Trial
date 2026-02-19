@@ -2972,3 +2972,1135 @@ function addRepostStyles() {
     `;
     document.head.appendChild(style);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// COMMENTS SYSTEM — Drop this entire block into view.js
+// Replaces: showDetail(), submitComment() (new), adds loadComments(),
+//           renderComment(), submitComment(), addCommentStyles()
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Comment realtime channel (cleaned up on nav away) ──
+let commentChannel = null;
+
+// ── Add all comment + detail UI styles once ──
+function addCommentStyles() {
+    if (document.getElementById('comment-system-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'comment-system-styles';
+    style.textContent = `
+        /* ── Detail page overhaul ── */
+        #nuba {
+            padding-bottom: 120px;
+        }
+
+        /* Post stats row */
+        .detail-stats-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 16px;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            margin: 4px 0 0;
+        }
+        .detail-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #888;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+        }
+        .detail-stat .stat-num {
+            font-weight: 600;
+            color: #111;
+            font-size: 14px;
+        }
+        .detail-stat svg {
+            width: 15px;
+            height: 15px;
+            opacity: 0.55;
+        }
+
+        /* ── Reaction bar (like + repost, unchanged in behaviour) ── */
+        .detail-reaction-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .detail-reaction-left {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+        .detail-reaction-right {
+            display: flex;
+            align-items: center;
+        }
+
+        /* ── Comments heading ── */
+        .comments-heading {
+            padding: 16px 16px 8px;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #111;
+            letter-spacing: -0.3px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* ── Comment list ── */
+        #comments-list {
+            padding: 0 0 8px;
+        }
+
+        /* ── Single comment ── */
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f7f7f7;
+            animation: commentSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes commentSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .comment-avatar-wrap {
+            flex-shrink: 0;
+            position: relative;
+        }
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 1.5px solid #f0f0f0;
+        }
+        .comment-thread-line {
+            position: absolute;
+            left: 50%;
+            top: 40px;
+            bottom: -12px;
+            width: 1.5px;
+            background: #eee;
+            transform: translateX(-50%);
+        }
+        .comment-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+        .comment-username {
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f0f0f;
+        }
+        .comment-verif {
+            width: 13px;
+            height: 13px;
+            opacity: 0.9;
+        }
+        .comment-time {
+            font-size: 12px;
+            color: #aaa;
+            margin-left: auto;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            white-space: nowrap;
+        }
+        .comment-text {
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-size: 14px;
+            color: #222;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        .comment-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 7px;
+        }
+        .comment-like-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 12px;
+            color: #999;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            transition: color 0.2s;
+        }
+        .comment-like-btn svg {
+            width: 14px;
+            height: 14px;
+            transition: all 0.25s ease;
+        }
+        .comment-like-btn.liked {
+            color: rgb(244,7,82);
+        }
+        .comment-like-btn.liked svg path {
+            fill: rgb(244,7,82);
+            stroke: rgb(244,7,82);
+        }
+        @keyframes commentHeartPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.6); }
+            100% { transform: scale(1); }
+        }
+        .comment-like-btn.pop svg {
+            animation: commentHeartPop 0.3s ease;
+        }
+        .comment-reply-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 12px;
+            color: #aaa;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            transition: color 0.2s;
+        }
+        .comment-reply-btn:hover { color: #555; }
+
+        /* Empty state */
+        .comments-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+        }
+        .comments-empty svg {
+            width: 40px;
+            height: 40px;
+            opacity: 0.3;
+            margin-bottom: 10px;
+        }
+        .comments-empty p {
+            font-size: 14px;
+            margin: 0;
+        }
+        .comments-empty span {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        /* Comments loading skeleton */
+        .comment-skeleton {
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f7f7f7;
+        }
+        .comment-skel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #eee;
+            flex-shrink: 0;
+        }
+        .comment-skel-body {
+            flex: 1;
+        }
+        .comment-skel-line {
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            margin-bottom: 7px;
+        }
+        .comment-skel-line.w60 { width: 60%; }
+        .comment-skel-line.w90 { width: 90%; }
+        .comment-skel-line.w75 { width: 75%; }
+        @keyframes skelShimmer {
+            0%   { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        .comment-skeleton .comment-skel-avatar,
+        .comment-skeleton .comment-skel-line {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+            background-size: 800px 100%;
+            animation: skelShimmer 1.4s infinite ease-in-out;
+        }
+
+        /* ── Fixed comment input bar at bottom ── */
+        .comment-input-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            background: #fff;
+            border-top: 1px solid #ebebeb;
+            padding: 8px 12px 12px;
+            /* Safe area for iPhones */
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+
+        /* Top micro-row: repost + like (unchanged behaviour) */
+        .cib-reactions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px 8px;
+            border-bottom: 1px solid #f3f3f3;
+            margin-bottom: 8px;
+        }
+        .cib-reactions-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Text input row */
+        .cib-input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .cib-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            margin-bottom: 2px;
+            border: 1.5px solid #f0f0f0;
+        }
+        .cib-input-wrap {
+            flex: 1;
+            background: #f7f7f7;
+            border-radius: 22px;
+            display: flex;
+            align-items: flex-end;
+            padding: 6px 10px 6px 14px;
+            gap: 6px;
+            min-height: 40px;
+            border: 1.5px solid transparent;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .cib-input-wrap:focus-within {
+            border-color: #f40752;
+            background: #fff;
+        }
+        .cib-textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            color: #111;
+            line-height: 1.45;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 0;
+            /* Single line by default, grows */
+            min-height: 20px;
+        }
+        .cib-textarea::placeholder { color: #bbb; }
+        .cib-extras {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+            margin-bottom: 1px;
+        }
+        .cib-icon-btn {
+            width: 28px;
+            height: 28px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.15s;
+        }
+        .cib-icon-btn:hover { background: #f0f0f0; }
+        .cib-icon-btn img {
+            width: 18px;
+            height: 18px;
+            opacity: 0.5;
+        }
+        .cib-send-btn {
+            width: 38px;
+            height: 38px;
+            background: #f40752;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.15s, background 0.2s, opacity 0.2s;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .cib-send-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .cib-send-btn:active { transform: scale(0.9); }
+        .cib-send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+        /* Sending spinner */
+        .cib-send-btn.sending {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .cib-send-btn.sending svg {
+            animation: spinSend 0.7s linear infinite;
+        }
+        @keyframes spinSend {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Reply-to indicator */
+        .cib-reply-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: #fff5f8;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-size: 12px;
+            color: #f40752;
+        }
+        .cib-reply-indicator.visible { display: flex; }
+        .cib-reply-indicator span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cib-reply-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            color: #f40752;
+            padding: 0 2px;
+        }
+
+        /* "Load more comments" button */
+        .load-more-comments-btn {
+            display: block;
+            width: calc(100% - 32px);
+            margin: 8px 16px 12px;
+            padding: 10px;
+            background: #f7f7f7;
+            border: none;
+            border-radius: 10px;
+            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s;
+        }
+        .load-more-comments-btn:hover { background: #f0f0f0; }
+    `;
+    document.head.appendChild(style);
+}
+
+// ── Load comments from Supabase ──────────────────────────────────────
+async function loadComments(postId, container, offset = 0) {
+    const limit = 15;
+    const { data, error } = await supabase
+        .from('comments')
+        .select(`
+            id, content, created_at, like_count, post_id, user_id,
+            user:users ( id, username, avatar )
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true })
+        .range(offset, offset + limit - 1);
+
+    if (error) {
+        console.error('Comments fetch error:', error);
+        return 0;
+    }
+
+    if (offset === 0) container.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        if (offset === 0) {
+            container.innerHTML = `
+                <div class="comments-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <p>No replies yet</p>
+                    <span>Be the first to reply</span>
+                </div>`;
+        }
+        return 0;
+    }
+
+    // Remove "load more" btn if it exists before appending new items
+    container.querySelector('.load-more-comments-btn')?.remove();
+
+    data.forEach((comment, idx) => {
+        const el = renderComment(comment, idx < data.length - 1);
+        container.appendChild(el);
+    });
+
+    // If full page returned, show "load more"
+    if (data.length === limit) {
+        const btn = document.createElement('button');
+        btn.className = 'load-more-comments-btn';
+        btn.textContent = 'Load more replies';
+        btn.addEventListener('click', async () => {
+            btn.textContent = 'Loading…';
+            btn.disabled = true;
+            await loadComments(postId, container, offset + limit);
+        });
+        container.appendChild(btn);
+    }
+
+    return data.length;
+}
+
+// ── Render a single comment element ─────────────────────────────────
+function renderComment(comment, showThreadLine = false) {
+    const div = document.createElement('div');
+    div.className = 'comment-item';
+    div.dataset.commentId = comment.id;
+
+    const avatar = comment.user?.avatar || 'pics/default-avatar.png';
+    const username = comment.user?.username || '@unknown';
+    const likeCount = comment.like_count || 0;
+    const timeStr = formatTimeSince(comment.created_at);
+
+    div.innerHTML = `
+        <div class="comment-avatar-wrap">
+            <img class="comment-avatar"
+                 src="${avatar}"
+                 onerror="this.src='pics/default-avatar.png'"
+                 onclick="showProfile('${comment.user_id}')">
+            ${showThreadLine ? '<div class="comment-thread-line"></div>' : ''}
+        </div>
+        <div class="comment-body">
+            <div class="comment-header">
+                <span class="comment-username" onclick="showProfile('${comment.user_id}')">${username}</span>
+                <img class="comment-verif" src="pics/very.svg" alt="">
+                <span class="comment-time">${timeStr}</span>
+            </div>
+            <p class="comment-text">${comment.content}</p>
+            <div class="comment-actions-row">
+                <button class="comment-like-btn" data-comment-id="${comment.id}" data-liked="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span class="comment-like-count">${likeCount > 0 ? likeCount : ''}</span>
+                </button>
+                <button class="comment-reply-btn" data-username="${username}">Reply</button>
+            </div>
+        </div>
+    `;
+
+    // Comment like button (client-side only, no DB write for simplicity)
+    const likeBtn = div.querySelector('.comment-like-btn');
+    likeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const liked = likeBtn.dataset.liked === 'true';
+        const countEl = likeBtn.querySelector('.comment-like-count');
+        const currentCount = parseInt(countEl.textContent || '0', 10);
+        const newLiked = !liked;
+
+        likeBtn.dataset.liked = newLiked ? 'true' : 'false';
+        likeBtn.classList.toggle('liked', newLiked);
+        likeBtn.classList.add('pop');
+        setTimeout(() => likeBtn.classList.remove('pop'), 350);
+
+        const newCount = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+        countEl.textContent = newCount > 0 ? newCount : '';
+    });
+
+    // Reply button – fills textarea with mention
+    div.querySelector('.comment-reply-btn').addEventListener('click', () => {
+        const textarea = document.querySelector('.cib-textarea');
+        const indicator = document.querySelector('.cib-reply-indicator');
+        if (textarea) {
+            textarea.focus();
+            if (!textarea.value.startsWith(`@${username}`)) {
+                textarea.value = `@${username} `;
+            }
+            autoResizeCibTextarea(textarea);
+            updateCibSendBtn(textarea);
+        }
+        if (indicator) {
+            indicator.querySelector('span').textContent = `Replying to ${username}`;
+            indicator.classList.add('visible');
+        }
+    });
+
+    return div;
+}
+
+// ── Submit a new comment ──────────────────────────────────────────────
+async function submitComment() {
+    if (!currentUserId) {
+        alert('Please sign in to reply');
+        return;
+    }
+
+    const textarea = document.querySelector('.cib-textarea');
+    const sendBtn  = document.querySelector('.cib-send-btn');
+    if (!textarea) return;
+
+    const content = textarea.value.trim();
+    if (!content) return;
+
+    const postId = document.querySelector('#nuba [data-post-id]')?.dataset?.postId;
+    if (!postId) {
+        console.error('Cannot find postId for comment submit');
+        return;
+    }
+
+    // Loading state
+    sendBtn?.classList.add('sending');
+    sendBtn?.classList.remove('active');
+    textarea.disabled = true;
+
+    try {
+        const { data: inserted, error } = await supabase
+            .from('comments')
+            .insert({
+                post_id:  postId,
+                user_id:  currentUserId,
+                content:  content
+            })
+            .select(`
+                id, content, created_at, like_count, post_id, user_id,
+                user:users ( id, username, avatar )
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // Clear input
+        textarea.value = '';
+        textarea.style.height = 'auto';
+        sendBtn?.classList.remove('sending');
+        textarea.disabled = false;
+        updateCibSendBtn(textarea);
+
+        // Hide reply indicator
+        const indicator = document.querySelector('.cib-reply-indicator');
+        if (indicator) indicator.classList.remove('visible');
+
+        // Append new comment to list
+        const list = document.getElementById('comments-list');
+        if (list) {
+            // Remove empty state if visible
+            list.querySelector('.comments-empty')?.remove();
+            const el = renderComment(inserted, false);
+            el.style.animationDelay = '0ms';
+            list.appendChild(el);
+            // Scroll the new comment into view
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Bump comment_count in DB (fire-and-forget)
+        supabase.rpc('increment_comment_count', { p_post_id: postId }).catch(() => {
+            // Fallback: manual increment
+            supabase.from('posts')
+                .select('comment_count')
+                .eq('id', postId)
+                .single()
+                .then(({ data }) => {
+                    if (data) {
+                        supabase.from('posts')
+                            .update({ comment_count: (data.comment_count || 0) + 1 })
+                            .eq('id', postId);
+                    }
+                });
+        });
+
+        // Update the comment count display in detail stats
+        const commentStatEl = document.querySelector('.detail-comment-count');
+        if (commentStatEl) {
+            const cur = parseInt(commentStatEl.textContent || '0', 10);
+            commentStatEl.textContent = cur + 1;
+        }
+
+    } catch (err) {
+        console.error('Submit comment failed:', err);
+        alert("Couldn't post reply. Please try again.");
+        sendBtn?.classList.remove('sending');
+        sendBtn?.classList.add('active');
+        textarea.disabled = false;
+    }
+}
+
+// ── Realtime comment subscription ────────────────────────────────────
+function subscribeToComments(postId, listEl) {
+    // Unsubscribe any previous channel
+    if (commentChannel) {
+        supabase.removeChannel(commentChannel);
+        commentChannel = null;
+    }
+
+    commentChannel = supabase
+        .channel(`comments:post:${postId}`)
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'comments',
+            filter: `post_id=eq.${postId}`
+        }, async (payload) => {
+            // Skip if it's my own comment (already added optimistically)
+            if (payload.new.user_id === currentUserId) return;
+
+            // Fetch full comment with user
+            const { data: full } = await supabase
+                .from('comments')
+                .select(`
+                    id, content, created_at, like_count, post_id, user_id,
+                    user:users ( id, username, avatar )
+                `)
+                .eq('id', payload.new.id)
+                .single();
+
+            if (!full) return;
+
+            listEl.querySelector('.comments-empty')?.remove();
+            const el = renderComment(full, false);
+            listEl.appendChild(el);
+
+            // Update count display
+            const commentStatEl = document.querySelector('.detail-comment-count');
+            if (commentStatEl) {
+                const cur = parseInt(commentStatEl.textContent || '0', 10);
+                commentStatEl.textContent = cur + 1;
+            }
+        })
+        .subscribe();
+}
+
+// ── Helpers for the input bar ─────────────────────────────────────────
+function autoResizeCibTextarea(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+}
+
+function updateCibSendBtn(ta) {
+    const btn = document.querySelector('.cib-send-btn');
+    if (!btn) return;
+    if (ta.value.trim().length > 0) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// REPLACE showDetail() — copy this over the old one
+// ═══════════════════════════════════════════════════════════════════
+async function showDetail(postId) {
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const detailPage = document.getElementById('meal');
+    if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
+    detailPage.classList.add('active');
+
+    addCommentStyles();
+
+    const nuba = document.getElementById('nuba');
+    if (!nuba) { console.error('nuba container not found'); return; }
+    nuba.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div>';
+
+    const { data: postData, error } = await supabase
+        .from('posts')
+        .select(`
+            id, content, image, video, created_at,
+            like_count, comment_count, repost_count, views, user_id,
+            reposted_post_id,
+            user:users ( id, username, avatar ),
+            reposted_post:reposted_post_id (
+                id, content, image, video, created_at, user_id,
+                user:users ( id, username, avatar )
+            )
+        `)
+        .eq('id', postId)
+        .single();
+
+    if (error || !postData) {
+        console.error('Post fetch error:', error);
+        nuba.innerHTML = '<p style="text-align:center;padding:40px;color:#999;">Post not found</p>';
+        return;
+    }
+
+    const post = {
+        id:           postData.id,
+        userId:       postData.user_id,
+        username:     postData.user?.username || '@unknown',
+        avatar:       postData.user?.avatar   || 'pics/default-avatar.png',
+        content:      postData.content        || '',
+        image:        postData.image          || null,
+        video:        postData.video          || null,
+        timestamp:    formatTimeSince(postData.created_at),
+        date:         new Date(postData.created_at).toLocaleString(),
+        likeCount:    postData.like_count     || 0,
+        commentCount: postData.comment_count  || 0,
+        repostCount:  postData.repost_count   || 0,
+        views:        postData.views          || 0,
+    };
+
+    const isOwnPost = currentUserId && post.userId === currentUserId;
+    const isRepost  = !!postData.reposted_post_id && !!postData.reposted_post;
+    const original  = isRepost ? postData.reposted_post : null;
+    const origUser  = original ? {
+        username: original.user?.username || '@unknown',
+        avatar:   original.user?.avatar   || 'pics/default-avatar.png',
+    } : null;
+
+    // ── Media block ──────────────────────────────────────────────────
+    let mediaBlock = '';
+    if (isRepost) {
+        mediaBlock = `
+            <div class="swet detail-repost-wrap">
+                ${post.content ? `
+                    <div class="tir" style="margin-bottom:14px;">
+                        <p class="tiri" style="white-space:pre-wrap;">${post.content}</p>
+                    </div>` : ''}
+
+                <div class="detail-original-card" data-original-id="${original.id}">
+                    <div class="doc-quote-bg">"</div>
+                    <div class="doc-header">
+                        <div class="small-photo1" style="width:34px;height:34px;">
+                            <a class="lino" onclick="showProfile('${original.user_id}')">
+                                <img class="small-photo" src="${origUser.avatar}"
+                                     onerror="this.src='pics/default-avatar.png'">
+                            </a>
+                        </div>
+                        <div class="pos">
+                            <a class="home-click" onclick="showProfile('${original.user_id}')">
+                                <div class="post1">
+                                    <div class="jerr">
+                                        <p class="jerry" style="font-size:14px;">${origUser.username}</p>
+                                    </div>
+                                    <img class="verif" src="pics/very.svg">
+                                </div>
+                            </a>
+                            <p class="time" style="font-size:12px;">${formatTimeSince(original.created_at)}</p>
+                        </div>
+                    </div>
+                    ${original.content ? `
+                        <div style="font-size:14px;color:#374151;line-height:1.55;margin:10px 0;white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0,250).trimEnd()+'…' : original.content}</div>
+                    ` : ''}
+                    ${original.image ? `
+                        <div style="margin:10px -16px -16px;border-radius:0 0 14px 14px;overflow:hidden;">
+                            <img src="${original.image}" style="width:100%;display:block;max-height:300px;object-fit:cover;">
+                        </div>` : ''}
+                    ${original.video && !original.image ? `
+                        <div class="video-container" data-post-id="${original.id}"
+                             style="margin:10px -16px -16px;border-radius:0 0 14px 14px;overflow:hidden;">
+                            <video class="video-thumbnail" preload="metadata" style="width:100%;">
+                                <source src="${original.video}" type="video/mp4">
+                            </video>
+                            <div class="video-overlay">
+                                <div class="play-button">
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>` : ''}
+                </div>
+            </div>`;
+    } else {
+        mediaBlock = `
+            <div class="tir">
+                <p class="tiri" style="white-space:pre-wrap;">${post.content}<br></p>
+            </div>
+            ${post.image ? `
+                <div class="swet">
+                    <div class="laptop1"><img class="lapto" src="${post.image}"></div>
+                </div>` : ''}
+            ${post.video ? `
+                <div class="swet">
+                    <div class="video-container" data-post-id="${post.id}">
+                        <video class="video-thumbnail" preload="metadata">
+                            <source src="${post.video}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay">
+                            <div class="play-button">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : ''}`;
+    }
+
+    // ── Logged-in user avatar for input bar ──
+    let myAvatar = 'pics/default-avatar.png';
+    if (currentUserId) {
+        const { data: me } = await supabase.from('users').select('avatar').eq('id', currentUserId).single();
+        if (me?.avatar) myAvatar = me.avatar;
+    }
+
+    // ── Build the full detail HTML ────────────────────────────────────
+    nuba.innerHTML = `
+        <!-- Post header -->
+        <div class="cust-name" data-post-id="${post.id}">
+            <div class="heading">
+                <div class="small-photo1">
+                    <a class="lino" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                        <img class="small-photo" src="${post.avatar}" onerror="this.src='pics/default-avatar.png'">
+                    </a>
+                </div>
+                <div class="pos">
+                    <div>
+                        <div class="link-wrapper">
+                            <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
+                                <div class="post1">
+                                    <div class="jerr"><p class="jerry">${post.username}</p></div>
+                                    <div><img class="verif" src="pics/very.svg"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="comp1">
+                        <div class="cll"><p class="time">${post.date || post.timestamp}</p></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="detail-follow foni" onclick="
+                    const foniElem = document.querySelector('.foni');
+                    if (foniElem.innerHTML==='Follow'){foniElem.innerHTML='Following';foniElem.classList.add('follow');}
+                    else{foniElem.innerHTML='Follow';foniElem.classList.remove('follow');}
+                ">Follow</button>
+            </div>
+            <div class="dots">
+                <img class="dot" src="pics/dots.svg">
+                <div class="tool"><p>More</p></div>
+            </div>
+        </div>
+
+        ${mediaBlock}
+
+        <!-- Stats row -->
+        <div class="detail-stats-row">
+            <div class="detail-stat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <span class="stat-num">${post.likeCount}</span> reactions
+            </div>
+            <div class="detail-stat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="stat-num detail-comment-count">${post.commentCount}</span> replies
+            </div>
+            <div class="detail-stat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                </svg>
+                <span class="stat-num repost-count-display">${post.repostCount}</span> echoes
+            </div>
+            <div class="detail-stat" style="margin-left:auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span class="stat-num">${post.views}</span>
+            </div>
+        </div>
+
+        <!-- Reaction bar (like + repost – UNCHANGED behaviour) -->
+        <div class="detail-reaction-bar">
+            <div class="detail-reaction-left">
+                <!-- Repost button -->
+                <div class="repost-btn sted buyt"
+                     data-post-id="${post.id}"
+                     data-reposted="false"
+                     style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-family:'IBM Plex Sans',Roboto,sans-serif;">
+                    <img class="feeling spoil repost-icon" src="pics/retweet.svg" style="width:22px;height:22px;" alt="Repost">
+                    <span style="font-size:13px;color:#888;">${post.repostCount > 0 ? post.repostCount : ''}</span>
+                </div>
+                <!-- Like button -->
+                <div class="heart-ai" data-post-id="${post.id}" data-liked="false"
+                     style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                    <svg class="heart-icon heart-clickable" width="22" height="22" viewBox="0 0 24 24">
+                        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span class="like-count heart-clickable">${post.likeCount > 0 ? post.likeCount : ''}</span>
+                </div>
+            </div>
+            <div class="detail-reaction-right">
+                <div class="reaction">
+                    <div class="small-photo1">
+                        <a class="lino"><img class="hui" src="pics/16.jpg"></a>
+                        <div class="vrea"><img class="luve" src="pics/lovv.png"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments section -->
+        <div class="comments-heading">Replies</div>
+        <div id="comments-list">
+            <!-- skeleton while loading -->
+            ${[0,1,2].map(() => `
+                <div class="comment-skeleton">
+                    <div class="comment-skel-avatar"></div>
+                    <div class="comment-skel-body">
+                        <div class="comment-skel-line w60"></div>
+                        <div class="comment-skel-line w90"></div>
+                        <div class="comment-skel-line w75"></div>
+                    </div>
+                </div>`).join('')}
+        </div>
+
+        <!-- Fixed comment input bar -->
+        <div class="comment-input-bar">
+            <div class="cib-reactions">
+                <div class="cib-reactions-left">
+                    <!-- intentionally empty; reactions are in the bar above -->
+                </div>
+            </div>
+            <div class="cib-reply-indicator">
+                <span></span>
+                <button class="cib-reply-close" onclick="
+                    this.closest('.cib-reply-indicator').classList.remove('visible');
+                    const ta = document.querySelector('.cib-textarea');
+                    if (ta) { ta.value=''; updateCibSendBtn(ta); }
+                ">×</button>
+            </div>
+            <div class="cib-input-row">
+                <img class="cib-avatar" src="${myAvatar}" onerror="this.src='pics/default-avatar.png'">
+                <div class="cib-input-wrap">
+                    <textarea class="cib-textarea"
+                        placeholder="Reply to @${post.username}…"
+                        rows="1"></textarea>
+                    <div class="cib-extras">
+                        <button class="cib-icon-btn" type="button" title="Emoji">
+                            <img src="pics/emoji.svg" alt="emoji">
+                        </button>
+                        <button class="cib-icon-btn" type="button" title="Attach image">
+                            <img src="pics/gallery.svg" alt="image">
+                        </button>
+                    </div>
+                </div>
+                <button class="cib-send-btn" type="button" title="Send reply" onclick="submitComment()">
+                    <!-- Send icon (paper plane) -->
+                    <svg viewBox="0 0 24 24" fill="white">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // ── Wire up textarea auto-resize + send button ──────────────────
+    const cibTextarea = nuba.querySelector('.cib-textarea');
+    if (cibTextarea) {
+        cibTextarea.addEventListener('input', () => {
+            autoResizeCibTextarea(cibTextarea);
+            updateCibSendBtn(cibTextarea);
+        });
+        cibTextarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (cibTextarea.value.trim()) submitComment();
+            }
+        });
+    }
+
+    // ── Original card tap → go to original post ────────────────────
+    const origCard = nuba.querySelector('.detail-original-card');
+    if (origCard) {
+        origCard.style.cursor = 'pointer';
+        origCard.addEventListener('click', (e) => {
+            if (e.target.closest('a')) return;
+            showDetail(original.id);
+        });
+    }
+
+    // ── Detail repost button (UNCHANGED behaviour) ─────────────────
+    const detailRepostBtn = nuba.querySelector('.repost-btn');
+    if (detailRepostBtn) {
+        const targetPostId = post.id;
+        getMyRepostOfPost(targetPostId).then(myRepostId => {
+            if (myRepostId) {
+                detailRepostBtn.setAttribute('data-reposted', 'true');
+                detailRepostBtn.classList.add('reposted');
+            }
+        });
+        detailRepostBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRepost(targetPostId, detailRepostBtn);
+        });
+    }
+
+    // ── Like functionality (UNCHANGED behaviour) ──────────────────
+    const detailHeart = nuba.querySelector('.heart-ai');
+    if (detailHeart) {
+        const alreadyLiked = await isPostLikedByCurrentUser(post.id);
+        if (alreadyLiked) {
+            detailHeart.setAttribute('data-liked', 'true');
+            detailHeart.querySelector('.heart-icon')?.classList.add('liked');
+            detailHeart.querySelector('.like-count')?.classList.add('liked');
+        }
+        detailHeart.querySelectorAll('.heart-clickable').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleLike(post.id, detailHeart);
+            });
+        });
+    }
+
+    // ── Load comments ─────────────────────────────────────────────
+    const commentsList = document.getElementById('comments-list');
+    if (commentsList) {
+        await loadComments(post.id, commentsList);
+        subscribeToComments(post.id, commentsList);
+    }
+
+    window.scrollTo(0, 0);
+}
+
+// ── Clean up realtime when navigating away ────────────────────────
+const _origGoBackFromDetail = typeof goBackFromDetail !== 'undefined' ? goBackFromDetail : null;
+function goBackFromDetail() {
+    // Unsubscribe comments channel
+    if (commentChannel) {
+        supabase.removeChannel(commentChannel);
+        commentChannel = null;
+    }
+    // Call original logic
+    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
+    document.getElementById('meal')?.classList.remove('active');
+    const nuba = document.getElementById('nuba');
+    if (nuba) nuba.innerHTML = '';
+    document.querySelector('.detail-content')?.classList.remove('active');
+    document.getElementById('food')?.classList.add('active');
+    if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
+}
