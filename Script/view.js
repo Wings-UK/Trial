@@ -1818,7 +1818,7 @@ function createLikeNotificationElement(notif) {
             <div class="actor-info" style="text-align: left; flex:1; cursor: pointer;">
                 <div style="font-weight:600; font-size:15px;">${actor.username}</div>
                 <div style="color:#555; font-size:14px; margin-top:2px;">
-                    liked your post · ${timeAgo}
+                    liked your note · ${timeAgo}
                 </div>
             </div>
         </div>
