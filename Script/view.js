@@ -2472,6 +2472,18 @@ async function handleRepostClick(postId, repostBtnEl) {
         alert('Please sign in to repost');
         return;
     }
+    
+    // Prevent self-repost
+    const { data: originalPost } = await supabase
+        .from('posts')
+        .select('user_id')
+        .eq('id', postId)
+        .single();
+
+    if (originalPost?.user_id === currentUserId) {
+        showToast("You can't repost your own post");
+        return;
+    }
 
     try {
         const { data: originalPost, error } = await supabase
