@@ -3985,8 +3985,7 @@ async function submitComment(postId, parentId = null, textarea, submitBtn) {
     }
 
     // Increment post comment_count via RPC
-    supabase.rpc('increment_post_comment_count', { pid: postId, delta: 1 }).catch(console.error);
-
+    supabase.rpc('increment_post_comment_count', { pid: postId, delta: 1 }).then(({ error }) => { if (error) console.error(error); });
     // Optimistically add to UI
    if (!parentId) {
     const emptyEl = document.querySelector('.comments-empty');
