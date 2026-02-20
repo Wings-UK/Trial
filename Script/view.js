@@ -3151,6 +3151,7 @@ function injectCommentStyles() {
 
         .comment-avatar-wrap {
             flex-shrink: 0;
+            padding-top: 10px;
             position: relative;
             cursor: pointer;
         }
@@ -3161,7 +3162,6 @@ function injectCommentStyles() {
             border-radius: 10px;
             object-fit: cover;
             display: block;
-            padding-top: 10px;
             border: 1.5px solid #f8e8ec;
             transition: transform 0.2s ease;
         }
