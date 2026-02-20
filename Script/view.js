@@ -970,7 +970,7 @@ async function showDetail(postId) {
                                     <img class="verif" src="pics/very.svg">
                                 </div>
                             </a>
-                            <p class="time" style="font-size:12px;">${formatTimeSince(original.created_at)}</p>
+                            <p class="time" style="font-size:14px;">${formatTimeSince(original.created_at)}</p>
                         </div>
                     </div>
 
@@ -3221,7 +3221,7 @@ function injectCommentStyles() {
         }
 
         .comment-time {
-            font-size: 12px;
+            font-size: 14px;
             color: #bbb;
             font-family:  Noto Sans JP, roboto;
             white-space: nowrap;
@@ -3253,8 +3253,8 @@ function injectCommentStyles() {
             border: none;
             padding: 3px 0;
             cursor: pointer;
-            font-size: 12px;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 14px;
+            font-family:  Noto Sans JP, roboto;
             color: #999;
             transition: color 0.2s ease;
             -webkit-tap-highlight-color: transparent;
