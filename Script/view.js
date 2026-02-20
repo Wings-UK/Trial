@@ -3158,9 +3158,10 @@ function injectCommentStyles() {
         .comment-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 50%;
+            border-radius: 10px;
             object-fit: cover;
             display: block;
+            padding-top: 10px;
             border: 1.5px solid #f8e8ec;
             transition: transform 0.2s ease;
         }
