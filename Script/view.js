@@ -946,7 +946,7 @@ async function showDetail(postId) {
         mediaBlock = `
             <div class="swet detail-repost-wrap">
                 ${post.content ? `
-                    <div class="tir" style="margin-bottom: 14px;">
+                    <div class="tir" style="margin-bottom: 10px;">
                         <p class="tiri" style="white-space:pre-wrap;">${post.content}</p>
                     </div>
                 ` : ''}
@@ -965,7 +965,7 @@ async function showDetail(postId) {
                             <a class="home-click" onclick="showProfile('${original.user_id}')">
                                 <div class="post1">
                                     <div class="jerr">
-                                        <p class="jerry" style="font-size:14px;">${origUser.username}</p>
+                                        <p class="jerry" style="font-size:15px;">${origUser.username}</p>
                                     </div>
                                     <img class="verif" src="pics/very.svg">
                                 </div>
@@ -975,7 +975,7 @@ async function showDetail(postId) {
                     </div>
 
                     ${original.content ? `
-                        <div style="font-size:14px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
+                        <div style="font-size:15px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
                     ` : ''}
 
                     ${original.image ? `
