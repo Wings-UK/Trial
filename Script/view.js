@@ -1184,7 +1184,7 @@ async function showDetail(postId) {
             });
         });
     }
-
+    await mountCommentSection(postId);
     window.scrollTo(0, 0);
 }
 
