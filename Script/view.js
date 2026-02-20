@@ -3988,14 +3988,24 @@ async function submitComment(postId, parentId = null, textarea, submitBtn) {
     supabase.rpc('increment_post_comment_count', { pid: postId, delta: 1 }).catch(console.error);
 
     // Optimistically add to UI
-    if (!parentId) {
-        const emptyEl = document.querySelector('.comments-empty');
-        if (emptyEl) {
-            const list = document.getElementById('comments-list');
-            if (list) list.innerHTML = '';
-        }
-        appendCommentToList(newComment, true, true);
+   if (!parentId) {
+    const emptyEl = document.querySelector('.comments-empty');
+    if (emptyEl) {
+        const list = document.getElementById('comments-list');
+        if (list) list.innerHTML = '';
     }
+
+    const commentWithUser = {
+        ...newComment,
+        user: {
+            id: currentUserId,
+            username: newComment.user?.username || '@you',
+            avatar: commentState.myAvatar
+        }
+    };
+
+    appendCommentToList(commentWithUser, true, true);
+}
 
     updateCommentCountByDelta(1);
 
