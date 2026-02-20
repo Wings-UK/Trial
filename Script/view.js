@@ -3113,7 +3113,7 @@ function injectCommentStyles() {
         .comment-item {
             display: flex;
             gap: 11px;
-            padding: 14px 16px;
+            padding: 5px 5px;
             border-bottom: 1px solid #fafafa;
             position: relative;
             animation: commentSlideIn 0.3s cubic-bezier(0.34, 1.36, 0.64, 1) both;
