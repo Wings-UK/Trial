@@ -3151,7 +3151,7 @@ function injectCommentStyles() {
 
         .comment-avatar-wrap {
             flex-shrink: 0;
-            padding-top: 10px;
+            padding-top: 15px;
             position: relative;
             cursor: pointer;
         }
@@ -3216,8 +3216,8 @@ function injectCommentStyles() {
         }
 
         .comment-verify {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             flex-shrink: 0;
         }
 
