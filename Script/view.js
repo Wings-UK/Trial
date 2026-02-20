@@ -3136,7 +3136,7 @@ function injectCommentStyles() {
 
         /* thread line for replies */
         .comment-item.is-reply {
-            padding-left: 52px;
+            padding-left: 0px;
         }
 
         .comment-item.is-reply::before {
@@ -3242,7 +3242,7 @@ function injectCommentStyles() {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-top: 7px;
+            margin-top: 2px;
             padding-left: 2px;
         }
 
