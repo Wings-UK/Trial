@@ -1132,7 +1132,7 @@ async function showDetail(postId) {
                     <img class="cinu" src="pics/at.svg">
                     <img class="cinu" src="pics/emoji.svg">
                     <img class="cinu" src="pics/gallery.svg">
-                    <img class="caun" src="pics/up.svg" onclick="submitComment()">
+                    <img class="caun" src="pics/up.svg">
                 </div>
             </div>
         </div>
@@ -4171,28 +4171,34 @@ function updateCommentCount(count) {
 }
 
 function updateCommentCountByDelta(delta) {
+    // 1. Update the Replies pill in the detail view
     const pill = document.getElementById('comment-count-pill');
-    if (!pill) return;
-    const current = parseInt(pill.textContent, 10) || 0;
-    pill.textContent = Math.max(0, current + delta);
-
-    // Also sync the stat row on the detail page
-    const statEl = document.querySelector('#nuba .werey');
-    if (statEl) {
-        const reactions = parseInt(statEl.textContent, 10) || 0;
-        // Don't update here — that's likes not comments
+    if (pill) {
+        const current = parseInt(pill.textContent, 10) || 0;
+        pill.textContent = Math.max(0, current + delta);
     }
-    // Update comment_count shown in the .viewe display
-    const commentCountDisplays = document.querySelectorAll('#nuba .viewe');
-    commentCountDisplays.forEach(el => {
-        if (el.textContent.includes('discuss')) {
-            const span = el.querySelector('.werey');
-            if (span) {
-                const v = parseInt(span.textContent, 10) || 0;
-                span.textContent = Math.max(0, v + delta);
+
+    // 2. Sync the comment count in the homepage feed card
+    const postId = commentState.postId;
+    if (postId) {
+        // The comment button span (number next to the chat icon)
+        const commentBtnSpan = document.querySelector(`.comment-btn[data-post-id="${postId}"] span`);
+        if (commentBtnSpan) {
+            const v = parseInt(commentBtnSpan.textContent, 10) || 0;
+            commentBtnSpan.textContent = Math.max(0, v + delta);
+        }
+
+        // The "View all X discuss" text above the reactions bar
+        const feedCard = document.querySelector(`.poster[data-post-id="${postId}"]`);
+        if (feedCard) {
+            const discussEl = feedCard.querySelector('.lefto .dick p.viewe');
+            if (discussEl && discussEl.textContent.includes('discuss')) {
+                const match = discussEl.textContent.match(/\d+/);
+                const current = match ? parseInt(match[0], 10) : 0;
+                discussEl.textContent = `View all ${Math.max(0, current + delta)} discuss`;
             }
         }
-    });
+    }
 }
 
 // ─── Realtime subscription for new comments ────────────────────────
