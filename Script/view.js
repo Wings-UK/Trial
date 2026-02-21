@@ -1745,6 +1745,7 @@ async function loadLikeNotifications() {
             read,
             actor_id,
             post_id,
+            comment_text,
             users!actor_id (
                 username,
                 avatar
@@ -1760,7 +1761,7 @@ async function loadLikeNotifications() {
             )
         `)
         .eq('user_id', currentUserId)
-        .eq('type', 'like')
+        .in('type', ['like', 'comment'])
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -1774,6 +1775,8 @@ async function loadLikeNotifications() {
         created_at: row.created_at,
         read: row.read,
         actor_id: row.actor_id,
+        type: row.type,
+        comment_text: row.comment_text || null,
         actor: {
             username: row.users?.username || '@unknown',
             avatar: row.users?.avatar || 'pics/default-avatar.png'
@@ -1794,7 +1797,18 @@ function createNotificationElement(notif) {
     const author = notif.post?.author || { username: '@unknown', avatar: 'pics/default-avatar.png' };
     const timeAgo = formatTimeSince(notif.created_at);
 
-    const message = notif.type === 'repost' ? 'reposted your note' : 'loved your note';
+    let message = 'loved your note';
+    if (notif.type === 'repost') message = 'reposted your note';
+    if (notif.type === 'comment') message = 'replied to your note';
+
+    // Truncate comment text to 3 lines worth (~120 chars)
+    let commentPreview = '';
+    if (notif.type === 'comment' && notif.comment_text) {
+        const trimmed = notif.comment_text.trim();
+        commentPreview = trimmed.length > 120
+            ? `<div style="font-size:13px; color:#888; margin-top:5px; line-height:1.4;">${trimmed.slice(0, 120)}...</div>`
+            : `<div style="font-size:13px; color:#888; margin-top:5px; line-height:1.4;">${trimmed}</div>`;
+    }
 
     const div = document.createElement('div');
     div.className = 'notification-item';
@@ -1827,6 +1841,7 @@ function createNotificationElement(notif) {
                 <div style="color:#555; font-size:14px; margin-top:2px;">
                     ${message} · ${timeAgo}
                 </div>
+                ${commentPreview}
             </div>
         </div>
 
@@ -1845,10 +1860,10 @@ function createNotificationElement(notif) {
         if (notif.actor_id) showProfile(notif.actor_id);
     });
 
-    // Everything else → post detail
+    // Everything else → post detail, scroll to comments
     div.addEventListener('click', (e) => {
         if (e.target.closest('.actor-avatar')) return;
-        if (notif.post?.id) showDetail(notif.post.id);
+        if (notif.post?.id) showDetail(notif.post.id, notif.type === 'comment');
     });
 
     return div;
@@ -3998,8 +4013,29 @@ async function submitComment(postId, parentId = null, textarea, submitBtn) {
         return;
     }
 
-    // Increment post comment_count via RPC
     supabase.rpc('increment_post_comment_count', { pid: postId, delta: 1 }).then(({ error }) => { if (error) console.error(error); });
+
+    // Send comment notification to post author (fire and forget)
+    supabase
+        .from('posts')
+        .select('user_id')
+        .eq('id', postId)
+        .single()
+        .then(({ data: postOwner }) => {
+            // Don't notify yourself
+            if (postOwner?.user_id && postOwner.user_id !== currentUserId) {
+                supabase.from('notifications').insert({
+                    user_id: postOwner.user_id,
+                    actor_id: currentUserId,
+                    post_id: postId,
+                    type: 'comment',
+                    comment_text: content,
+                    read: false
+                }).then(({ error }) => {
+                    if (error) console.error('Comment notification insert failed:', error.message);
+                });
+            }
+        });
     // Optimistically add to UI
    if (!parentId) {
     const emptyEl = document.querySelector('.comments-empty');
