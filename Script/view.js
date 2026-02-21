@@ -1875,6 +1875,7 @@ async function renderNotifications() {
 
     container.innerHTML = '<div class="skeleton" style="height:120px; margin:16px;"></div><p>Loading...</p>';
 
+    // loadLikeNotifications now fetches all types: like, repost, comment
     const notifs = await loadLikeNotifications();
 
     container.innerHTML = '';
@@ -1883,10 +1884,9 @@ async function renderNotifications() {
         container.innerHTML = `
             <div style="padding:60px 20px; text-align:center; color:#777;">
                 <h3>No notifications yet</h3>
-                <p style="margin-top:12px;">When someone likes your post, you'll see it here.</p>
+                <p style="margin-top:12px;">When someone likes, reposts, or replies to your note, you'll see it here.</p>
             </div>
         `;
-     
         return;
     }
 
