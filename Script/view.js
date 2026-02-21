@@ -2548,10 +2548,7 @@ async function submitPost() {
         return;
     }
 
-    // ── Disable button silently ──
-    if (postBtn) {
-        postBtn.disabled = true;
-    }
+    if (postBtn) postBtn.disabled = true;
 
     let imageUrl = null;
 
@@ -2619,7 +2616,6 @@ async function submitPost() {
     }
     document.getElementById('mediaPreview').innerHTML = '';
 
-    // ── Add new post to feed ──
     const adapted = {
         id: newPost.id,
         userId: user.id,
@@ -2640,7 +2636,6 @@ async function submitPost() {
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    // ── Repost count + notification ──
     if (repostedId) {
         try {
             const { error: rpcError } = await supabase
@@ -2667,8 +2662,28 @@ async function submitPost() {
             updateCurrentUserRepostButtons(repostedId, true);
 
             const { data: originalPost } = await supabase
+                .from('posts')
+                .select('user_id')
+                .eq('id', repostedId)
+                .single();
 
+            if (originalPost && originalPost.user_id !== user.id) {
+                await supabase.from('notifications').insert({
+                    user_id:  originalPost.user_id,
+                    actor_id: user.id,
+                    post_id:  repostedId,
+                    type:     'repost',
+                    read:     false
+                });
+            }
 
+        } catch (err) {
+            console.error('Failed to update repost count:', err.message);
+        }
+    }
+
+    showToast('Posted!');
+}
 
 async function loadRepostNotifications() {
     if (!currentUserId) return [];
