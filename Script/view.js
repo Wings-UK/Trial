@@ -1290,8 +1290,8 @@ function handleMediaSelect(e) {
     }
 
     // Optional size limit (8MB)
-    if (file.size > 8 * 1024 * 1024) {
-        alert("Image must be smaller than 8MB");
+   if (file.size > 3 * 1024 * 1024) {
+    alert("Image must be smaller than 3MB");
         e.target.value = '';
         return;
     }
@@ -2548,22 +2548,49 @@ async function submitPost() {
         return;
     }
 
+    // ── Loading state ──
+    if (postBtn) {
+        postBtn.disabled = true;
+        postBtn.textContent = 'Posting...';
+    }
+
     let imageUrl = null;
+
     if (selectedMediaFile) {
-        const fileExt = selectedMediaFile.name.split('.').pop() || 'jpg';
-        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        try {
+            // ── Compress image before upload ──
+            let fileToUpload = selectedMediaFile;
+            if (selectedMediaFile.type.startsWith('image/')) {
+                postBtn.textContent = 'Compressing...';
+                fileToUpload = await compressImage(selectedMediaFile);
+            }
 
-        const { error: uploadError } = await supabase.storage
-            .from('post-images')
-            .upload(fileName, selectedMediaFile, { upsert: false });
+            postBtn.textContent = 'Uploading...';
 
-        if (uploadError) {
-            alert('Image upload failed: ' + uploadError.message);
+            const fileExt = 'jpg'; // always jpg after compression
+            const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('post-images')
+                .upload(fileName, fileToUpload, { upsert: false });
+
+            if (uploadError) {
+                alert('Image upload failed: ' + uploadError.message);
+                postBtn.disabled = false;
+                postBtn.textContent = 'Post';
+                return;
+            }
+
+            const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
+            imageUrl = urlData.publicUrl;
+
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Upload failed. Check your connection and try again.');
+            postBtn.disabled = false;
+            postBtn.textContent = 'Post';
             return;
         }
-
-        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
-        imageUrl = urlData.publicUrl;
     }
 
     const postData = {
@@ -2588,14 +2615,20 @@ async function submitPost() {
 
     if (insertError) {
         alert('Could not create post: ' + insertError.message);
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post';
         return;
     }
 
     closePostModal();
-    if (postBtn) delete postBtn.dataset.repostingId;
+    if (postBtn) {
+        delete postBtn.dataset.repostingId;
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post';
+    }
     document.getElementById('mediaPreview').innerHTML = '';
 
-    // Add new post to feed
+    // ── Add new post to feed ──
     const adapted = {
         id: newPost.id,
         userId: user.id,
@@ -2616,17 +2649,13 @@ async function submitPost() {
     const el = createPostElement(adapted);
     document.getElementById('flyer')?.prepend(el);
 
-    // If this was a repost → update count + send notification
+    // ── Repost count + notification ──
     if (repostedId) {
         try {
-            // Use RPC so we can update any post's count regardless of ownership
             const { error: rpcError } = await supabase
                 .rpc('increment_repost_count', { post_id: repostedId });
 
-            if (rpcError) {
-                console.error('increment_repost_count RPC failed:', rpcError.message);
-            } else {
-                // Fetch the real new count from DB to display accurately
+            if (!rpcError) {
                 const { data: updated } = await supabase
                     .from('posts')
                     .select('repost_count')
@@ -2635,47 +2664,32 @@ async function submitPost() {
 
                 const newCount = updated?.repost_count || 0;
 
-                // Update the public count on all visible buttons for this post
                 document.querySelectorAll(`.repost-btn[data-post-id="${repostedId}"] span`)
                     .forEach(span => {
                         span.textContent = newCount > 0 ? newCount : '';
                     });
 
-                // Also update the detail page stat display if visible
                 document.querySelectorAll('.repost-count-display')
-                    .forEach(el => {
-                        el.textContent = newCount;
-                    });
+                    .forEach(el => { el.textContent = newCount; });
             }
 
-            // Turn green ONLY for current user regardless of RPC result
             updateCurrentUserRepostButtons(repostedId, true);
 
-            // ── SEND REPOST NOTIFICATION ──────────────────────────
-            // Fetch the original post's owner so we know who to notify
             const { data: originalPost } = await supabase
                 .from('posts')
                 .select('user_id')
                 .eq('id', repostedId)
                 .single();
 
-            // Only notify if reposter is not the post owner
             if (originalPost && originalPost.user_id !== user.id) {
-                const { error: notifError } = await supabase
-                    .from('notifications')
-                    .insert({
-                        user_id:  originalPost.user_id,  // who receives the notification
-                        actor_id: user.id,               // who did the reposting
-                        post_id:  repostedId,            // the original post
-                        type:     'repost',
-                        read:     false
-                    });
-
-                if (notifError) {
-                    console.error('Repost notification failed:', notifError.message);
-                }
+                await supabase.from('notifications').insert({
+                    user_id:  originalPost.user_id,
+                    actor_id: user.id,
+                    post_id:  repostedId,
+                    type:     'repost',
+                    read:     false
+                });
             }
-            // ─────────────────────────────────────────────────────
 
         } catch (err) {
             console.error('Failed to update repost count:', err.message);
@@ -2684,6 +2698,8 @@ async function submitPost() {
 
     showToast('Posted!');
 }
+
+
 
 async function loadRepostNotifications() {
     if (!currentUserId) return [];
@@ -4253,3 +4269,34 @@ function escapeHtml(text) {
 
   That's it. The comment section will auto-mount below the detail view.
 */
+
+
+async function compressImage(file, maxWidthPx = 1200, quality = 0.75) {
+
+    // ── 3MB hard limit ──
+    const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_SIZE_BYTES) {
+        throw new Error('Image is too large. Please choose a photo under 3MB.');
+    }
+
+    return new Promise(resolve => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scale = Math.min(1, maxWidthPx / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(
+                blob => {
+                    resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+                    URL.revokeObjectURL(url);
+                },
+                'image/jpeg',
+                quality
+            );
+        };
+        img.src = url;
+    });
+}
