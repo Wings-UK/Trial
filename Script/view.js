@@ -2831,13 +2831,14 @@ async function loadMorePosts() {
             .from('posts')
             .select(`
                 id, content, image, video, created_at,
-                like_count, comment_count, repost_count, views, user_id,
+                like_count, repost_count, views, user_id,
                 reposted_post_id,
                 user:users ( id, username, avatar ),
                 reposted_post:reposted_post_id (
                     id, content, image, video, created_at, user_id,
                     user:users ( id, username, avatar )
-                )
+                ),
+                comments(count)
             `)
             .order('created_at', { ascending: false })
             .range(loadedPostIds.size, loadedPostIds.size + postsPerLoad - 1);
@@ -2865,7 +2866,7 @@ async function loadMorePosts() {
                 video: p.video || null,
                 timestamp: formatTimeSince(p.created_at),
                 likeCount: p.like_count || 0,
-                commentCount: p.comment_count || 0,
+                commentCount: p.comments?.[0]?.count || 0,
                 repostCount: p.repost_count || 0,
                 views: p.views || 0,
                 reposted_post_id: p.reposted_post_id,
