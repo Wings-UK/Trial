@@ -3142,7 +3142,7 @@ function injectCommentStyles() {
         .comment-item.is-reply::before {
             content: '';
             position: absolute;
-            left: 38px;
+            left: 0px;
             top: 0;
             bottom: 0;
             width: 1.5px;
