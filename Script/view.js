@@ -883,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Everything else is identical to your current showDetail().
 // ───────────────────────────────────────────────────────────────
 
-async function showDetail(postId) {
+async function showDetail(postId, scrollToComments = false) {
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
@@ -1185,7 +1185,16 @@ async function showDetail(postId) {
         });
     }
     await mountCommentSection(postId);
-    window.scrollTo(0, 0);
+
+    if (scrollToComments) {
+        const commentsHeader = document.querySelector('.comments-header');
+        if (commentsHeader) {
+            const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
+            window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+        }
+    } else {
+        window.scrollTo(0, 0);
+    }
 }
 
 
@@ -2384,7 +2393,11 @@ function createPostElement(post) {
 
     posterElement.addEventListener('click', (e) => {
         if (posterElement.dataset.blockNavigation === 'true') return;
-        if (e.target.closest('.repost-btn, .heart-ai, .comment-btn, .dots, a, button')) return;
+        if (e.target.closest('.comment-btn')) {
+            showDetail(post.id, true);
+            return;
+        }
+        if (e.target.closest('.repost-btn, .heart-ai, .dots, a, button')) return;
         showDetail(post.id);
     });
 
