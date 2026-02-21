@@ -2548,26 +2548,21 @@ async function submitPost() {
         return;
     }
 
-    // ── Loading state ──
+    // ── Disable button silently ──
     if (postBtn) {
         postBtn.disabled = true;
-        postBtn.textContent = 'Posting...';
     }
 
     let imageUrl = null;
 
     if (selectedMediaFile) {
         try {
-            // ── Compress image before upload ──
             let fileToUpload = selectedMediaFile;
             if (selectedMediaFile.type.startsWith('image/')) {
-                postBtn.textContent = 'Compressing...';
                 fileToUpload = await compressImage(selectedMediaFile);
             }
 
-            postBtn.textContent = 'Uploading...';
-
-            const fileExt = 'jpg'; // always jpg after compression
+            const fileExt = 'jpg';
             const fileName = `${user.id}_${Date.now()}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
@@ -2576,8 +2571,7 @@ async function submitPost() {
 
             if (uploadError) {
                 alert('Image upload failed: ' + uploadError.message);
-                postBtn.disabled = false;
-                postBtn.textContent = 'Post';
+                if (postBtn) postBtn.disabled = false;
                 return;
             }
 
@@ -2586,9 +2580,8 @@ async function submitPost() {
 
         } catch (err) {
             console.error('Upload error:', err);
-            alert('Upload failed. Check your connection and try again.');
-            postBtn.disabled = false;
-            postBtn.textContent = 'Post';
+            alert(err.message || 'Upload failed. Check your connection and try again.');
+            if (postBtn) postBtn.disabled = false;
             return;
         }
     }
@@ -2615,8 +2608,7 @@ async function submitPost() {
 
     if (insertError) {
         alert('Could not create post: ' + insertError.message);
-        postBtn.disabled = false;
-        postBtn.textContent = 'Post';
+        if (postBtn) postBtn.disabled = false;
         return;
     }
 
@@ -2624,7 +2616,6 @@ async function submitPost() {
     if (postBtn) {
         delete postBtn.dataset.repostingId;
         postBtn.disabled = false;
-        postBtn.textContent = 'Post';
     }
     document.getElementById('mediaPreview').innerHTML = '';
 
@@ -2676,28 +2667,6 @@ async function submitPost() {
             updateCurrentUserRepostButtons(repostedId, true);
 
             const { data: originalPost } = await supabase
-                .from('posts')
-                .select('user_id')
-                .eq('id', repostedId)
-                .single();
-
-            if (originalPost && originalPost.user_id !== user.id) {
-                await supabase.from('notifications').insert({
-                    user_id:  originalPost.user_id,
-                    actor_id: user.id,
-                    post_id:  repostedId,
-                    type:     'repost',
-                    read:     false
-                });
-            }
-
-        } catch (err) {
-            console.error('Failed to update repost count:', err.message);
-        }
-    }
-
-    showToast('Posted!');
-}
 
 
 
@@ -4274,29 +4243,83 @@ function escapeHtml(text) {
 async function compressImage(file, maxWidthPx = 1200, quality = 0.75) {
 
     // ── 3MB hard limit ──
-    const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+    const MAX_SIZE_BYTES = 3 * 1024 * 1024;
     if (file.size > MAX_SIZE_BYTES) {
         throw new Error('Image is too large. Please choose a photo under 3MB.');
     }
 
-    return new Promise(resolve => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const scale = Math.min(1, maxWidthPx / img.width);
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(
-                blob => {
-                    resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
-                    URL.revokeObjectURL(url);
-                },
-                'image/jpeg',
-                quality
-            );
+    // ── If already small enough, skip compression entirely ──
+    if (file.size < 500 * 1024) { // under 500KB, no need to compress
+        return file;
+    }
+
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader(); // ← MORE compatible on mobile than createObjectURL
+
+        const timeout = setTimeout(() => {
+            reject(new Error('Image took too long to process. Try a different photo.'));
+        }, 15000);
+
+        reader.onerror = () => {
+            clearTimeout(timeout);
+            reject(new Error('Could not read image file.'));
         };
-        img.src = url;
+
+        reader.onload = (readerEvent) => {
+            const img = new Image();
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                reject(new Error('Could not load image.'));
+            };
+
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const scale = Math.min(1, maxWidthPx / img.width);
+                    canvas.width = Math.floor(img.width * scale);
+                    canvas.height = Math.floor(img.height * scale);
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // ── Use toDataURL instead of toBlob — more compatible on mobile ──
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                    if (!dataUrl || dataUrl === 'data:,') {
+                        clearTimeout(timeout);
+                        // Canvas failed — just return original file
+                        resolve(file);
+                        return;
+                    }
+
+                    // Convert dataURL → Blob → File
+                    const byteString = atob(dataUrl.split(',')[1]);
+                    const ab = new ArrayBuffer(byteString.length);
+                    const ia = new Uint8Array(ab);
+                    for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                    }
+                    const blob = new Blob([ab], { type: 'image/jpeg' });
+                    const compressedFile = new File(
+                        [blob],
+                        file.name.replace(/\.[^.]+$/, '.jpg'),
+                        { type: 'image/jpeg' }
+                    );
+
+                    clearTimeout(timeout);
+                    resolve(compressedFile);
+
+                } catch (err) {
+                    clearTimeout(timeout);
+                    // If anything fails, just use original file
+                    resolve(file);
+                }
+            };
+
+            img.src = readerEvent.target.result;
+        };
+
+        reader.readAsDataURL(file); // ← reads file into base64, works reliably on mobile
     });
 }
