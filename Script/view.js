@@ -1777,9 +1777,7 @@ function createNotificationElement(notif) {
     let commentPreview = '';
     if (notif.type === 'comment' && notif.comment_text) {
         const trimmed = notif.comment_text.trim();
-        commentPreview = trimmed.length > 120
-            ? `<div style="font-size:13px; color:#888; margin-top:5px; line-height:1.4;">${trimmed.slice(0, 120)}...</div>`
-            : `<div style="font-size:13px; color:#888; margin-top:5px; line-height:1.4;">${trimmed}</div>`;
+        commentPreview = `<div style="font-size:13px; color:#888; margin-top:5px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${trimmed}</div>`;
     }
 
     const div = document.createElement('div');
