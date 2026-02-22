@@ -1740,54 +1740,26 @@ async function loadLikeNotifications() {
     const { data, error } = await supabase
         .from('notifications')
         .select(`
-            id,
-            created_at,
-            read,
-            actor_id,
-            post_id,
-            comment_text,
-            users!actor_id (
-                username,
-                avatar
-            ),
+            id, created_at, read, actor_id, post_id,
+            users!actor_id ( username, avatar ),
             posts!fk_notifications_post_id (
-                id,
-                image,
-                user_id,
-                users!user_id (
-                    username,
-                    avatar
-                )
+                id, image, user_id,
+                users!user_id ( username, avatar )
             )
         `)
         .eq('user_id', currentUserId)
-        .in('type', ['like', 'comment'])
+        .eq('type', 'like')
         .order('created_at', { ascending: false })
         .limit(20);
 
-    if (error) {
-        console.error("Notifications fetch failed:", error);
-        return [];
-    }
+    if (error) { console.error("Like notifications fetch failed:", error); return []; }
 
     return (data || []).map(row => ({
-        id: row.id,
-        created_at: row.created_at,
-        read: row.read,
-        actor_id: row.actor_id,
-        type: row.type,
-        comment_text: row.comment_text || null,
-        actor: {
-            username: row.users?.username || '@unknown',
-            avatar: row.users?.avatar || 'pics/default-avatar.png'
-        },
-        post: {
-            id: row.posts?.id || row.post_id,
-            image: row.posts?.image,
-            author: {
-                username: row.posts?.users?.username || '@unknown',
-                avatar: row.posts?.users?.avatar || 'pics/default-avatar.png'
-            }
+        id: row.id, created_at: row.created_at, read: row.read,
+        actor_id: row.actor_id, type: 'like',
+        actor: { username: row.users?.username || '@unknown', avatar: row.users?.avatar || 'pics/default-avatar.png' },
+        post: { id: row.posts?.id || row.post_id, image: row.posts?.image,
+            author: { username: row.posts?.users?.username || '@unknown', avatar: row.posts?.users?.avatar || 'pics/default-avatar.png' }
         }
     }));
 }
@@ -1867,33 +1839,6 @@ function createNotificationElement(notif) {
     });
 
     return div;
-}
-
-async function renderNotifications() {
-    const container = document.querySelector('#notifications .notifications-body');
-    if (!container) return;
-
-    container.innerHTML = '<div class="skeleton" style="height:120px; margin:16px;"></div><p>Loading...</p>';
-
-    // loadLikeNotifications now fetches all types: like, repost, comment
-    const notifs = await loadLikeNotifications();
-
-    container.innerHTML = '';
-
-    if (notifs.length === 0) {
-        container.innerHTML = `
-            <div style="padding:60px 20px; text-align:center; color:#777;">
-                <h3>No notifications yet</h3>
-                <p style="margin-top:12px;">When someone likes, reposts, or replies to your note, you'll see it here.</p>
-            </div>
-        `;
-        return;
-    }
-
-    notifs.forEach(notif => {
-        const item = createNotificationElement(notif);
-        container.appendChild(item);
-    });
 }
 
 async function deletePost(postId, postElement) {
@@ -2775,17 +2720,13 @@ async function renderNotifications() {
 
     container.innerHTML = '<div class="skeleton" style="height:120px; margin:16px;"></div><p>Loading...</p>';
 
-    // Load both types in parallel
-    const [likeNotifs, repostNotifs] = await Promise.all([
+    const [likeNotifs, commentNotifs, repostNotifs] = await Promise.all([
         loadLikeNotifications(),
+        loadCommentNotifications(),
         loadRepostNotifications()
     ]);
 
-    // Tag like notifications with their type (repost ones already have type set)
-    const taggedLikes = likeNotifs; // type is already correct from the DB
-
-    // Merge and sort by newest first
-    const allNotifs = [...taggedLikes, ...repostNotifs]
+    const allNotifs = [...likeNotifs, ...commentNotifs, ...repostNotifs]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     container.innerHTML = '';
@@ -2794,7 +2735,7 @@ async function renderNotifications() {
         container.innerHTML = `
             <div style="padding:60px 20px; text-align:center; color:#777;">
                 <h3>No notifications yet</h3>
-                <p style="margin-top:12px;">When someone likes or reposts your note, you'll see it here.</p>
+                <p style="margin-top:12px;">When someone likes, reposts, or replies to your note, you'll see it here.</p>
             </div>
         `;
         return;
@@ -2804,6 +2745,37 @@ async function renderNotifications() {
         const item = createNotificationElement(notif);
         container.appendChild(item);
     });
+}
+
+async function loadCommentNotifications() {
+    if (!currentUserId) return [];
+
+    const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+            id, created_at, read, actor_id, post_id, comment_text,
+            users!actor_id ( username, avatar ),
+            posts!fk_notifications_post_id (
+                id, image, user_id,
+                users!user_id ( username, avatar )
+            )
+        `)
+        .eq('user_id', currentUserId)
+        .eq('type', 'comment')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) { console.error("Comment notifications fetch failed:", error); return []; }
+
+    return (data || []).map(row => ({
+        id: row.id, created_at: row.created_at, read: row.read,
+        actor_id: row.actor_id, type: 'comment',
+        comment_text: row.comment_text || null,
+        actor: { username: row.users?.username || '@unknown', avatar: row.users?.avatar || 'pics/default-avatar.png' },
+        post: { id: row.posts?.id || row.post_id, image: row.posts?.image,
+            author: { username: row.posts?.users?.username || '@unknown', avatar: row.posts?.users?.avatar || 'pics/default-avatar.png' }
+        }
+    }));
 }
 
 // ───────────────────────────────────────────────
