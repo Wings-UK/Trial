@@ -2321,7 +2321,7 @@ function createPostElement(post) {
                     <div class="mee">
                         <div class="comment-btn" data-post-id="${post.id}">
                             <img class="feeling" src="pics/comment.svg" alt="Comment">
-                            <span>${post.commentCount || 0}</span>
+                            <span>${post.commentCount > 0 ? post.commentCount : ''}</span>
                         </div>
 
                         <div class="repost-btn"
