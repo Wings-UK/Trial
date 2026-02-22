@@ -2782,7 +2782,7 @@ async function renderNotifications() {
     ]);
 
     // Tag like notifications with their type (repost ones already have type set)
-    const taggedLikes = likeNotifs.map(n => ({ ...n, type: 'like' }));
+    const taggedLikes = likeNotifs; // type is already correct from the DB
 
     // Merge and sort by newest first
     const allNotifs = [...taggedLikes, ...repostNotifs]
