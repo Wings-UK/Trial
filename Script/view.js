@@ -328,7 +328,7 @@ function addMinimalReactionStyles() {
 }
 .like-count {
     font-size: 14px;
-    font-family: ibm plex sans, roboto;
+    font-family: 'M PLUS 1p', sans-serif;
 } 
 .like-count.liked {
     font-weight: 500;
@@ -396,7 +396,7 @@ function addMinimalReactionStyles() {
     gap: 5px;
     cursor: pointer;
     font-size: 15px;
-    font-family: ibm plex sans, roboto;
+    font-family: 'M PLUS 1p', sans-serif;
 }
 
     `;
@@ -3003,7 +3003,7 @@ function injectCommentStyles() {
         }
 
         .comments-header-title {
-            font-family: Noto Sans JP, roboto;
+            font-family: 'M PLUS 1p', sans-serif;
             font-size: 15px;
             font-weight: 500;
             color: #111;
@@ -3015,7 +3015,7 @@ function injectCommentStyles() {
             color: #fff;
             font-size: 11px;
             font-weight: 700;
-            font-family: Noto Sans JP, roboto;
+            font-family: 'M PLUS 1p', sans-serif;
             padding: 2px 8px;
             border-radius: 999px;
             min-width: 20px;
@@ -3231,7 +3231,7 @@ function injectCommentStyles() {
             font-size: 15px;
             line-height: 1.55;
             color: #222;
-            font-family: Noto Sans JP, roboto;
+            font-family: 'M PLUS 1p', sans-serif;
             word-break: break-word;
             white-space: pre-wrap;
         }
