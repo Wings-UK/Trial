@@ -328,7 +328,7 @@ function addMinimalReactionStyles() {
 }
 .like-count {
     font-size: 14px;
-    font-family: 'M PLUS 1p', sans-serif;
+    font-family: 'Noto Sans JP', roboto;
 } 
 .like-count.liked {
     font-weight: 500;
@@ -396,7 +396,7 @@ function addMinimalReactionStyles() {
     gap: 5px;
     cursor: pointer;
     font-size: 15px;
-    font-family: 'M PLUS 1p', sans-serif;
+    font-family: 'Noto Sans JP', roboto;
 }
 
     `;
@@ -3003,7 +3003,7 @@ function injectCommentStyles() {
         }
 
         .comments-header-title {
-            font-family: 'M PLUS 1p', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             font-size: 15px;
             font-weight: 500;
             color: #111;
@@ -3015,7 +3015,7 @@ function injectCommentStyles() {
             color: #fff;
             font-size: 11px;
             font-weight: 700;
-            font-family: 'M PLUS 1p', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             padding: 2px 8px;
             border-radius: 999px;
             min-width: 20px;
@@ -3094,7 +3094,7 @@ function injectCommentStyles() {
 
         .comments-empty p {
             font-size: 14px;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             color: #aaa;
             text-align: center;
             line-height: 1.5;
@@ -3231,7 +3231,7 @@ function injectCommentStyles() {
             font-size: 15px;
             line-height: 1.55;
             color: #222;
-            font-family: 'M PLUS 1p', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             word-break: break-word;
             white-space: pre-wrap;
         }
@@ -3344,7 +3344,7 @@ function injectCommentStyles() {
             outline: none;
             resize: none;
             font-size: 13.5px;
-            font-family: 'IBM Plex Sans', Roboto, sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             color: #222;
             background: transparent;
             min-height: 36px;
@@ -3371,7 +3371,7 @@ function injectCommentStyles() {
             font-size: 13px;
             color: #aaa;
             cursor: pointer;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             padding: 6px 10px;
             border-radius: 999px;
             transition: background 0.15s;
@@ -3389,7 +3389,7 @@ function injectCommentStyles() {
             border-radius: 999px;
             font-size: 13px;
             font-weight: 600;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             padding: 6px 16px;
             cursor: pointer;
             transition: background 0.15s, transform 0.1s;
@@ -3416,7 +3416,7 @@ function injectCommentStyles() {
             font-size: 13px;
             color: #f40752;
             font-weight: 600;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             cursor: pointer;
             padding: 6px 0 6px 52px;
             display: flex;
@@ -3442,7 +3442,7 @@ function injectCommentStyles() {
             font-size: 14px;
             font-weight: 500;
             color: #555;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: 'Noto Sans JP', roboto;
             cursor: pointer;
             transition: border-color 0.2s, color 0.2s, background 0.2s;
         }
