@@ -1786,7 +1786,7 @@ function createNotificationElement(notif) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
+        padding: 12px 5px;
         border: 0.5px solid #eee;
         border-radius: 10px;
         margin: 8px 12px;
