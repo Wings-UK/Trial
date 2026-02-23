@@ -408,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addMinimalReactionStyles();
     addRepostStyles();
     addMasonryHeartAnimationStyles();
+injectDiscussStyles();
+    subscribeToDiscussUpdates();
 });
 
 
@@ -2306,15 +2308,14 @@ function createPostElement(post) {
 
         ${mainContentHTML}
 
-        <div class="lefto">
-            <div class="dick">
-                <div>
-                    <img class="lefti" src="pics/bounce.svg">
-                </div>
-                <div>
-                    <p class="viewe">View all ${post.commentCount || 0} discuss</p>
-                </div>
-            </div>
+        <div class="dick">
+        <div>
+            <img class="lefti" src="pics/bounce.svg">
+        </div>
+        <div>
+            <span class="discuss-label viewe"></span>
+        </div>
+    </div>
             <div class="twits">
                 <div><img class="lefti" src="pics/stats.svg"></div>
                 <div><p class="viewe">${post.views || '0'} views</p></div>
@@ -2413,6 +2414,8 @@ function createPostElement(post) {
 
     enablePostLongPress(posterElement, post);
     observePostForViews(posterElement);
+    const discussEl = posterElement.querySelector('.discuss-label');
+    if (discussEl) renderDiscussLabel(discussEl, post.id, post.discussCount || 0);
     return posterElement;
 }
 
@@ -2612,6 +2615,7 @@ async function submitPost() {
     };
 
     const el = createPostElement(adapted);
+    await savePostKeywords(newPost.id, content);
     document.getElementById('flyer')?.prepend(el);
 
     if (repostedId) {
@@ -2808,7 +2812,8 @@ async function loadMorePosts() {
             .from('posts')
             .select(`
                 id, content, image, video, created_at,
-                like_count, repost_count, views, user_id,
+                like_count, repost_count,
+                discuss_count, views, user_id,
                 reposted_post_id,
                 user:users ( id, username, avatar ),
                 reposted_post:reposted_post_id (
@@ -2846,6 +2851,7 @@ async function loadMorePosts() {
                 commentCount: p.comments?.[0]?.count || 0,
                 repostCount: p.repost_count || 0,
                 views: p.views || 0,
+                discussCount: p.discuss_count || 0,
                 reposted_post_id: p.reposted_post_id,
                 reposted_post: p.reposted_post ? {
                     id: p.reposted_post.id,
@@ -4662,6 +4668,629 @@ CHANGE 3 — showDetail()
   At the very end, before or after `await mountCommentSection(postId);`, add:
   
       await trackDetailView(postId);
+
+*/
+
+// ═══════════════════════════════════════════════════════════════════
+//  DISCUSS FEATURE — Drop this entire block into view.js
+//
+//  What this file does:
+//  1. Extracts keywords from post text on create (compromise.js)
+//  2. Saves keywords to post_topics table
+//  3. Recalculates discuss_count for all related posts
+//  4. Renders "view all X discuss" / "No discuss" label on every card
+//  5. Syncs discuss_count live via Supabase realtime
+//  6. Opens a full discuss feed panel (same header as notifications)
+//     with full post cards — identical structure, everything functional
+//
+//  REQUIRES: compromise.js loaded before view.js
+//  Add to your HTML <head>:
+//  <script src="https://unpkg.com/compromise@14.14.0/builds/compromise.min.js"></script>
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ─────────────────────────────────────────────────────────────────
+// KEYWORD EXTRACTION using compromise.js
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Extracts 3–6 meaningful keywords from post text.
+ * Priority: named entities (people, places, orgs) → nouns → verbs
+ * Returns lowercase deduplicated array.
+ */
+function extractKeywords(text) {
+    if (!text || text.trim().length < 10) return [];
+
+    // Fallback if compromise not loaded
+    if (typeof nlp === 'undefined') {
+        console.warn('compromise.js not loaded — using basic keyword fallback');
+        return basicKeywordExtract(text);
+    }
+
+    const doc = nlp(text);
+
+    const stopWords = new Set([
+        'the','a','an','is','are','was','were','be','been','being',
+        'have','has','had','do','does','did','will','would','could',
+        'should','may','might','shall','can','need','dare','ought',
+        'used','able','this','that','these','those','it','its','he',
+        'she','they','we','i','you','his','her','their','our','my',
+        'your','its','there','here','when','where','who','what','how',
+        'why','which','after','before','about','with','from','into',
+        'still','just','some','also','even','back','more','than',
+        'then','now','all','any','both','each','few','more','most',
+        'other','such','no','nor','not','only','own','same','so',
+        'too','very','s','t','can','will','just','don','should',
+        'now','d','ll','m','o','re','ve','y','ain','aren','couldn',
+        'didn','doesn','hadn','hasn','haven','isn','ma','mightn',
+        'mustn','needn','shan','shouldn','wasn','weren','won','wouldn',
+        'bro','guys','man','like','really','actually','basically'
+    ]);
+
+    const keywords = new Set();
+
+    // 1. People (highest priority)
+    doc.people().out('array').forEach(p => {
+        const clean = p.toLowerCase().trim();
+        if (clean.length > 2 && !stopWords.has(clean)) keywords.add(clean);
+    });
+
+    // 2. Places
+    doc.places().out('array').forEach(p => {
+        const clean = p.toLowerCase().trim();
+        if (clean.length > 2 && !stopWords.has(clean)) keywords.add(clean);
+    });
+
+    // 3. Organizations
+    doc.organizations().out('array').forEach(o => {
+        const clean = o.toLowerCase().trim();
+        if (clean.length > 2 && !stopWords.has(clean)) keywords.add(clean);
+    });
+
+    // 4. Topics/nouns if we still need more keywords
+    if (keywords.size < 3) {
+        doc.nouns().out('array').forEach(n => {
+            const clean = n.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+            if (clean.length > 3 && !stopWords.has(clean)) keywords.add(clean);
+        });
+    }
+
+    // 5. Key verbs as last resort
+    if (keywords.size < 2) {
+        doc.verbs().out('array').forEach(v => {
+            const clean = v.toLowerCase().trim();
+            if (clean.length > 4 && !stopWords.has(clean)) keywords.add(clean);
+        });
+    }
+
+    return [...keywords].slice(0, 6);
+}
+
+/**
+ * Basic fallback if compromise isn't loaded.
+ * Strips common words, returns top nouns by length.
+ */
+function basicKeywordExtract(text) {
+    const stopWords = new Set([
+        'the','a','an','is','are','was','were','be','been',
+        'have','has','had','this','that','will','from','with',
+        'into','about','they','when','after','still','bro','just'
+    ]);
+
+    return text
+        .replace(/[^a-zA-Z\s]/g, ' ')
+        .split(/\s+/)
+        .map(w => w.toLowerCase())
+        .filter(w => w.length > 3 && !stopWords.has(w))
+        .filter((w, i, arr) => arr.indexOf(w) === i) // dedupe
+        .slice(0, 6);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// SAVE KEYWORDS + RECALCULATE
+// Call this in submitPost() after the post is successfully inserted
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Extracts keywords from post content and saves them to post_topics.
+ * Then triggers server-side discuss_count recalculation for all
+ * posts that share those keywords.
+ *
+ * HOW TO USE: In submitPost(), after you get `newPost` from Supabase insert,
+ * add this one line:
+ *
+ *     await savePostKeywords(newPost.id, content);
+ *
+ */
+async function savePostKeywords(postId, content) {
+    if (!postId || !content || content.trim().length < 10) return;
+
+    const keywords = extractKeywords(content);
+    if (!keywords.length) return;
+
+    // Build insert rows
+    const rows = keywords.map(kw => ({ post_id: postId, keyword: kw }));
+
+    const { error } = await supabase
+        .from('post_topics')
+        .insert(rows)
+        .select();
+
+    if (error) {
+        // Unique violation just means keyword already saved — fine
+        if (error.code !== '23505') {
+            console.warn('savePostKeywords failed (non-fatal):', error.message);
+        }
+        return;
+    }
+
+    // Now recalculate discuss_count for all related posts server-side
+    try {
+        await supabase.rpc('recalculate_discuss_count', { p_post_id: postId });
+    } catch (err) {
+        console.warn('recalculate_discuss_count failed (non-fatal):', err.message);
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// SYNC DISCUSS COUNT in DOM
+// Same pattern as syncLikeUI / syncViewCount
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Updates every visible discuss label for this postId.
+ * Called by realtime subscription and after recalculation.
+ */
+function syncDiscussCount(postId, newCount) {
+    document.querySelectorAll(`.poster[data-post-id="${postId}"] .discuss-label`)
+        .forEach(el => {
+            renderDiscussLabel(el, postId, newCount);
+        });
+
+    // Also sync the discuss feed if it's open for this post
+    const discussFeed = document.getElementById('discuss-feed-panel');
+    if (discussFeed && discussFeed.dataset.originPostId === String(postId)) {
+        const headerCount = discussFeed.querySelector('.discuss-header-count');
+        if (headerCount) headerCount.textContent = newCount;
+    }
+}
+
+/**
+ * Writes the correct label text and tap behaviour into el.
+ * el must be the .discuss-label span inside the post card.
+ */
+function renderDiscussLabel(el, postId, count) {
+    if (count < 1) {
+        el.textContent = 'No discuss';
+        el.classList.remove('tappable');
+        el.onclick = null;
+        el.style.cursor = 'default';
+        el.style.color = '#aaa';
+    } else {
+        el.textContent = `view all ${count} discuss`;
+        el.classList.add('tappable');
+        el.style.cursor = 'pointer';
+        el.style.color = '#f40752';
+        // Prevent post card tap-through
+        el.onclick = (e) => {
+            e.stopPropagation();
+            openDiscussFeed(postId);
+        };
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// REALTIME — subscribe to post_topics inserts
+// Updates discuss counts live for posts already in the feed
+// ─────────────────────────────────────────────────────────────────
+
+let discussRealtimeChannel = null;
+
+function subscribeToDiscussUpdates() {
+    if (discussRealtimeChannel) return; // already subscribed
+
+    discussRealtimeChannel = supabase
+        .channel('post_topics_inserts')
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'post_topics' },
+            async (payload) => {
+                const newKeyword = payload.new?.keyword;
+                const triggerPostId = payload.new?.post_id;
+                if (!newKeyword || !triggerPostId) return;
+
+                // Find all posts in the current feed that share this keyword.
+                // We re-fetch their discuss_count from the DB (already updated by RPC).
+                const feedPostIds = [...document.querySelectorAll('.poster[data-post-id]')]
+                    .map(el => el.dataset.postId)
+                    .filter(Boolean);
+
+                if (!feedPostIds.length) return;
+
+                // Check which of these posts share the new keyword
+                const { data } = await supabase
+                    .from('post_topics')
+                    .select('post_id')
+                    .eq('keyword', newKeyword)
+                    .in('post_id', feedPostIds);
+
+                if (!data?.length) return;
+
+                // For each matching post, fetch its updated discuss_count and sync UI
+                for (const row of data) {
+                    const { data: postData } = await supabase
+                        .from('posts')
+                        .select('discuss_count')
+                        .eq('id', row.post_id)
+                        .single();
+
+                    if (postData) {
+                        syncDiscussCount(row.post_id, postData.discuss_count || 0);
+                    }
+                }
+            }
+        )
+        .subscribe();
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// DISCUSS FEED PANEL
+// Opens a full-screen panel with the same header as notifications
+// ─────────────────────────────────────────────────────────────────
+
+let discussFeedScrollPos = 0; // remembers main feed scroll before opening
+
+/**
+ * Opens the discuss feed for a given postId.
+ * Saves current scroll position so back button restores it perfectly.
+ */
+async function openDiscussFeed(postId) {
+    // Save scroll position
+    discussFeedScrollPos = window.scrollY;
+
+    // Create the panel
+    const panel = document.createElement('div');
+    panel.id = 'discuss-feed-panel';
+    panel.dataset.originPostId = postId;
+    panel.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #fff;
+        z-index: 1000;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        animation: discussSlideIn 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+    `;
+
+    // ── Header (same structure as notification header) ──
+    panel.innerHTML = `
+        <div class="discuss-panel-header">
+            <button class="discuss-back-btn" onclick="closeDiscussFeed()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2.2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <span class="discuss-panel-title">Discuss</span>
+        </div>
+
+        <div id="discuss-feed-list">
+            <!-- Skeleton loaders -->
+            ${[1,2,3].map(() => `
+                <div class="poster skeleton" style="margin:0;border-radius:0;border-bottom:1px solid #f5f5f5;">
+                    <div class="cust-name">
+                        <div class="heading">
+                            <div class="small-photo1 skeleton-avatar"></div>
+                            <div class="pos">
+                                <div class="skeleton-text short"></div>
+                                <div class="skeleton-text medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tir">
+                        <div class="skeleton-text long"></div>
+                        <div class="skeleton-text medium"></div>
+                    </div>
+                    <div class="lefto skeleton-reactions"></div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    document.body.appendChild(panel);
+    injectDiscussStyles();
+
+    // Prevent main feed from scrolling behind panel
+    document.body.style.overflow = 'hidden';
+
+    // Load the posts
+    await loadDiscussPosts(postId);
+}
+
+/**
+ * Fetches discuss posts via RPC and renders them using createPostElement.
+ */
+async function loadDiscussPosts(postId) {
+    const list = document.getElementById('discuss-feed-list');
+    if (!list) return;
+
+    try {
+        // Fetch related posts via RPC (already ordered by engagement)
+        const { data: discussPosts, error } = await supabase
+            .rpc('fetch_discuss_posts', { p_post_id: postId });
+
+        if (error) throw error;
+
+        // Clear skeletons
+        list.innerHTML = '';
+
+        if (!discussPosts || discussPosts.length === 0) {
+            list.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;
+                            justify-content:center;padding:60px 20px;gap:12px;color:#aaa;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                              stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <p style="font-size:15px;font-family:'Noto Sans JP',roboto;
+                               color:#bbb;text-align:center;line-height:1.6;">
+                        No related posts yet.<br>Be the first to talk about this.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        // Fetch user data for each post (the RPC returns raw post data)
+        const userIds = [...new Set(discussPosts.map(p => p.user_id).filter(Boolean))];
+        const { data: users } = await supabase
+            .from('users')
+            .select('id, username, avatar')
+            .in('id', userIds);
+
+        const userMap = {};
+        (users || []).forEach(u => { userMap[u.id] = u; });
+
+        // Fetch comment counts
+        const postIds = discussPosts.map(p => p.id);
+        const { data: commentCounts } = await supabase
+            .from('comments')
+            .select('post_id, count:post_id.count()')
+            .in('post_id', postIds);
+
+        const commentMap = {};
+        (commentCounts || []).forEach(c => { commentMap[c.post_id] = c.count; });
+
+        // Render each post using the EXACT same createPostElement
+        for (const p of discussPosts) {
+            const u = userMap[p.user_id] || {};
+            const isOwnPost = currentUserId && p.user_id === currentUserId;
+
+            // Fetch reposted post data if needed
+            let repostedPost = null;
+            if (p.reposted_post_id) {
+                const { data: rp } = await supabase
+                    .from('posts')
+                    .select('id, content, image, video, created_at, user_id, user:users(id,username,avatar)')
+                    .eq('id', p.reposted_post_id)
+                    .single();
+                repostedPost = rp;
+            }
+
+            const adapted = {
+                id: p.id,
+                userId: p.user_id,
+                username: u.username || '@unknown',
+                avatar: u.avatar || 'pics/default-avatar.png',
+                content: p.content || '',
+                image: p.image || null,
+                video: p.video || null,
+                timestamp: formatTimeSince(p.created_at),
+                likeCount: p.like_count || 0,
+                commentCount: commentMap[p.id] || 0,
+                repostCount: p.repost_count || 0,
+                views: p.views || 0,
+                discussCount: p.discuss_count || 0,
+                reposted_post_id: p.reposted_post_id || null,
+                reposted_post: repostedPost
+            };
+
+            const el = createPostElement(adapted);
+
+            // Style: no rounded corners, flush edges like a feed
+            el.style.borderRadius = '0';
+            el.style.borderBottom = '1px solid #f5f5f5';
+
+            list.appendChild(el);
+        }
+
+        // Start view tracking for discuss feed posts
+        reObserveAllFeedPosts();
+
+    } catch (err) {
+        console.error('loadDiscussPosts failed:', err);
+        if (list) {
+            list.innerHTML = `
+                <p style="text-align:center;padding:40px 20px;color:#aaa;font-size:14px;">
+                    Could not load discuss posts. Please try again.
+                </p>
+            `;
+        }
+    }
+}
+
+/**
+ * Closes the discuss feed panel and restores scroll position.
+ */
+function closeDiscussFeed() {
+    const panel = document.getElementById('discuss-feed-panel');
+    if (!panel) return;
+
+    panel.style.animation = 'discussSlideOut 0.22s cubic-bezier(0.4, 0, 0.2, 1) both';
+
+    setTimeout(() => {
+        panel.remove();
+        document.body.style.overflow = '';
+        // Restore exact scroll position
+        window.scrollTo({ top: discussFeedScrollPos, behavior: 'instant' });
+    }, 220);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// STYLES for discuss panel + discuss label
+// ─────────────────────────────────────────────────────────────────
+
+function injectDiscussStyles() {
+    if (document.getElementById('discuss-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'discuss-styles';
+    style.textContent = `
+        /* ── Slide animations ─────────────────────────────────── */
+        @keyframes discussSlideIn {
+            from { transform: translateX(100%); opacity: 0.6; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes discussSlideOut {
+            from { transform: translateX(0);    opacity: 1; }
+            to   { transform: translateX(100%); opacity: 0.6; }
+        }
+
+        /* ── Panel header (same pattern as notifications) ─────── */
+        .discuss-panel-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .discuss-back-btn {
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: #111;
+            display: flex;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            border-radius: 50%;
+            transition: background 0.15s;
+        }
+
+        .discuss-back-btn:active {
+            background: #f5f5f5;
+        }
+
+        .discuss-panel-title {
+            font-family: 'Noto Sans JP', roboto;
+            font-size: 18px;
+            font-weight: 700;
+            color: #111;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Discuss label on every feed card ─────────────────── */
+        .discuss-label {
+            font-size: 14px;
+            font-family: 'Noto Sans JP', roboto;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .discuss-label.tappable:active {
+            opacity: 0.7;
+        }
+    `;
+
+    document.head.appendChild(style);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+// CHANGES NEEDED IN YOUR EXISTING FUNCTIONS
+// Read carefully — these are the 3 integration points
+// ─────────────────────────────────────────────────────────────────
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE 1 of 3 — Inside createPostElement()
+
+Find this block in your .lefto div:
+
+    <div class="dick">
+        <div>
+            <img class="lefti" src="pics/bounce.svg">
+        </div>
+        <div>
+            <p class="viewe">View all ${post.commentCount || 0} discuss</p>
+        </div>
+    </div>
+
+REPLACE the entire .dick div with:
+
+    <div class="dick">
+        <div>
+            <img class="lefti" src="pics/bounce.svg">
+        </div>
+        <div>
+            <span class="discuss-label viewe"></span>
+        </div>
+    </div>
+
+Then at the VERY END of createPostElement(), just before `return posterElement;`,
+add these two lines:
+
+    const discussEl = posterElement.querySelector('.discuss-label');
+    if (discussEl) renderDiscussLabel(discussEl, post.id, post.discussCount || 0);
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE 2 of 3 — Inside loadMorePosts(), in the adapted object
+
+Add one field to the adapted object:
+
+    discussCount: p.discuss_count || 0,
+
+Also add discuss_count to the Supabase select query:
+
+    .select(`
+        id, content, image, video, created_at,
+        like_count, repost_count, views, discuss_count, user_id,
+        ...
+    `)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE 3 of 3 — Inside submitPost(), after successful insert
+
+After the line:
+    const el = createPostElement(adapted);
+
+Add:
+    await savePostKeywords(newPost.id, content);
+
+That's it. The RPC handles all the discuss_count recalculation.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+// ─────────────────────────────────────────────────────────────────
+// INIT — call these from your DOMContentLoaded block
+// ─────────────────────────────────────────────────────────────────
+
+/*
+Add inside your existing DOMContentLoaded:
+
+    injectDiscussStyles();
+    subscribeToDiscussUpdates();
 
 */
 
