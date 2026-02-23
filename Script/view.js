@@ -4053,6 +4053,29 @@ async function submitReply(parentCommentId, textarea, composer, parentWrap) {
     // ✅ Update count immediately (optimistic)
     updateCommentCountByDelta(1);
 
+    // ✅ Show reply immediately (optimistic)
+    const repliesContainer = parentWrap.querySelector(`.replies-container[data-parent-id="${parentCommentId}"]`);
+    const optimisticReply = {
+        id: `optimistic-${Date.now()}`,
+        content,
+        created_at: new Date().toISOString(),
+        like_count: 0,
+        parent_id: parentCommentId,
+        user_id: currentUserId,
+        user: {
+            id: currentUserId,
+            username: commentState.myUsername,
+            avatar: commentState.myAvatar,
+        }
+    };
+
+    let optimisticEl = null;
+    if (repliesContainer) {
+        optimisticEl = buildCommentElement(optimisticReply, parentCommentId, true);
+        repliesContainer.appendChild(optimisticEl);
+        parentWrap.querySelector('.load-replies-toggle')?.style.setProperty('display', 'none');
+    }
+
     const { data: newReply, error } = await supabase
         .from('comments')
         .insert({
@@ -4071,7 +4094,7 @@ async function submitReply(parentCommentId, textarea, composer, parentWrap) {
 
     if (error) {
         console.error('Reply insert error:', error);
-        // ✅ Revert count if it failed
+        optimisticEl?.remove();
         updateCommentCountByDelta(-1);
         showToast('Could not post reply');
         return;
@@ -4079,17 +4102,20 @@ async function submitReply(parentCommentId, textarea, composer, parentWrap) {
 
     supabase.rpc('increment_post_comment_count', { pid: commentState.postId, delta: 1 }).catch(console.error);
 
-    const repliesContainer = parentWrap.querySelector(`.replies-container[data-parent-id="${parentCommentId}"]`);
-    if (repliesContainer) {
-        const replyEl = buildCommentElement(newReply, parentCommentId, true);
-        repliesContainer.appendChild(replyEl);
-
-        setTimeout(() => {
-            replyEl.classList.remove('comment-new');
-        }, 2500);
+    // ✅ Swap optimistic element with real one (so delete/like work correctly)
+    if (repliesContainer && optimisticEl) {
+        const replyWithUser = {
+            ...newReply,
+            user: {
+                id: currentUserId,
+                username: newReply.user?.username || commentState.myUsername,
+                avatar: newReply.user?.avatar || commentState.myAvatar,
+            }
+        };
+        const replyEl = buildCommentElement(replyWithUser, parentCommentId, true);
+        repliesContainer.replaceChild(replyEl, optimisticEl);
+        setTimeout(() => replyEl.classList.remove('comment-new'), 2500);
     }
-
-    parentWrap.querySelector('.load-replies-toggle')?.style.setProperty('display', 'none');
 }
 
 // ─── Load reply count ─────────────────────────────────────────────
