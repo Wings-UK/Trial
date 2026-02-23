@@ -3,7 +3,7 @@ body {
   padding: 0;
   background: #000;                /* or dark color / gradient */
   min-height: 100vh;
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
 }
 
 .retail-project {
@@ -149,7 +149,7 @@ body {
   resize: none;
   font-size: 19px;
   line-height: 1.45;
-  font-family: 'M PLUS 1p', system-ui, sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   background: transparent;
   color: #111;
   overflow-y: auto;
@@ -267,7 +267,7 @@ body {
 }
 
 .wallet-title, .notifications-body {
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   text-align: center;
 }
 
@@ -277,7 +277,7 @@ body {
   align-items: center;
   padding: 6px 6px 10px;
   background-color: rgb(248,248, 248);
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
 }
 
 .meta-left {
@@ -630,7 +630,7 @@ body {
   gap: 10px;
 }
 .comment-container {
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
       position: fixed;
       bottom: 0;
       left: 0;
@@ -795,7 +795,7 @@ body {
   top: 0;
   width: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -938,7 +938,7 @@ body {
 }
 
 .time-display {
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   color: white;
   font-size: 12px;
   text-align: right;
@@ -2478,11 +2478,11 @@ body {
   left: 50px;
 }
 .pend {
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   color: rgb(189, 187, 187);
 }
 .pending {
-  font-family: 'M PLUS 1p', sans-serif;
+  font-family: 'Noto Sans JP', roboto;
   font-size: 20px;
   font-weight: bold;
   color: rgb(189, 187, 187);
@@ -3230,7 +3230,7 @@ body {
     top: 12px;
     right: 12px;
     font-size: 48px;
-    font-family: 'M PLUS 1p', sans-serif;
+    font-family: 'Noto Sans JP', roboto;
     color: #667eea;
     opacity: 0.08;
     line-height: 1;
@@ -3566,7 +3566,7 @@ body {
     opacity: 0.06;
     pointer-events: none;
     user-select: none;
-    font-family: 'M PLUS 1p', sans-serif;
+    font-family: 'Noto Sans JP', roboto;
 }
 
 /* Author row inside the card */
