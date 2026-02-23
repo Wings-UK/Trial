@@ -1184,6 +1184,7 @@ async function showDetail(postId, scrollToComments = false) {
             });
         });
     }
+    await trackDetailView(postId);
     await mountCommentSection(postId);
 
     if (scrollToComments) {
@@ -2406,6 +2407,7 @@ function createPostElement(post) {
     }
 
     enablePostLongPress(posterElement, post);
+    observePostForViews(posterElement);
     return posterElement;
 }
 
@@ -2861,6 +2863,7 @@ async function loadMorePosts() {
     } finally {
         isLoading = false;
     }
+    reObserveAllFeedPosts();
 }
 
 function buildMasonryTile(post, ownerAvatar, ownerUsername) {
@@ -4392,3 +4395,268 @@ async function compressImage(file, maxWidthPx = 1200, quality = 0.75) {
         reader.readAsDataURL(file); // ← reads file into base64, works reliably on mobile
     });
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  VIEW TRACKING — X-style (counts each unique user once per post)
+//  
+//  HOW TO INTEGRATE:
+//  1. Run the SQL migration in Supabase SQL Editor (see bottom of file)
+//  2. Paste this entire file's JS into view.js (after your global vars)
+//  3. Follow the 3 inline call instructions marked with ★
+// ═══════════════════════════════════════════════════════════════
+
+
+// ─────────────────────────────────────────────────────────────
+// CORE: Track a view for a post (one per user, server-side dedup)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Records a view for postId by the current user.
+ * Uses an RPC so the increment + dedup happen atomically in Postgres.
+ * Safe to call multiple times — duplicates are ignored.
+ */
+async function recordPostView(postId) {
+    if (!currentUserId || !postId) return;
+
+    try {
+        const { error } = await supabase.rpc('record_post_view', {
+            p_post_id: postId,
+            p_user_id: currentUserId
+        });
+
+        if (error) {
+            // Silently ignore — views are non-critical
+            console.warn('View record failed (non-fatal):', error.message);
+        }
+    } catch (err) {
+        console.warn('recordPostView error (non-fatal):', err.message);
+    }
+}
+
+/**
+ * Fetches the latest view count from Supabase and updates
+ * every matching DOM element for this postId.
+ * Called after recordPostView so both feed + detail stay in sync.
+ */
+async function syncViewCount(postId) {
+    if (!postId) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('posts')
+            .select('views')
+            .eq('id', postId)
+            .single();
+
+        if (error || !data) return;
+
+        const count = data.views ?? 0;
+        const formatted = formatViewCount(count);
+
+        // Update feed cards
+        document.querySelectorAll(`.poster[data-post-id="${postId}"] .twits .viewe`)
+            .forEach(el => { el.textContent = `${formatted} views`; });
+
+        // Update detail page (if open for this post)
+        const detailViewEl = document.querySelector(`#nuba .twits .viewe`);
+        if (detailViewEl) {
+            const detailPostId = document.querySelector('#nuba .cust-name')?.dataset.postId;
+            if (String(detailPostId) === String(postId)) {
+                detailViewEl.textContent = `${formatted} views`;
+            }
+        }
+
+    } catch (err) {
+        console.warn('syncViewCount error (non-fatal):', err.message);
+    }
+}
+
+/**
+ * Formats a number like X does: 1200 → "1.2K", 1500000 → "1.5M"
+ */
+function formatViewCount(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// INTERSECTION OBSERVER — fires when a feed card enters viewport
+// ─────────────────────────────────────────────────────────────
+
+let _viewObserver = null;
+
+function getViewObserver() {
+    if (_viewObserver) return _viewObserver;
+
+    _viewObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+
+            const el    = entry.target;
+            const postId = el.dataset.postId;
+
+            // Only count once per element per session
+            if (el.dataset.viewTracked === 'true') return;
+            el.dataset.viewTracked = 'true';
+
+            // ★ X-style rule: post must be visible for at least 1 second
+            const timer = setTimeout(async () => {
+                if (!document.contains(el)) return; // removed from DOM
+                await recordPostView(postId);
+                await syncViewCount(postId);
+            }, 1000);
+
+            // Cancel if scrolled away before 1s
+            el._viewTimer = timer;
+        });
+
+        entries.forEach(entry => {
+            if (entry.isIntersecting) return;
+            const el = entry.target;
+            if (el._viewTimer) {
+                clearTimeout(el._viewTimer);
+                el._viewTimer = null;
+                // Reset so if they scroll back it tries again
+                // (but server dedup means it won't double-count)
+                el.dataset.viewTracked = 'false';
+            }
+        });
+
+    }, {
+        threshold: 0.6  // 60% of card must be visible — matches X's heuristic
+    });
+
+    return _viewObserver;
+}
+
+/**
+ * ★ CALL THIS after appending a new .poster element to the feed.
+ *
+ * In createPostElement(), add ONE LINE at the very end,
+ * just before `return posterElement;`:
+ *
+ *     observePostForViews(posterElement);
+ *
+ */
+function observePostForViews(posterElement) {
+    if (!posterElement || !posterElement.dataset.postId) return;
+    getViewObserver().observe(posterElement);
+}
+
+/**
+ * ★ Also call this once after loadMorePosts() appends a batch,
+ * to catch any posts that were already in the DOM and visible:
+ *
+ *     reObserveAllFeedPosts();
+ *
+ * (call it inside loadMorePosts, after the posts are appended)
+ */
+function reObserveAllFeedPosts() {
+    document.querySelectorAll('.poster[data-post-id]').forEach(el => {
+        if (el.dataset.viewTracked !== 'true') {
+            getViewObserver().observe(el);
+        }
+    });
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// DETAIL PAGE — record view immediately when post is opened
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * ★ CALL THIS at the end of showDetail(), after nuba.innerHTML is set.
+ * Add ONE line:
+ *
+ *     await trackDetailView(postId);
+ *
+ * This fires when a user taps a post card to open the full detail.
+ * X counts this as a view too.
+ */
+async function trackDetailView(postId) {
+    await recordPostView(postId);
+    await syncViewCount(postId);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE MIGRATION — run this ONCE in your SQL Editor
+// ═══════════════════════════════════════════════════════════════
+/*
+
+-- 1. Make sure views column exists (skip if already there)
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0 NOT NULL;
+
+-- 2. Table to deduplicate views per user
+CREATE TABLE IF NOT EXISTS post_views (
+    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    viewed_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (post_id, user_id)   -- composite PK = automatic dedup
+);
+
+-- 3. Index for fast lookups
+CREATE INDEX IF NOT EXISTS idx_post_views_post_id ON post_views(post_id);
+
+-- 4. RPC that atomically inserts the view row and increments the counter
+CREATE OR REPLACE FUNCTION record_post_view(p_post_id UUID, p_user_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- Try to insert; if duplicate (same user already viewed), do nothing
+    INSERT INTO post_views (post_id, user_id)
+    VALUES (p_post_id, p_user_id)
+    ON CONFLICT (post_id, user_id) DO NOTHING;
+
+    -- Only increment when a NEW row was actually inserted
+    IF FOUND THEN
+        UPDATE posts
+        SET views = COALESCE(views, 0) + 1
+        WHERE id = p_post_id;
+    END IF;
+END;
+$$;
+
+-- 5. RLS: allow any authenticated user to insert their own view
+ALTER TABLE post_views ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert own views" ON post_views
+    FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Views are readable by all" ON post_views
+    FOR SELECT TO authenticated
+    USING (true);
+
+*/
+// ═══════════════════════════════════════════════════════════════
+
+
+// ─────────────────────────────────────────────────────────────
+// SUMMARY OF THE 3 CHANGES TO MAKE IN YOUR EXISTING view.js
+// ─────────────────────────────────────────────────────────────
+/*
+
+CHANGE 1 — createPostElement()
+  At the very end, before `return posterElement;`, add:
+  
+      observePostForViews(posterElement);
+
+
+CHANGE 2 — loadMorePosts() or wherever you append posts to #flyer
+  After the loop that appends posts, add:
+  
+      reObserveAllFeedPosts();
+
+
+CHANGE 3 — showDetail()
+  At the very end, before or after `await mountCommentSection(postId);`, add:
+  
+      await trackDetailView(postId);
+
+*/
+
