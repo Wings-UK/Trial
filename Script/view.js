@@ -4050,33 +4050,8 @@ async function submitReply(parentCommentId, textarea, composer, parentWrap) {
     textarea.style.height = 'auto';
     composer.classList.remove('open');
 
-    // ── Optimistic render BEFORE waiting for Supabase ──
-    const repliesContainer = parentWrap.querySelector(`.replies-container[data-parent-id="${parentCommentId}"]`);
-    if (!repliesContainer) {
-        console.warn('replies container not found for', parentCommentId);
-    }
-
-    const optimisticReply = {
-        id: `optimistic-${Date.now()}`,
-        content,
-        created_at: new Date().toISOString(),
-        like_count: 0,
-        parent_id: parentCommentId,
-        user_id: currentUserId,
-        user: {
-            id: currentUserId,
-            username: commentState.myUsername,
-            avatar: commentState.myAvatar,
-        }
-    };
-
-    let optimisticEl = null;
-    if (repliesContainer) {
-        optimisticEl = buildCommentElement(optimisticReply, parentCommentId, true);
-        repliesContainer.appendChild(optimisticEl);
-        // Hide the "X replies" toggle since we're showing replies now
-        parentWrap.querySelector('.load-replies-toggle')?.style.setProperty('display', 'none');
-    }
+    // ✅ Update count immediately (optimistic)
+    updateCommentCountByDelta(1);
 
     const { data: newReply, error } = await supabase
         .from('comments')
@@ -4096,37 +4071,24 @@ async function submitReply(parentCommentId, textarea, composer, parentWrap) {
 
     if (error) {
         console.error('Reply insert error:', error);
-        // Remove optimistic element on failure
-        optimisticEl?.remove();
+        // ✅ Revert count if it failed
+        updateCommentCountByDelta(-1);
         showToast('Could not post reply');
         return;
     }
 
-    // Increment post comment count
     supabase.rpc('increment_post_comment_count', { pid: commentState.postId, delta: 1 }).catch(console.error);
 
-    // Replace optimistic element with real one (has correct id for likes/delete)
-    if (repliesContainer && optimisticEl) {
-        const replyWithUser = {
-            ...newReply,
-            user: {
-                id: currentUserId,
-                username: newReply.user?.username || commentState.myUsername,
-                avatar: newReply.user?.avatar || commentState.myAvatar,
-            }
-        };
-
-        const replyEl = buildCommentElement(replyWithUser, parentCommentId, true);
-        repliesContainer.replaceChild(replyEl, optimisticEl);
+    const repliesContainer = parentWrap.querySelector(`.replies-container[data-parent-id="${parentCommentId}"]`);
+    if (repliesContainer) {
+        const replyEl = buildCommentElement(newReply, parentCommentId, true);
+        repliesContainer.appendChild(replyEl);
 
         setTimeout(() => {
             replyEl.classList.remove('comment-new');
         }, 2500);
     }
 
-    updateCommentCountByDelta(1);
-
-    // Hide the "X replies" toggle (already expanded)
     parentWrap.querySelector('.load-replies-toggle')?.style.setProperty('display', 'none');
 }
 
