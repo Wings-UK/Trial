@@ -48,7 +48,7 @@
   padding: 8px 20px;
   border-radius: 20px;
   font-size: 13px;
-  font-family: Noto Sans JP;
+  font-family: 'M PLUS 1p', sans-serif;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   border: none;
   cursor: pointer;
@@ -97,7 +97,7 @@
   border-radius: 20px 20px 0 0;
   padding: 15px;
   animation: slideUp .3s ease;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'M PLUS 1p', sans-serif;
 }
 
 @keyframes slideUp {
