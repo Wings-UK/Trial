@@ -1503,10 +1503,16 @@ function goBackFromDetail() {
     // Go back to homepage
     document.getElementById('food')?.classList.add('active');
 
+    // Defer scroll until after the feed has painted
     if (savedScroll) {
-        window.scrollTo(0, parseInt(savedScroll));
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                window.scrollTo(0, parseInt(savedScroll));
+            });
+        });
     }
 }
+
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
