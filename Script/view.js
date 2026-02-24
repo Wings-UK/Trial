@@ -1481,7 +1481,8 @@ function enablePostLongPress(posterElement, post) {
         ) {
             closeActions();
         }
-    }, { capture: true }); // capture phase to catch early
+    }, { capture: true });
+    return { showActions, closeActions };// capture phase to catch early
 }
 
 function goBackFromDetail() {
@@ -2300,7 +2301,6 @@ function createPostElement(post) {
             </div>
             <div class="dots">
                 <img class="dot" src="pics/dots.svg">
-                <div class="tool"><p>More</p></div>
             </div>
         </div>
 
@@ -2411,7 +2411,17 @@ function createPostElement(post) {
         });
     }
 
-    enablePostLongPress(posterElement, post);
+    const { showActions } = enablePostLongPress(posterElement, post);
+
+// Wire the 3-dot button to trigger the same menu
+const dotBtn = posterElement.querySelector('.dots'); // adjust selector to match your actual dot button
+if (dotBtn) {
+    dotBtn.addEventListener('click', e => {
+        e.stopPropagation(); // prevent the post card click from firing
+        e.preventDefault();
+        showActions();
+    });
+}
     observePostForViews(posterElement);
     return posterElement;
 }
