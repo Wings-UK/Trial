@@ -1505,7 +1505,7 @@ img, svg {
   padding-top: 0px;
 }
 .small-photo, .hui {
-  width: 45px;
+  width: 40px;
   object-fit: cover;
   object-position: middle;
   border-radius: 10px;
@@ -2456,8 +2456,8 @@ img, svg {
   right: 25px;
 }
 .small-photo {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
   object-position: top;
   border-radius: 10px;
