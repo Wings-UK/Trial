@@ -7,7 +7,12 @@ let currentUserId = null;
 // ───────────────────────────────────────────────
 let unreadNotificationCount = 0;
 let notificationChannel = null;   // will hold the realtime subscription
-
+// Prevent browser context menu on long-press of images/SVGs
+document.addEventListener('contextmenu', e => {
+    if (e.target.closest('img, svg, .poster')) {
+        e.preventDefault();
+    }
+});
 // Get logged-in user ID once when page loads
 document.addEventListener('DOMContentLoaded', async () => {
     try {
