@@ -889,7 +889,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ───────────────────────────────────────────────────────────────
 
 async function showDetail(postId, scrollToComments = false) {
-  console.log('Saving scroll:', window.scrollY, 'food scrollTop:', document.getElementById('food')?.scrollTop);
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
@@ -930,7 +929,7 @@ async function showDetail(postId, scrollToComments = false) {
         image:        postData.image          || null,
         video:        postData.video          || null,
         timestamp:    formatTimeSince(postData.created_at),
-        date: new Date(postData.created_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        date:         new Date(postData.created_at).toLocaleString(),
         likeCount:    postData.like_count     || 0,
         commentCount: postData.comment_count  || 0,
         repostCount:  postData.repost_count   || 0,
@@ -1199,6 +1198,8 @@ async function showDetail(postId, scrollToComments = false) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
+    } else {
+        window.scrollTo(0, 0);
     }
 }
 
@@ -1488,16 +1489,24 @@ posterElement.addEventListener('click', e => {
 
 function goBackFromDetail() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
-    document.getElementById('meal').classList.remove('active');
-    document.getElementById('food').classList.add('active');
+
+    // Deactivate detail page
+    document.getElementById('meal')?.classList.remove('active');
+
+    // 🔥 Clear detail content
+    const nuba = document.getElementById('nuba');
+    if (nuba) nuba.innerHTML = '';
+
+    // Hide sticky detail header
+    document.querySelector('.detail-content')?.classList.remove('active');
+
+    // Go back to homepage
+    document.getElementById('food')?.classList.add('active');
+
     if (savedScroll) {
-        const target = parseInt(savedScroll);
-        window.scrollTo(0, target);
-        // Insurance: re-apply after DOM settles
-        setTimeout(() => window.scrollTo(0, target), 50);
+        window.scrollTo(0, parseInt(savedScroll));
     }
 }
-
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
