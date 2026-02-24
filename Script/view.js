@@ -929,7 +929,7 @@ async function showDetail(postId, scrollToComments = false) {
         image:        postData.image          || null,
         video:        postData.video          || null,
         timestamp:    formatTimeSince(postData.created_at),
-        date:         new Date(postData.created_at).toLocaleString(),
+        date: new Date(postData.created_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         likeCount:    postData.like_count     || 0,
         commentCount: postData.comment_count  || 0,
         repostCount:  postData.repost_count   || 0,
