@@ -1488,7 +1488,7 @@ posterElement.addEventListener('click', e => {
 }
 
 function goBackFromDetail() {
-    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
+    const savedScroll = parseInt(sessionStorage.getItem('scrollPosition_feed') || '0');
 
     // Deactivate detail page
     document.getElementById('meal')?.classList.remove('active');
@@ -1500,17 +1500,19 @@ function goBackFromDetail() {
     // Hide sticky detail header
     document.querySelector('.detail-content')?.classList.remove('active');
 
-    // Go back to homepage
+    // Pre-position the scroll BEFORE making feed visible
+    document.documentElement.style.scrollBehavior = 'auto';
+    document.body.style.scrollBehavior = 'auto';
+    window.scrollTo(0, savedScroll);
+
+    // Now show the feed — it paints already at the right position
     document.getElementById('food')?.classList.add('active');
 
-    // Defer scroll until after the feed has painted
-    if (savedScroll) {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                window.scrollTo(0, parseInt(savedScroll));
-            });
-        });
-    }
+    // Restore scroll behavior
+    requestAnimationFrame(() => {
+        document.documentElement.style.scrollBehavior = '';
+        document.body.style.scrollBehavior = '';
+    });
 }
 
 async function uploadAvatar(file) {
