@@ -889,6 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ───────────────────────────────────────────────────────────────
 
 async function showDetail(postId, scrollToComments = false) {
+  console.log('Saving scroll:', window.scrollY, 'food scrollTop:', document.getElementById('food')?.scrollTop);
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
