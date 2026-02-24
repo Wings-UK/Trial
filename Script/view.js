@@ -1463,14 +1463,16 @@ function enablePostLongPress(posterElement, post) {
     posterElement.addEventListener('mouseup', () => clearTimeout(mouseDownTime));
     posterElement.addEventListener('mouseleave', () => clearTimeout(mouseDownTime));
 
-    // ─── CLICK HANDLING WHEN MENU IS OPEN ───
-    posterElement.addEventListener('click', e => {
-        if (posterElement.dataset.blockNavigation === 'true') {
-            e.stopPropagation();
-            e.preventDefault();
-            closeActions();
-        }
-    });
+// ─── CLICK HANDLING WHEN MENU IS OPEN ───
+posterElement.addEventListener('click', e => {
+    if (posterElement.dataset.blockNavigation === 'true') {
+        // If the click came from the dots button, let the dot's own handler deal with it
+        if (e.target.closest('.dots')) return;
+        e.stopPropagation();
+        e.preventDefault();
+        closeActions();
+    }
+});
 
     // ─── CLOSE WHEN TAPPING OUTSIDE ───
     document.addEventListener('touchstart', e => {
@@ -1482,7 +1484,7 @@ function enablePostLongPress(posterElement, post) {
             closeActions();
         }
     }, { capture: true });
-    return { showActions, closeActions };// capture phase to catch early
+    const { showActions, closeActions, isActive } = enablePostLongPress(posterElement, post);
 }
 
 function goBackFromDetail() {
@@ -2414,12 +2416,16 @@ function createPostElement(post) {
     const { showActions } = enablePostLongPress(posterElement, post);
 
 // Wire the 3-dot button to trigger the same menu
-const dotBtn = posterElement.querySelector('.dots'); // adjust selector to match your actual dot button
+const dotBtn = posterElement.querySelector('.dots');
 if (dotBtn) {
     dotBtn.addEventListener('click', e => {
-        e.stopPropagation(); // prevent the post card click from firing
+        e.stopPropagation();
         e.preventDefault();
-        showActions();
+        if (isActive()) {
+            closeActions(); // second tap on dots = close
+        } else {
+            showActions(); // first tap = open
+        }
     });
 }
     observePostForViews(posterElement);
