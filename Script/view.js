@@ -1198,8 +1198,6 @@ async function showDetail(postId, scrollToComments = false) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
-    } else {
-        window.scrollTo(0, 0);
     }
 }
 
