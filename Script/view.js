@@ -1484,7 +1484,7 @@ posterElement.addEventListener('click', e => {
             closeActions();
         }
     }, { capture: true });
-    const { showActions, closeActions, isActive } = enablePostLongPress(posterElement, post);
+    return { showActions, closeActions, isActive }; // ← ADD THIS
 }
 
 function goBackFromDetail() {
@@ -2413,7 +2413,7 @@ function createPostElement(post) {
         });
     }
 
-    const { showActions } = enablePostLongPress(posterElement, post);
+    const { showActions, closeActions, isActive } = enablePostLongPress(posterElement, post);
 
 // Wire the 3-dot button to trigger the same menu
 const dotBtn = posterElement.querySelector('.dots');
