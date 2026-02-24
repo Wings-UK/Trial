@@ -1490,7 +1490,12 @@ function goBackFromDetail() {
     const savedScroll = sessionStorage.getItem('scrollPosition_feed');
     document.getElementById('meal').classList.remove('active');
     document.getElementById('food').classList.add('active');
-    if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
+    if (savedScroll) {
+        const target = parseInt(savedScroll);
+        window.scrollTo(0, target);
+        // Insurance: re-apply after DOM settles
+        setTimeout(() => window.scrollTo(0, target), 50);
+    }
 }
 
 async function uploadAvatar(file) {
