@@ -37,42 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-const _savedScroll = {};
 
-function _leavePage() {
-    const active = document.querySelector('.page.active');
-    if (active) _savedScroll[active.id] = window.scrollY;
-}
-
-function _enterPage(id) {
-    // 1. Deactivate all pages first
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-
-    const page = document.getElementById(id);
-    if (!page) return;
-
-    // 2. Activate new page — but keep it invisible during scroll setup
-    page.classList.add('active');
-    page.style.visibility = 'hidden';           // ← key change
-    page.style.position   = 'absolute';         // prevent layout shift affecting body
-    page.style.width      = '100%';
-    page.style.top        = '0';
-    page.style.left       = '0';
-
-    // 3. Restore scroll position **before browser paints**
-    const savedY = _savedScroll[id] ?? 0;
-    window.scrollTo({ top: savedY, behavior: 'instant' });
-
-    // 4. Let browser paint once with correct scroll → then show content
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            page.style.visibility = 'visible';
-            page.style.position   = '';           // restore normal flow
-            page.style.top        = '';
-            page.style.left       = '';
-        });
-    });
-}
 // ───────────────────────────────────────────────
 // REAL LIKE HELPERS – persistent across sessions
 // ───────────────────────────────────────────────
@@ -241,7 +206,8 @@ function addSkeletonStyles() {
     document.head.appendChild(style);
 }
 
-
+// Keep these important parts
+history.scrollRestoration = "manual";
 
 let loadedPostIds = new Set();
 let isLoading = false;
@@ -533,116 +499,141 @@ async function fetchUserProfile(userId) {
 }
 
 async function showProfile(userId) {
-    _leavePage();
-const profileSection = document.getElementById('profile');
-if (!profileSection) return;
-_enterPage('profile');
+    // Save scroll position
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
-    const ireti = document.getElementById('ireti');
-    if (!ireti) return;
+    // Switch page  
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));  
+    const profileSection = document.getElementById('profile');  
+    if (!profileSection) return;  
+    profileSection.classList.add('active');  
 
-    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';
+    const ireti = document.getElementById('ireti');  
+    if (!ireti) return;  
 
-    const userData = await fetchUserProfile(userId);
-    if (!userData) {
-        ireti.innerHTML = '<p>User not found</p>';
-        return;
-    }
+    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';  
 
-    ireti.innerHTML = `
+    const userData = await fetchUserProfile(userId);  
+    if (!userData) {  
+        ireti.innerHTML = '<p>User not found</p>';  
+        return;  
+    }  
+
+    ireti.innerHTML = `  
     <header class="heado file">
         <div class="heador" style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 16px;">
+            
+            <!-- Left: Back -->
             <div class="exp-order" onclick="goBack()">
                 <img class="flat" src="pics/angle.svg">
+                
             </div>
+
+            <!-- Right: Dots (more options) -->
             <div class="profile-header-right">
                 <img class="dot" src="pics/dots.svg" style="width:18px; height:18px; cursor:pointer;">
             </div>
+            
         </div>
     </header>
-        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">
-        <div>
-            <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">
-        </div>
-        <div class="klr">
-            <div class="drun">
-                <div><p class="spe">${userData.username}</p></div>
-                <div><img class="verify" src="pics/very.svg"></div>
-            </div>
-            <div class="druu">
-                <div><p class="rkl">${userData.location || 'No location'}</p></div>
-            </div>
-            <div class="nin">
-                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>
-            </div>
-            <div class="cha">
-                <p>${userData.bio || 'No bio yet'}</p>
-            </div>
-            <div class="man">
-                <div class="vre"><button class="aasw">Follow</button></div>
-                <div class="vre"><button class="aasw">1 : 1</button></div>
-            </div>
-        </div>
-        <div class="ewe">
-            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
-            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
-            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
-        </div>
-        <div class="mansonro">
-            <div class="masonri">
-                <div class="column left-column"></div>
-                <div class="column right-column"></div>
-            </div>
-        </div>
-    `;
+        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">  
+        <div>  
+            <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">  
+        </div>  
+        <div class="klr">  
+            <div class="drun">  
+                <div>  
+                    <p class="spe">${userData.username}</p>  
+                </div>  
+                <div>  
+                    <img class="verify" src="pics/very.svg">  
+                </div>  
+            </div>  
+            <div class="druu">  
+                <div>  
+                    <p class="rkl">${userData.location || 'No location'}</p>  
+                </div>  
+            </div>  
+            <div class="nin">  
+                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>  
+            </div>  
+            <div class="cha">  
+                <p>${userData.bio || 'No bio yet'}</p>  
+            </div>  
+            <div class="man">  
+                <div class="vre">  
+                    <button class="aasw">Follow</button>  
+                </div>  
+                <div class="vre">  
+                    <button class="aasw">1 : 1</button>  
+                </div>  
+            </div>  
+        </div>  
+        <div class="ewe">  
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
+        </div>  
+        <div class="mansonro">  
+            <div class="masonri">  
+                <div class="column left-column"></div>  
+                <div class="column right-column"></div>  
+            </div>  
+        </div>  
+    `;  
 
-    const leftColumn = document.querySelector('.left-column');
-    const rightColumn = document.querySelector('.right-column');
-    leftColumn.innerHTML = '';
-    rightColumn.innerHTML = '';
+    const leftColumn = document.querySelector('.left-column');  
+    const rightColumn = document.querySelector('.right-column');  
+    leftColumn.innerHTML = '';  
+    rightColumn.innerHTML = '';  
 
-    if (!userData.posts || userData.posts.length === 0) {
-        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
-    } else {
+    if (!userData.posts || userData.posts.length === 0) {  
+        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';  
+    } else {  
         userData.posts.forEach((post, index) => {
             const tile = buildMasonryTile(post, userData.avatar, userData.username);
             if (index % 2 === 0) leftColumn.appendChild(tile);
             else                 rightColumn.appendChild(tile);
         });
-    }
+    }  
 
     initializeMasonryHeartReactions();
-    window.scrollTo(0, 0); // profile always starts at top
+    window.scrollTo(0, 0);
 }
 
 // Paste this exactly as-is — add at the bottom
 function goBack() {
-    _leavePage();
-    _enterPage('food');
+    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
+    document.getElementById('profile').classList.remove('active');
+    document.getElementById('food').classList.add('active');
+    if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
 }
 
 // Quick switch to home (used from bottom nav)
 function switchToHome() {
-    _leavePage();
-    _enterPage('food');
-    document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('food').classList.add('active');
+  
+  // Optional: reset bottom nav active state
+  document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
+  // You can add .active to home icon if you want visual feedback
 }
-
-
 
 // Go back from notifications → home
 function goBackToHome() {
-    switchToHome();
+  switchToHome();
 }
 
 // Switch to notifications
 async function switchToNotifications() {
-    _leavePage();
-_enterPage('notifications');
-
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('notifications').classList.add('active');
+    
+    // Reset unread count when user opens the tab
     unreadNotificationCount = 0;
     updateNotificationBadge();
 
+    // Mark all notifications as read (optional but strongly recommended)
     if (currentUserId) {
         const { error } = await supabase
             .from('notifications')
@@ -650,20 +641,30 @@ _enterPage('notifications');
             .eq('user_id', currentUserId)
             .eq('read', false);
 
-        if (error) console.error("Failed to mark notifications as read:", error);
+        if (error) {
+            console.error("Failed to mark notifications as read:", error);
+        } else {
+            console.log("Marked all notifications as read");
+        }
     }
-
+    
+    // Highlight bell in bottom nav
     document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
-
+    
     renderNotifications();
+    window.scrollTo(0, 0);
 }
 
 async function showMyProfile() {
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
-    _leavePage();
-const profileSection = document.getElementById('profile');
-if (!profileSection) { console.error('Profile section (#profile) not found'); return; }
-_enterPage('profile');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const profileSection = document.getElementById('profile');
+    if (!profileSection) {
+        console.error('Profile section (#profile) not found');
+        return;
+    }
+    profileSection.classList.add('active');
 
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
@@ -888,11 +889,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ───────────────────────────────────────────────────────────────
 
 async function showDetail(postId, scrollToComments = false) {
-    // Switch pages — #food stays in DOM, browser keeps its scroll
-    _leavePage();
+    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
     if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
-    _enterPage('meal');
+    detailPage.classList.add('active');
 
     const nuba = document.getElementById('nuba');
     if (!nuba) { console.error('nuba container not found'); return; }
@@ -1119,6 +1120,7 @@ async function showDetail(postId, scrollToComments = false) {
             </div>
             <div class="actions">
                 <div class="dil">
+                    <!-- KEY FIX: data-post-id="${post.id}" so updateCurrentUserRepostButtons finds it -->
                     <div class="repost-btn sted buyt"
                          data-post-id="${post.id}"
                          data-reposted="false">
@@ -1152,6 +1154,8 @@ async function showDetail(postId, scrollToComments = false) {
     }
 
     // ── Detail repost button ──
+    // KEY FIX: targets post.id (not repostTargetId / original.id)
+    // This post's own button reflects whether THIS post was reposted by you.
     const detailRepostBtn = nuba.querySelector('.repost-btn');
     if (detailRepostBtn) {
         const targetPostId = post.id;
@@ -1185,21 +1189,18 @@ async function showDetail(postId, scrollToComments = false) {
             });
         });
     }
-
-    // ── Scroll detail to top BEFORE async calls that shift layout ──
-    
-
     await trackDetailView(postId);
-  //  await mountCommentSection(postId);
+    await mountCommentSection(postId);
 
-    // ── Scroll to comments AFTER section is mounted ──
-//    if (scrollToComments) {
- /*       const commentsHeader = document.querySelector('.comments-header');
- /*       if (commentsHeader) {
+    if (scrollToComments) {
+        const commentsHeader = document.querySelector('.comments-header');
+        if (commentsHeader) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
-    } */
+    } else {
+        window.scrollTo(0, 0);
+    }
 }
 
 
@@ -1487,30 +1488,25 @@ posterElement.addEventListener('click', e => {
 }
 
 function goBackFromDetail() {
-    _leavePage();
+    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
 
+    // Deactivate detail page
     document.getElementById('meal')?.classList.remove('active');
-    document.querySelector('.detail-content')?.classList.remove('active');
 
+    // 🔥 Clear detail content
     const nuba = document.getElementById('nuba');
     if (nuba) nuba.innerHTML = '';
 
-    const food = document.getElementById('food');
-    if (!food) return;
+    // Hide sticky detail header
+    document.querySelector('.detail-content')?.classList.remove('active');
 
-    // Make it present in layout but invisible — no flash
-    food.style.opacity = '0';
-    food.classList.add('active');
+    // Go back to homepage
+    document.getElementById('food')?.classList.add('active');
 
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: _savedScroll['food'] ?? 0, behavior: 'instant' });
-            // Now reveal — scroll is already correct, no flash
-            food.style.opacity = '1';
-        });
-    });
+    if (savedScroll) {
+        window.scrollTo(0, parseInt(savedScroll));
+    }
 }
-
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
