@@ -1190,16 +1190,16 @@ async function showDetail(postId, scrollToComments = false) {
     
 
     await trackDetailView(postId);
-    await mountCommentSection(postId);
+  //  await mountCommentSection(postId);
 
     // ── Scroll to comments AFTER section is mounted ──
-    if (scrollToComments) {
-        const commentsHeader = document.querySelector('.comments-header');
-        if (commentsHeader) {
+//    if (scrollToComments) {
+ /*       const commentsHeader = document.querySelector('.comments-header');
+ /*       if (commentsHeader) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
-    }
+    } */
 }
 
 
