@@ -4711,6 +4711,6 @@ function restoreFeedScrollPosition() {
             window.scrollTo(0, parseInt(saved, 10));
             // Optional: clear after restore so next fresh visit starts from top
             // sessionStorage.removeItem('scrollPosition_feed');
-        }, 60);
+        }, 180);
     }
 }
