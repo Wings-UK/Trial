@@ -499,6 +499,7 @@ async function fetchUserProfile(userId) {
 }
 
 async function showProfile(userId) {
+  saveFeedScrollPosition(); 
     // Save scroll position
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
@@ -607,6 +608,7 @@ function goBack() {
     document.getElementById('profile').classList.remove('active');
     document.getElementById('food').classList.add('active');
     if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
+    restoreFeedScrollPosition();
 }
 
 // Quick switch to home (used from bottom nav)
@@ -616,12 +618,21 @@ function switchToHome() {
   
   // Optional: reset bottom nav active state
   document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
+  restoreFeedScrollPosition();
   // You can add .active to home icon if you want visual feedback
 }
+
+// Call this whenever #food becomes active
+document.addEventListener('page-changed', (e) => {   // or your own event/custom logic
+    if (e.detail?.pageId === 'food' || document.getElementById('food').classList.contains('active')) {
+        restoreFeedScrollPosition();
+    }
+});
 
 // Go back from notifications → home
 function goBackToHome() {
   switchToHome();
+  restoreFeedScrollPosition();
 }
 
 // Switch to notifications
@@ -656,6 +667,7 @@ async function switchToNotifications() {
 }
 
 async function showMyProfile() {
+  saveFeedScrollPosition(); 
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -889,6 +901,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ───────────────────────────────────────────────────────────────
 
 async function showDetail(postId, scrollToComments = false) {
+  saveFeedScrollPosition(); 
     sessionStorage.setItem('scrollPosition_feed', window.scrollY);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('meal');
@@ -1506,6 +1519,7 @@ function goBackFromDetail() {
     if (savedScroll) {
         window.scrollTo(0, parseInt(savedScroll));
     }
+    restoreFeedScrollPosition();
 }
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -4680,3 +4694,23 @@ CHANGE 3 — showDetail()
       await trackDetailView(postId);
 
 */
+
+// Save current feed scroll position
+function saveFeedScrollPosition() {
+    if (document.getElementById('food')?.classList.contains('active')) {
+        sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+    }
+}
+
+// Restore feed scroll position (call when feed becomes active)
+function restoreFeedScrollPosition() {
+    const saved = sessionStorage.getItem('scrollPosition_feed');
+    if (saved) {
+        // Small delay helps on mobile when layout is still shifting
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(saved, 10));
+            // Optional: clear after restore so next fresh visit starts from top
+            // sessionStorage.removeItem('scrollPosition_feed');
+        }, 60);
+    }
+}
