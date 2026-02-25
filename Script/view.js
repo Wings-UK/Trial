@@ -1367,6 +1367,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // LONG PRESS / THREE-DOTS MENU – improved 2025 style
 // ───────────────────────────────────────────────
 
+// ───────────────────────────────────────────────
+// LONG PRESS / THREE-DOTS MENU – Fixed & Stable 2026
+// ───────────────────────────────────────────────
+
 let activeActionBar = null;
 
 function enablePostLongPress(posterElement, post) {
@@ -1375,19 +1379,24 @@ function enablePostLongPress(posterElement, post) {
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
     let pressTimer = null;
+    let mouseTimer = null;
     let menuIsOpen = false;
 
-    // ── Close any open menu ────────────────────────────────
+    // ───────────────────────────────────────────────
+    // CLOSE MENU (SAFE)
+    // ───────────────────────────────────────────────
     function closeMenu() {
         if (!menuIsOpen) return;
 
         const bar = posterElement.querySelector('.post-action-bar');
         if (bar) {
-            bar.style.animation = 'slideOutFromBottom 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+            bar.style.animation =
+                'slideOutFromBottom 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+
             setTimeout(() => {
                 bar.remove();
                 posterElement.classList.remove('long-press-active');
-            }, 240);
+            }, 220);
         }
 
         menuIsOpen = false;
@@ -1396,14 +1405,32 @@ function enablePostLongPress(posterElement, post) {
         if (activeActionBar === posterElement) {
             activeActionBar = null;
         }
+
+        document.removeEventListener('touchstart', outsideHandler, true);
     }
 
-    // ── Show action menu with slide-up animation ───────────
-    function showMenu() {
-        // Close any other open menu first
+    // ───────────────────────────────────────────────
+    // CLOSE ANY OTHER OPEN MENU
+    // ───────────────────────────────────────────────
+    function closePreviousMenu() {
         if (activeActionBar && activeActionBar !== posterElement) {
-            closeMenu();
+            const oldBar =
+                activeActionBar.querySelector('.post-action-bar');
+            if (oldBar) oldBar.remove();
+
+            activeActionBar.classList.remove('long-press-active');
+            activeActionBar.dataset.blockNavigation = 'false';
+            activeActionBar = null;
         }
+    }
+
+    // ───────────────────────────────────────────────
+    // SHOW MENU
+    // ───────────────────────────────────────────────
+    function showMenu() {
+        if (menuIsOpen) return;
+
+        closePreviousMenu();
 
         activeActionBar = posterElement;
         menuIsOpen = true;
@@ -1411,11 +1438,9 @@ function enablePostLongPress(posterElement, post) {
         posterElement.classList.add('long-press-active');
         posterElement.dataset.blockNavigation = 'true';
 
-        // Create the floating action bar
         const bar = document.createElement('div');
         bar.className = 'post-action-bar';
 
-        // Different buttons depending on ownership
         if (isOwnPost) {
             bar.innerHTML = `
                 <button class="action-btn edit"   data-post-id="${post.id}">Edit</button>
@@ -1430,64 +1455,108 @@ function enablePostLongPress(posterElement, post) {
 
         posterElement.appendChild(bar);
 
-        // Trigger slide-up animation
-        bar.style.animation = 'slideUpFromBottom 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both';
+        bar.style.animation =
+            'slideUpFromBottom 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both';
 
-        // ── Action handlers ─────────────────────────────────────
+        // ───────────────────────────────────────────────
+        // BUTTON ACTIONS
+        // ───────────────────────────────────────────────
         bar.querySelectorAll('.action-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const action = btn.classList[1]; // edit / delete / dislike / report
+
+                const action = btn.classList[1];
 
                 if (action === 'delete') {
                     if (confirm("Delete this post? This cannot be undone.")) {
                         await deletePost(post.id, posterElement);
                     }
-                } else if (action === 'edit') {
-                    console.log("Edit post clicked → should open edit modal", post.id);
-                    // →→→ You can call your edit modal function here ←←←
-                } else if (action === 'dislike') {
-                    console.log("Dislike action on post", post.id);
-                    // Future: add dislike logic
-                } else if (action === 'report') {
-                    console.log("Report action on post", post.id);
-                    // Future: open report modal / flow
+                }
+
+                if (action === 'edit') {
+                    console.log("Edit post clicked", post.id);
+                    // call your edit modal here
+                }
+
+                if (action === 'dislike') {
+                    console.log("Dislike post", post.id);
+                }
+
+                if (action === 'report') {
+                    console.log("Report post", post.id);
                 }
 
                 closeMenu();
             });
         });
 
-        if (navigator.vibrate) navigator.vibrate([0, 30, 50, 30]);
+        // Haptic feedback
+        if (navigator.vibrate) {
+            navigator.vibrate([0, 30, 40, 30]);
+        }
+
+        document.addEventListener('touchstart', outsideHandler, true);
     }
 
-    // ── Long press detection (touch) ─────────────────────────
-    posterElement.addEventListener('touchstart', e => {
+    // ───────────────────────────────────────────────
+    // OUTSIDE TAP HANDLER
+    // ───────────────────────────────────────────────
+    function outsideHandler(e) {
+        if (
+            menuIsOpen &&
+            activeActionBar === posterElement &&
+            !posterElement.contains(e.target)
+        ) {
+            closeMenu();
+        }
+    }
+
+    // ───────────────────────────────────────────────
+    // TOUCH LONG PRESS
+    // ───────────────────────────────────────────────
+    posterElement.addEventListener('touchstart', (e) => {
         if (e.touches.length > 1) return;
         if (menuIsOpen) return;
 
-        pressTimer = setTimeout(showMenu, 480); // slightly longer than before → feels more intentional
+        pressTimer = setTimeout(showMenu, 500);
     });
 
-    posterElement.addEventListener('touchmove', () => clearTimeout(pressTimer));
-    posterElement.addEventListener('touchend',   () => clearTimeout(pressTimer));
-    posterElement.addEventListener('touchcancel',() => clearTimeout(pressTimer));
+    posterElement.addEventListener('touchmove', () => {
+        clearTimeout(pressTimer);
+    });
 
-    // ── Also support mouse long-press (desktop testing) ──────
-    let mouseTimer;
-    posterElement.addEventListener('mousedown', e => {
+    posterElement.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
+    });
+
+    posterElement.addEventListener('touchcancel', () => {
+        clearTimeout(pressTimer);
+    });
+
+    // ───────────────────────────────────────────────
+    // MOUSE LONG PRESS (DESKTOP)
+    // ───────────────────────────────────────────────
+    posterElement.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
-        mouseTimer = setTimeout(showMenu, 580);
+        mouseTimer = setTimeout(showMenu, 600);
     });
 
-    posterElement.addEventListener('mouseup',   () => clearTimeout(mouseTimer));
-    posterElement.addEventListener('mouseleave',() => clearTimeout(mouseTimer));
+    posterElement.addEventListener('mouseup', () => {
+        clearTimeout(mouseTimer);
+    });
 
-    // ── Click outside / tap again to close ───────────────────
-    posterElement.addEventListener('click', e => {
-        if (posterElement.dataset.blockNavigation !== 'true') return;
+    posterElement.addEventListener('mouseleave', () => {
+        clearTimeout(mouseTimer);
+    });
 
-        // Allow dots to open/close independently
+    // ───────────────────────────────────────────────
+    // CLICK HANDLING (SAFE FOR SPA)
+    // ───────────────────────────────────────────────
+    posterElement.addEventListener('click', (e) => {
+        if (posterElement.dataset.blockNavigation === 'true') {
+            e.preventDefault();
+        }
+
         if (e.target.closest('.dots')) {
             if (menuIsOpen) {
                 closeMenu();
@@ -1497,25 +1566,94 @@ function enablePostLongPress(posterElement, post) {
             return;
         }
 
-        // Normal post click → close menu if open
-        closeMenu();
-    });
-
-    // Global tap-outside handler
-    const outsideHandler = (e) => {
-        if (menuIsOpen && activeActionBar === posterElement && !posterElement.contains(e.target)) {
+        if (menuIsOpen) {
             closeMenu();
         }
-    };
+    });
 
-    document.addEventListener('touchstart', outsideHandler, { capture: true });
-
-    // Cleanup when element is removed (optional but good practice)
+    // ───────────────────────────────────────────────
+    // CLEANUP (FOR VIRTUAL RENDERING)
+    // ───────────────────────────────────────────────
     posterElement._cleanupLongPress = () => {
-        document.removeEventListener('touchstart', outsideHandler, { capture: true });
+        document.removeEventListener('touchstart', outsideHandler, true);
+        clearTimeout(pressTimer);
+        clearTimeout(mouseTimer);
     };
 }
 
+
+// ───────────────────────────────────────────────
+// ACTION MENU STYLES (Inject Once)
+// ───────────────────────────────────────────────
+function addActionMenuStyles() {
+    if (document.getElementById('action-menu-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'action-menu-styles';
+
+    style.textContent = `
+        .post-action-bar {
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28, 28, 30, 0.94);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            padding: 6px 8px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .long-press-active .post-action-bar {
+            pointer-events: auto;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.18s;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .action-btn.delete,
+        .action-btn.report {
+            color: #ff3b30;
+        }
+
+        .action-btn.edit {
+            color: #0a84ff;
+        }
+
+        @keyframes slideUpFromBottom {
+            0%   { transform: translateX(-50%) translateY(40px);  opacity: 0; scale: 0.92; }
+            60%  { transform: translateX(-50%) translateY(-6px);  opacity: 1;  scale: 1.04; }
+            100% { transform: translateX(-50%) translateY(0);     opacity: 1;  scale: 1;   }
+        }
+
+        @keyframes slideOutFromBottom {
+            0%   { transform: translateX(-50%) translateY(0);     opacity: 1;  scale: 1;   }
+            100% { transform: translateX(-50%) translateY(34px);  opacity: 0;  scale: 0.94; }
+        }
+    `;
+
+    document.head.appendChild(style);
+}
 // ───────────────────────────────────────────────
 // Required CSS animations (add this once — e.g. in addRepostStyles() or new function)
 // ───────────────────────────────────────────────
