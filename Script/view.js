@@ -45,11 +45,32 @@ function _leavePage() {
 }
 
 function _enterPage(id) {
+    // 1. Deactivate all pages first
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
+
+    const page = document.getElementById(id);
+    if (!page) return;
+
+    // 2. Activate new page — but keep it invisible during scroll setup
+    page.classList.add('active');
+    page.style.visibility = 'hidden';           // ← key change
+    page.style.position   = 'absolute';         // prevent layout shift affecting body
+    page.style.width      = '100%';
+    page.style.top        = '0';
+    page.style.left       = '0';
+
+    // 3. Restore scroll position **before browser paints**
+    const savedY = _savedScroll[id] ?? 0;
+    window.scrollTo({ top: savedY, behavior: 'instant' });
+
+    // 4. Let browser paint once with correct scroll → then show content
     requestAnimationFrame(() => {
-        window.scrollTo({ top: _savedScroll[id] ?? 0, behavior: 'instant' });
+        requestAnimationFrame(() => {
+            page.style.visibility = 'visible';
+            page.style.position   = '';           // restore normal flow
+            page.style.top        = '';
+            page.style.left       = '';
+        });
     });
 }
 // ───────────────────────────────────────────────
