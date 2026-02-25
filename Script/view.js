@@ -869,9 +869,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function showDetail(postId, scrollToComments = false) {
     // Switch pages — #food stays in DOM, browser keeps its scroll
     _leavePage();
-const detailPage = document.getElementById('meal');
-if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
-_enterPage('meal');
+    const detailPage = document.getElementById('meal');
+    if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
+    _enterPage('meal');
 
     const nuba = document.getElementById('nuba');
     if (!nuba) { console.error('nuba container not found'); return; }
@@ -1165,18 +1165,21 @@ _enterPage('meal');
         });
     }
 
+    // ── Scroll detail to top BEFORE async calls that shift layout ──
+    if (!scrollToComments) {
+        window.scrollTo(0, 0);
+    }
+
     await trackDetailView(postId);
     await mountCommentSection(postId);
 
-    // Scroll detail page to top (or to comments if requested)
+    // ── Scroll to comments AFTER section is mounted ──
     if (scrollToComments) {
         const commentsHeader = document.querySelector('.comments-header');
         if (commentsHeader) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
-    } else {
-        window.scrollTo(0, 0);
     }
 }
 
@@ -1465,16 +1468,21 @@ posterElement.addEventListener('click', e => {
 }
 
 function goBackFromDetail() {
-    // Deactivate detail
+    _leavePage();
+
     document.getElementById('meal')?.classList.remove('active');
     document.querySelector('.detail-content')?.classList.remove('active');
 
-    // Clear detail content so it's fresh next time
     const nuba = document.getElementById('nuba');
     if (nuba) nuba.innerHTML = '';
 
-    // Reactivate feed — browser restores its scroll position automatically
     document.getElementById('food')?.classList.add('active');
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: _savedScroll['food'] ?? 0, behavior: 'instant' });
+        });
+    });
 }
 
 async function uploadAvatar(file) {
