@@ -37,7 +37,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+const _savedScroll = {};
 
+function _leavePage() {
+    const active = document.querySelector('.page.active');
+    if (active) _savedScroll[active.id] = window.scrollY;
+}
+
+function _enterPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    requestAnimationFrame(() => {
+        window.scrollTo({ top: _savedScroll[id] ?? 0, behavior: 'instant' });
+    });
+}
 // ───────────────────────────────────────────────
 // REAL LIKE HELPERS – persistent across sessions
 // ───────────────────────────────────────────────
@@ -498,10 +512,10 @@ async function fetchUserProfile(userId) {
 }
 
 async function showProfile(userId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const profileSection = document.getElementById('profile');
-    if (!profileSection) return;
-    profileSection.classList.add('active');
+    _leavePage();
+const profileSection = document.getElementById('profile');
+if (!profileSection) return;
+_enterPage('profile');
 
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
@@ -582,17 +596,15 @@ async function showProfile(userId) {
 
 // Paste this exactly as-is — add at the bottom
 function goBack() {
-    document.getElementById('profile')?.classList.remove('active');
-    document.getElementById('food')?.classList.add('active');
-    // No scrollTo needed — browser preserves feed scroll automatically
+    _leavePage();
+    _enterPage('food');
 }
 
 // Quick switch to home (used from bottom nav)
 function switchToHome() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('food')?.classList.add('active');
+    _leavePage();
+    _enterPage('food');
     document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
-    // No scrollTo needed
 }
 
 
@@ -604,8 +616,8 @@ function goBackToHome() {
 
 // Switch to notifications
 async function switchToNotifications() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('notifications')?.classList.add('active');
+    _leavePage();
+_enterPage('notifications');
 
     unreadNotificationCount = 0;
     updateNotificationBadge();
@@ -623,18 +635,14 @@ async function switchToNotifications() {
     document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
 
     renderNotifications();
-    window.scrollTo(0, 0);
 }
 
 async function showMyProfile() {
 
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const profileSection = document.getElementById('profile');
-    if (!profileSection) {
-        console.error('Profile section (#profile) not found');
-        return;
-    }
-    profileSection.classList.add('active');
+    _leavePage();
+const profileSection = document.getElementById('profile');
+if (!profileSection) { console.error('Profile section (#profile) not found'); return; }
+_enterPage('profile');
 
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
@@ -860,10 +868,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function showDetail(postId, scrollToComments = false) {
     // Switch pages — #food stays in DOM, browser keeps its scroll
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const detailPage = document.getElementById('meal');
-    if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
-    detailPage.classList.add('active');
+    _leavePage();
+const detailPage = document.getElementById('meal');
+if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
+_enterPage('meal');
 
     const nuba = document.getElementById('nuba');
     if (!nuba) { console.error('nuba container not found'); return; }
