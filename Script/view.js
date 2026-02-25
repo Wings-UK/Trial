@@ -1187,9 +1187,7 @@ async function showDetail(postId, scrollToComments = false) {
     }
 
     // ── Scroll detail to top BEFORE async calls that shift layout ──
-    if (!scrollToComments) {
-        window.scrollTo(0, 0);
-    }
+    
 
     await trackDetailView(postId);
     await mountCommentSection(postId);
