@@ -1476,11 +1476,18 @@ function goBackFromDetail() {
     const nuba = document.getElementById('nuba');
     if (nuba) nuba.innerHTML = '';
 
-    document.getElementById('food')?.classList.add('active');
+    const food = document.getElementById('food');
+    if (!food) return;
+
+    // Make it present in layout but invisible — no flash
+    food.style.opacity = '0';
+    food.classList.add('active');
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             window.scrollTo({ top: _savedScroll['food'] ?? 0, behavior: 'instant' });
+            // Now reveal — scroll is already correct, no flash
+            food.style.opacity = '1';
         });
     });
 }
