@@ -1371,8 +1371,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // LONG PRESS / THREE-DOTS MENU – Fixed & Stable 2026
 // ───────────────────────────────────────────────
 
+
 let activeActionBar = null;
-let activeBar = null; // tracks the floating bar DOM element
 
 function enablePostLongPress(posterElement, post) {
     if (!posterElement || !post?.id) return { showActions: () => {}, closeActions: () => {}, isActive: () => false };
@@ -1382,7 +1382,6 @@ function enablePostLongPress(posterElement, post) {
     let pressTimer = null;
     let mouseTimer = null;
     let menuIsOpen = false;
-    let lastPressY = 0; // stores where the user pressed
 
     // ───────────────────────────────────────────────
     // CLOSE MENU (SAFE)
@@ -1390,13 +1389,13 @@ function enablePostLongPress(posterElement, post) {
     function closeMenu() {
         if (!menuIsOpen) return;
 
-        if (activeBar) {
-            activeBar.style.animation =
+        const bar = posterElement.querySelector('.post-action-bar');
+        if (bar) {
+            bar.style.animation =
                 'slideOutFromBottom 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards';
 
             setTimeout(() => {
-                activeBar?.remove();
-                activeBar = null;
+                bar.remove();
                 posterElement.classList.remove('long-press-active');
             }, 220);
         }
@@ -1409,19 +1408,17 @@ function enablePostLongPress(posterElement, post) {
         }
 
         document.removeEventListener('touchstart', outsideHandler, true);
-        document.removeEventListener('mousedown', outsideHandler, true);
     }
 
     // ───────────────────────────────────────────────
     // CLOSE ANY OTHER OPEN MENU
     // ───────────────────────────────────────────────
     function closePreviousMenu() {
-        if (activeBar) {
-            activeBar.remove();
-            activeBar = null;
-        }
-
         if (activeActionBar && activeActionBar !== posterElement) {
+            const oldBar =
+                activeActionBar.querySelector('.post-action-bar');
+            if (oldBar) oldBar.remove();
+
             activeActionBar.classList.remove('long-press-active');
             activeActionBar.dataset.blockNavigation = 'false';
             activeActionBar = null;
@@ -1431,7 +1428,7 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     // SHOW MENU
     // ───────────────────────────────────────────────
-    function showMenu(pressY = window.innerHeight / 2) {
+    function showMenu() {
         if (menuIsOpen) return;
 
         closePreviousMenu();
@@ -1457,14 +1454,7 @@ function enablePostLongPress(posterElement, post) {
             `;
         }
 
-        // ── Append to body so post height is irrelevant ──
-        document.body.appendChild(bar);
-        activeBar = bar;
-
-        // ── Position safely within viewport ──
-        const barHeight = bar.offsetHeight || 52;
-        const safeY = Math.min(pressY, window.innerHeight - barHeight - 24);
-        bar.style.top = `${safeY}px`;
+        posterElement.appendChild(bar);
 
         bar.style.animation =
             'slideUpFromBottom 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both';
@@ -1507,7 +1497,6 @@ function enablePostLongPress(posterElement, post) {
         }
 
         document.addEventListener('touchstart', outsideHandler, true);
-        document.addEventListener('mousedown', outsideHandler, true);
     }
 
     // ───────────────────────────────────────────────
@@ -1517,7 +1506,7 @@ function enablePostLongPress(posterElement, post) {
         if (
             menuIsOpen &&
             activeActionBar === posterElement &&
-            !activeBar?.contains(e.target)
+            !posterElement.contains(e.target)
         ) {
             closeMenu();
         }
@@ -1530,8 +1519,7 @@ function enablePostLongPress(posterElement, post) {
         if (e.touches.length > 1) return;
         if (menuIsOpen) return;
 
-        lastPressY = e.touches[0].clientY;
-        pressTimer = setTimeout(() => showMenu(lastPressY), 500);
+        pressTimer = setTimeout(showMenu, 500);
     });
 
     posterElement.addEventListener('touchmove', () => {
@@ -1551,8 +1539,7 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     posterElement.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
-        lastPressY = e.clientY;
-        mouseTimer = setTimeout(() => showMenu(lastPressY), 600);
+        mouseTimer = setTimeout(showMenu, 600);
     });
 
     posterElement.addEventListener('mouseup', () => {
@@ -1575,8 +1562,7 @@ function enablePostLongPress(posterElement, post) {
             if (menuIsOpen) {
                 closeMenu();
             } else {
-                const rect = e.target.getBoundingClientRect();
-                showMenu(rect.bottom);
+                showMenu();
             }
             return;
         }
@@ -1591,11 +1577,8 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     posterElement._cleanupLongPress = () => {
         document.removeEventListener('touchstart', outsideHandler, true);
-        document.removeEventListener('mousedown', outsideHandler, true);
         clearTimeout(pressTimer);
         clearTimeout(mouseTimer);
-        activeBar?.remove();
-        activeBar = null;
     };
 
     return {
