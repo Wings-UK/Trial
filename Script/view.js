@@ -1374,7 +1374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let activeActionBar = null;
 
 function enablePostLongPress(posterElement, post) {
-    if (!posterElement || !post?.id) return;
+    if (!posterElement || !post?.id) return { showActions: () => {}, closeActions: () => {}, isActive: () => false };
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
 
@@ -1578,6 +1578,12 @@ function enablePostLongPress(posterElement, post) {
         document.removeEventListener('touchstart', outsideHandler, true);
         clearTimeout(pressTimer);
         clearTimeout(mouseTimer);
+    };
+
+    return {
+        showActions: showMenu,
+        closeActions: closeMenu,
+        isActive: () => menuIsOpen
     };
 }
 
