@@ -1371,7 +1371,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // LONG PRESS / THREE-DOTS MENU – Fixed & Stable 2026
 // ───────────────────────────────────────────────
 
-
 let activeActionBar = null;
 
 function enablePostLongPress(posterElement, post) {
@@ -1601,7 +1600,7 @@ function addActionMenuStyles() {
     style.textContent = `
 .post-action-bar {
     position: absolute;
-    top: 60%;
+    bottom: -40px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.94);
