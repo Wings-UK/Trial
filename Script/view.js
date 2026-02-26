@@ -1600,7 +1600,7 @@ function addActionMenuStyles() {
     style.textContent = `
         .post-action-bar {
             position: absolute;
-            bottom: -4px;
+            top: 60%;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.94);
