@@ -1603,12 +1603,12 @@ function addActionMenuStyles() {
             bottom: -4px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(28, 28, 30, 0.94);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(20px);
             border-radius: 14px;
             padding: 6px 8px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             z-index: 100;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.08);
@@ -1624,9 +1624,9 @@ function addActionMenuStyles() {
             background: transparent;
             border: none;
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
-            padding: 10px 16px;
+            padding: 5px 8px;
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.18s;
@@ -1639,11 +1639,11 @@ function addActionMenuStyles() {
 
         .action-btn.delete,
         .action-btn.report {
-            color: #ff3b30;
+            color: black;
         }
 
         .action-btn.edit {
-            color: #0a84ff;
+            color: black;
         }
 
         @keyframes slideUpFromBottom {
