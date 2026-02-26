@@ -1609,7 +1609,7 @@ function addActionMenuStyles() {
             padding: 6px 8px;
             display: flex;
             gap: 10px;
-            z-index: 100;
+            z-index: 10;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.08);
             opacity: 0;
