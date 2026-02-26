@@ -1624,7 +1624,7 @@ function addActionMenuStyles() {
             background: transparent;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 400;
             padding: 5px 8px;
             border-radius: 10px;
