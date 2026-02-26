@@ -1617,8 +1617,8 @@ function addActionMenuStyles() {
 
     style.textContent = `
 .post-action-bar {
-    position: fixed;       /* changed from absolute */
-    top: auto;
+    position: absolute;
+    top: 60%;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.94);
@@ -1626,8 +1626,11 @@ function addActionMenuStyles() {
     border-radius: 14px;
     padding: 6px 8px;
     display: flex;
+    align-items: center;    /* ← add this */
     gap: 10px;
-    z-index: 9999;         /* bumped up since it's now outside the poster stacking context */
+    width: fit-content;     /* ← add this */
+    height: auto;           /* ← add this */
+    z-index: 10;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     border: 1px solid rgba(255,255,255,0.08);
     opacity: 0;
