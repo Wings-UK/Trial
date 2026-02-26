@@ -1625,12 +1625,11 @@ function addActionMenuStyles() {
             border: none;
             color: white;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 400;
             padding: 5px 8px;
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.18s;
-            white-space: nowrap;
         }
 
         .action-btn:hover {
@@ -1642,7 +1641,8 @@ function addActionMenuStyles() {
             color: black;
         }
 
-        .action-btn.edit {
+        .action-btn.edit,
+        .action-btn.dislike {
             color: black;
         }
 
