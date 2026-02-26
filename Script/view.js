@@ -1600,8 +1600,9 @@ function addActionMenuStyles() {
     style.textContent = `
 .post-action-bar {
     position: absolute;
-    bottom: -40px;
+    bottom: 20%;
     left: 50%;
+    height: 80px;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(20px);
