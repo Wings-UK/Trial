@@ -1599,23 +1599,22 @@ function addActionMenuStyles() {
 
     style.textContent = `
         .post-action-bar {
-            position: absolute;
-            top: auto;
-            bottom: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(20px);
-            border-radius: 14px;
-            padding: 6px 8px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.08);
-            opacity: 0;
-            pointer-events: none;
-        }
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(20px);
+    border-radius: 14px;
+    padding: 6px 8px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    opacity: 0;
+    pointer-events: none;
+}
 
         .long-press-active .post-action-bar {
             pointer-events: auto;
