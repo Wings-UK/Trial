@@ -1372,6 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ───────────────────────────────────────────────
 
 let activeActionBar = null;
+let activeBar = null; // tracks the floating bar DOM element
 
 function enablePostLongPress(posterElement, post) {
     if (!posterElement || !post?.id) return { showActions: () => {}, closeActions: () => {}, isActive: () => false };
@@ -1381,6 +1382,7 @@ function enablePostLongPress(posterElement, post) {
     let pressTimer = null;
     let mouseTimer = null;
     let menuIsOpen = false;
+    let lastPressY = 0; // stores where the user pressed
 
     // ───────────────────────────────────────────────
     // CLOSE MENU (SAFE)
@@ -1388,13 +1390,13 @@ function enablePostLongPress(posterElement, post) {
     function closeMenu() {
         if (!menuIsOpen) return;
 
-        const bar = posterElement.querySelector('.post-action-bar');
-        if (bar) {
-            bar.style.animation =
+        if (activeBar) {
+            activeBar.style.animation =
                 'slideOutFromBottom 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards';
 
             setTimeout(() => {
-                bar.remove();
+                activeBar?.remove();
+                activeBar = null;
                 posterElement.classList.remove('long-press-active');
             }, 220);
         }
@@ -1407,17 +1409,19 @@ function enablePostLongPress(posterElement, post) {
         }
 
         document.removeEventListener('touchstart', outsideHandler, true);
+        document.removeEventListener('mousedown', outsideHandler, true);
     }
 
     // ───────────────────────────────────────────────
     // CLOSE ANY OTHER OPEN MENU
     // ───────────────────────────────────────────────
     function closePreviousMenu() {
-        if (activeActionBar && activeActionBar !== posterElement) {
-            const oldBar =
-                activeActionBar.querySelector('.post-action-bar');
-            if (oldBar) oldBar.remove();
+        if (activeBar) {
+            activeBar.remove();
+            activeBar = null;
+        }
 
+        if (activeActionBar && activeActionBar !== posterElement) {
             activeActionBar.classList.remove('long-press-active');
             activeActionBar.dataset.blockNavigation = 'false';
             activeActionBar = null;
@@ -1427,7 +1431,7 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     // SHOW MENU
     // ───────────────────────────────────────────────
-    function showMenu() {
+    function showMenu(pressY = window.innerHeight / 2) {
         if (menuIsOpen) return;
 
         closePreviousMenu();
@@ -1453,7 +1457,14 @@ function enablePostLongPress(posterElement, post) {
             `;
         }
 
-        posterElement.appendChild(bar);
+        // ── Append to body so post height is irrelevant ──
+        document.body.appendChild(bar);
+        activeBar = bar;
+
+        // ── Position safely within viewport ──
+        const barHeight = bar.offsetHeight || 52;
+        const safeY = Math.min(pressY, window.innerHeight - barHeight - 24);
+        bar.style.top = `${safeY}px`;
 
         bar.style.animation =
             'slideUpFromBottom 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both';
@@ -1496,6 +1507,7 @@ function enablePostLongPress(posterElement, post) {
         }
 
         document.addEventListener('touchstart', outsideHandler, true);
+        document.addEventListener('mousedown', outsideHandler, true);
     }
 
     // ───────────────────────────────────────────────
@@ -1505,7 +1517,7 @@ function enablePostLongPress(posterElement, post) {
         if (
             menuIsOpen &&
             activeActionBar === posterElement &&
-            !posterElement.contains(e.target)
+            !activeBar?.contains(e.target)
         ) {
             closeMenu();
         }
@@ -1518,7 +1530,8 @@ function enablePostLongPress(posterElement, post) {
         if (e.touches.length > 1) return;
         if (menuIsOpen) return;
 
-        pressTimer = setTimeout(showMenu, 500);
+        lastPressY = e.touches[0].clientY;
+        pressTimer = setTimeout(() => showMenu(lastPressY), 500);
     });
 
     posterElement.addEventListener('touchmove', () => {
@@ -1538,7 +1551,8 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     posterElement.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
-        mouseTimer = setTimeout(showMenu, 600);
+        lastPressY = e.clientY;
+        mouseTimer = setTimeout(() => showMenu(lastPressY), 600);
     });
 
     posterElement.addEventListener('mouseup', () => {
@@ -1561,7 +1575,8 @@ function enablePostLongPress(posterElement, post) {
             if (menuIsOpen) {
                 closeMenu();
             } else {
-                showMenu();
+                const rect = e.target.getBoundingClientRect();
+                showMenu(rect.bottom);
             }
             return;
         }
@@ -1576,8 +1591,11 @@ function enablePostLongPress(posterElement, post) {
     // ───────────────────────────────────────────────
     posterElement._cleanupLongPress = () => {
         document.removeEventListener('touchstart', outsideHandler, true);
+        document.removeEventListener('mousedown', outsideHandler, true);
         clearTimeout(pressTimer);
         clearTimeout(mouseTimer);
+        activeBar?.remove();
+        activeBar = null;
     };
 
     return {
@@ -1598,18 +1616,18 @@ function addActionMenuStyles() {
     style.id = 'action-menu-styles';
 
     style.textContent = `
-        .post-action-bar {
-    position: absolute;
-    top: 50%;
+.post-action-bar {
+    position: fixed;       /* changed from absolute */
+    top: auto;
     left: 50%;
-    transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(20px);
     border-radius: 14px;
     padding: 6px 8px;
     display: flex;
     gap: 10px;
-    z-index: 10;
+    z-index: 9999;         /* bumped up since it's now outside the poster stacking context */
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     border: 1px solid rgba(255,255,255,0.08);
     opacity: 0;
