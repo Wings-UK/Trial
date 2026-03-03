@@ -604,25 +604,44 @@ async function showProfile(userId) {
 
 // Paste this exactly as-is — add at the bottom
 function goBack() {
-    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
-    document.getElementById('profile').classList.remove('active');
-    document.getElementById('food').classList.add('active');
-    if (savedScroll) window.scrollTo(0, parseInt(savedScroll));
+    returnToFeedAndRestoreScroll();
 }
 
 // Quick switch to home (used from bottom nav)
 function switchToHome() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('food').classList.add('active');
-  
-  // Optional: reset bottom nav active state
-  document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
-  // You can add .active to home icon if you want visual feedback
+  returnToFeedAndRestoreScroll();
 }
 
 // Go back from notifications → home
 function goBackToHome() {
-  switchToHome();
+  returnToFeedAndRestoreScroll();
+}
+
+function returnToFeedAndRestoreScroll() {
+    // 1. Deactivate current page(s)
+    document.querySelectorAll('.page.active').forEach(p => p.classList.remove('active'));
+
+    // 2. Activate feed / home
+    const feedPage = document.getElementById('food');
+    if (feedPage) {
+        feedPage.classList.add('active');
+    }
+
+    // 3. Restore scroll position if we have it
+    const saved = sessionStorage.getItem('scrollPosition_feed');
+    if (saved) {
+        // Small delay helps mobile browsers respect scrollTo after layout
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(saved, 10));
+            // Optional: clear it so we don't restore again on next refresh
+            // sessionStorage.removeItem('scrollPosition_feed');
+        }, 60);
+    }
+
+    // 4. Optional: update bottom nav active state
+    document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
+    // activate home icon if you have selector for it
+    // document.querySelector('.bottom .home-icon')?.classList.add('active');
 }
 
 // Switch to notifications
@@ -1670,25 +1689,9 @@ function addActionMenuStyles() {
 
 
 function goBackFromDetail() {
-    const savedScroll = sessionStorage.getItem('scrollPosition_feed');
-
-    // Deactivate detail page
-    document.getElementById('meal')?.classList.remove('active');
-
-    // 🔥 Clear detail content
-    const nuba = document.getElementById('nuba');
-    if (nuba) nuba.innerHTML = '';
-
-    // Hide sticky detail header
-    document.querySelector('.detail-content')?.classList.remove('active');
-
-    // Go back to homepage
-    document.getElementById('food')?.classList.add('active');
-
-    if (savedScroll) {
-        window.scrollTo(0, parseInt(savedScroll));
-    }
+   returnToFeedAndRestoreScroll();
 }
+
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
