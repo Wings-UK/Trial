@@ -309,235 +309,64 @@ function addMinimalReactionStyles() {
     const style = document.createElement('style');
     style.id = 'minimal-reaction-styles';
     style.textContent = `
-
-/* ── Post card ───────────────────────────────────────────── */
-.poster {
-    border-bottom: 1px solid #f2f2f2;
-    padding: 14px 14px 10px;
-    background: #fff;
-    transition: background 0.15s ease;
-    position: relative;
-}
-.poster:active {
-    background: #fafafa;
-}
-
-/* ── Header row ──────────────────────────────────────────── */
-.cust-name {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-.heading {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-}
-.small-photo1 {
-    flex-shrink: 0;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid #f5f5f5;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-.small-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    display: block;
-}
-.pos {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.post1 {
-    display: flex;
-    align-items: center;
+       
+.heart-ai {
+    width: 55px;
     gap: 5px;
-}
-.jerr {
-    overflow: hidden;
-}
-.jerry {
-    font-size: 15px;
-    font-weight: 600;
-    color: #111;
-    font-family: 'Noto Sans JP', roboto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
-    letter-spacing: -0.1px;
-}
-.verif {
-    width: 15px;
-    height: 15px;
-    flex-shrink: 0;
-}
-.time {
-    font-size: 13px;
-    color: #aaa;
-    font-family: 'Noto Sans JP', roboto;
-}
-.dots {
-    flex-shrink: 0;
-    padding: 4px;
-    cursor: pointer;
-    opacity: 0.45;
-    transition: opacity 0.2s;
-}
-.dots:hover { opacity: 0.9; }
-.dot { width: 18px; }
-
-/* ── Post text ───────────────────────────────────────────── */
-.tir {
-    margin-bottom: 10px;
-}
-.tired {
-    font-size: 15px;
-    line-height: 1.6;
-    color: #1a1a1a;
-    font-family: 'Noto Sans JP', roboto;
-    word-break: break-word;
-    white-space: pre-wrap;
-}
-.reer {
-    color: #f40752;
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-/* ── Stats bar (views / discuss) ─────────────────────────── */
-.lefto {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 8px 0 6px;
-    border-top: 1px solid #f5f5f5;
-    border-bottom: 1px solid #f5f5f5;
-    margin-bottom: 8px;
 }
-.dick, .twits {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+.heart-clickable {
     cursor: pointer;
 }
-.lefti { width: 16px; height: 16px; opacity: 0.45; }
-.viewe {
-    font-size: 13px;
-    color: #999;
-    font-family: 'Noto Sans JP', roboto;
-}
-
-/* ── Reaction bar ────────────────────────────────────────── */
-.reaction {
-    padding: 0;
-}
-.reaction-container {
-    width: 100%;
+.mee {
     display: flex;
-    align-items: center;
+    gap: 20px;
 }
 .call {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-}
-.mee {
-    display: flex;
-    gap: 18px;
-    align-items: center;
 }
 .feeling {
-    width: 20px;
-    height: 20px;
-    opacity: 0.65;
-    transition: opacity 0.2s;
-    flex-shrink: 0;
-}
-
-/* individual action buttons */
-.comment-btn, .repost-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: 'Noto Sans JP', roboto;
-    color: #777;
-    min-width: 42px;
-    padding: 5px 0;
-    -webkit-tap-highlight-color: transparent;
-    transition: color 0.2s;
-}
-.comment-btn:hover .feeling,
-.repost-btn:hover .feeling { opacity: 1; }
-.comment-btn span, .repost-btn span {
-    font-size: 13.5px;
-    color: #888;
-    min-width: 14px;
-}
-
-.donate-btn {
-    display: flex;
-    align-items: center;
-    padding: 5px;
-    cursor: pointer;
-    opacity: 0.55;
-    transition: opacity 0.2s;
-}
-.donate-btn:hover { opacity: 1; }
-
-/* ── Like / heart ────────────────────────────────────────── */
-.heart-ai {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    min-width: 42px;
-    padding: 5px 0;
-    -webkit-tap-highlight-color: transparent;
-}
-.heart-clickable {
-    cursor: pointer;
+    width: 22px;
 }
 .like-count {
-    font-size: 13.5px;
-    color: #888;
+    font-size: 14px;
     font-family: 'Noto Sans JP', roboto;
-    min-width: 14px;
-    transition: color 0.2s;
-}
+} 
 .like-count.liked {
-    font-weight: 600;
+    font-weight: 500;
     color: rgb(244, 7, 82);
 }
 .like-count:empty {
     display: none;
 }
 .heart-icon {
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: all 0.3s ease;
 }
 .heart-icon .heart-path {
-    stroke: #888;
+    stroke: rgb(0, 0, 0);
     fill: none;
     transition: all 0.3s ease;
+}
+.heart-icon.liked {
+    transform: scale(1);
 }
 .heart-icon.liked .heart-path {
     fill: rgb(244, 7, 82);
     stroke: rgb(244, 7, 82);
+}
+@keyframes heartBeat {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.7); }
+    100% { transform: scale(1); }
+}
+.heart-animation {
+    animation: heartBeat 0.7s ease-in-out;
+}
+.heart-icon {
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .heart-animation {
     animation: pop 0.3s ease forwards;
@@ -546,124 +375,33 @@ function addMinimalReactionStyles() {
     animation: shrinkFade 0.3s ease forwards;
 }
 @keyframes pop {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.55); }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
     100% { transform: scale(1); }
 }
 @keyframes shrinkFade {
-    0%   { transform: scale(1);   opacity: 1; }
-    50%  { transform: scale(0.5); opacity: 0.5; }
-    100% { transform: scale(1);   opacity: 1; }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
 }
-
-/* ── Repost card — main improved design ─────────────────── */
-.original-post-card {
-    border: 1.5px solid #ebebeb;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #fafafa;
-    margin: 6px 0 10px;
-    transition: border-color 0.2s ease, background 0.2s ease;
-    cursor: pointer;
-    position: relative;
-}
-.original-post-card:hover {
-    border-color: #e0e0e0;
-    background: #f5f5f5;
-}
-
-/* Top strip inside the repost card */
-.repost-indicator {
+.reaction-container {
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 9px 13px 7px;
-    border-bottom: 1px solid #f0f0f0;
-    background: linear-gradient(135deg, #fff8fa 0%, #fafafa 100%);
+    gap: 20px;
 }
-.repost-indicator img {
-    width: 14px;
-    height: 14px;
-    opacity: 0.55;
-    flex-shrink: 0;
+.donate-btn {
+    display: flex;
+    align-items: center;
 }
-.repost-indicator span {
-    font-size: 12.5px;
-    font-weight: 500;
-    color: #999;
-    font-family: 'Noto Sans JP', roboto;
-    letter-spacing: -0.1px;
-}
-
-/* Header inside repost card */
-.original-post-card .cust-name {
-    margin-bottom: 0;
-    padding: 10px 13px 6px;
-    background: transparent;
-}
-.original-post-card .heading {
-    gap: 9px;
-}
-.original-post-card .small-photo1 {
-    width: 34px;
-    height: 34px;
-    border-width: 1.5px;
-}
-.original-post-card .jerry {
-    font-size: 14px;
-    max-width: 130px;
-}
-.original-post-card .verif {
-    width: 13px;
-    height: 13px;
-}
-.original-post-card .time {
-    font-size: 12px;
-}
-
-/* Content inside repost card */
-.original-post-card .tir {
-    padding: 2px 13px 10px;
-    margin-bottom: 0;
-}
-.original-post-card .tired {
-    font-size: 14.5px;
-    color: #2a2a2a;
-    line-height: 1.55;
-}
-.original-post-card .laptop1 {
-    border-radius: 0;
-    overflow: hidden;
-}
-.original-post-card .laptop1 img {
-    width: 100%;
-    display: block;
-    max-height: 280px;
-    object-fit: cover;
-}
-
-/* "View original" link */
-.view-original {
-    display: inline-flex;
+.comment-btn, .repost-btn {
+    display: flex; 
+    width: 55px;
     align-items: center;
     gap: 5px;
-    padding: 8px 13px 11px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #f40752;
-    font-family: 'Noto Sans JP', roboto;
-    opacity: 0.85;
-    transition: opacity 0.2s;
-}
-.view-original:hover { opacity: 1; }
-
-/* Reposter's own commentary text */
-.repost-commentary {
-    margin-bottom: 8px;
-}
-.repost-commentary .tired {
+    cursor: pointer;
     font-size: 15px;
-    color: #1a1a1a;
+    font-family: 'Noto Sans JP', roboto;
 }
 
     `;
@@ -2629,15 +2367,15 @@ function createPostElement(post) {
 
             <div class="original-post-card" data-original-post-id="${original.id}">
                 <div class="repost-indicator">
-                    <img src="pics/retweet.svg" alt="Repost">
-                    <span>${user.username} reposted</span>
+                    <img src="pics/retweet.svg" alt="Repost" style="width:18px;height:18px;">
+                    <span>Reposted from @${originalUser.username}</span>
                 </div>
 
                 <div class="cust-name">
                     <div class="heading">
                         <div class="small-photo1">
                             <a class="lino" onclick="showProfile('${original.user_id}')">
-                                <img class="small-photo" src="${originalUser.avatar}" onerror="this.src='pics/default-avatar.png'">
+                                <img class="small-photo" src="${originalUser.avatar}">
                             </a>
                         </div>
                         <div class="pos">
@@ -2651,16 +2389,20 @@ function createPostElement(post) {
                                     </div>
                                 </a>
                             </div>
-                            <p class="time">${formatTimeSince(original.created_at)}</p>
+                            <div class="comp1">
+                                <div class="cll">
+                                    <p class="time">${formatTimeSince(original.created_at)}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                ${original.content ? `<div class="tir"><p class="tired">${shortenText(original.content, textLimit, false)}</p></div>` : ''}
+                ${original.content ? `<div class="tir"><p class="tired">${shortenText(original.content, textLimit, true)}</p></div>` : ''}
 
                 ${original.image ? `
                     <div class="laptop1">
-                        <img src="${original.image}" class="laptop" alt="Original post image" loading="lazy" style="width:100%;display:block;max-height:280px;object-fit:cover;">
+                        <img src="${original.image}" class="laptop" alt="Original post image" loading="lazy">
                     </div>
                 ` : ''}
 
@@ -2671,20 +2413,17 @@ function createPostElement(post) {
                         </video>
                         <div class="video-overlay">
                             <div class="play-button">
-                                <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
-                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.55)" stroke="white" stroke-width="2.5"/>
-                                    <path d="M32 24L19 32V16L32 24Z" fill="white"/>
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
                                 </svg>
                             </div>
                         </div>
                     </div>
                 ` : ''}
 
-                <div class="view-original">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    View original
+                <div class="view-original" style="padding:8px 12px; color:#1d9bf0; font-size:14px; cursor:pointer;">
+                    View original post →
                 </div>
             </div>
         `;
@@ -3422,27 +3161,21 @@ function addRepostStyles() {
     style.id = 'repost-styles';
     style.textContent = `
         .repost-icon {
-            transition: filter 0.2s ease, transform 0.2s ease;
+            transition: filter 0.2s ease;
         }
 
-        /* Active repost: tinted green icon */
+        /* Dark green + bolder look when reposted */
         .repost-btn.reposted .repost-icon {
             filter:
-                invert(29%) sepia(89%) saturate(420%) hue-rotate(110deg)
-                brightness(88%) contrast(130%)
+                invert(29%) sepia(89%) saturate(400%) hue-rotate(110deg)
+                brightness(90%) contrast(130%)
                 drop-shadow(0 0 0.6px #065f46);
-            transform: scale(1.06);
         }
 
-        /* Count text turns dark green */
+        /* Count text turns dark green too */
         .repost-btn.reposted span {
-            color: #059669;
-            font-weight: 600;
-        }
-
-        /* Repost card is-repost post gets a very subtle left accent */
-        .poster.is-repost {
-            border-left: 3px solid #f0f0f0;
+            color: #065f46;
+            font-weight: 500;
         }
     `;
     document.head.appendChild(style);
