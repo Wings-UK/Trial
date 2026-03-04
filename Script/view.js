@@ -1,78 +1,194 @@
-// view.js - simplified version that shows posts even without matching users
+// view.js
 
-// Paste this exactly as-is — add near the top, after any global variables
+// ═══════════════════════════════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════════════════════════════
+
 let currentUserId = null;
-// ───────────────────────────────────────────────
-// NOTIFICATION BADGE STATE
-// ───────────────────────────────────────────────
 let unreadNotificationCount = 0;
-let notificationChannel = null;   // will hold the realtime subscription
-// Prevent browser context menu on long-press of images/SVGs
-document.addEventListener('contextmenu', e => {
-    if (e.target.closest('img, svg, .poster')) {
-        e.preventDefault();
+let notificationChannel = null;
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION — X (Twitter) style
+// Pages are never destroyed. Hidden with CSS only.
+// Scroll is restored synchronously — zero flash guaranteed.
+// ═══════════════════════════════════════════════════════════════════
+
+// Inject the only CSS rule required for this to work
+(function injectNavStyles() {
+    if (document.getElementById('nav-core-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'nav-core-styles';
+    s.textContent = `
+        .page          { display: none !important; }
+        .page.active   { display: block !important; }
+    `;
+    document.head.appendChild(s);
+})();
+
+// Per-page scroll cache — survives page switches within the session
+const _navScrollCache = {};
+let _currentPageId = null;
+
+/**
+ * Core navigation function. Every page transition goes through here.
+ * Saves the current page's scroll, hides all pages, shows the target,
+ * and restores scroll — all synchronously in one frame so the browser
+ * never paints a flash at position 0.
+ */
+function navTo(toPageId, resetScroll = false) {
+    const toPage = document.getElementById(toPageId);
+    if (!toPage) { console.error(`[nav] #${toPageId} not found`); return; }
+
+    // 1. Save scroll of the page we are leaving
+    if (_currentPageId) {
+        _navScrollCache[_currentPageId] = window.scrollY;
     }
-});
-// Get logged-in user ID once when page loads
+
+    // 2. Swap active class
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    toPage.classList.add('active');
+    _currentPageId = toPageId;
+
+    // 3. Restore or reset scroll — synchronously, before any paint
+    if (resetScroll) {
+        window.scrollTo(0, 0);
+    } else {
+        const saved = _navScrollCache[toPageId];
+        window.scrollTo(0, saved !== undefined ? saved : 0);
+    }
+}
+
+// ── Public navigation helpers ────────────────────────────────────
+
+function returnToFeedAndRestoreScroll() { navTo('food'); }
+function goBack()                        { navTo('food'); }
+function goBackFromDetail()              { navTo('food'); }
+function switchToHome()                  { navTo('food'); }
+function goBackToHome()                  { navTo('food'); }
+
+function openWallet() {
+    navTo('wallet', true);
+}
+
+async function switchToNotifications() {
+    navTo('notifications', true);
+
+    unreadNotificationCount = 0;
+    updateNotificationBadge();
+
+    if (currentUserId) {
+        await supabase
+            .from('notifications')
+            .update({ read: true })
+            .eq('user_id', currentUserId)
+            .eq('read', false);
+    }
+
+    renderNotifications();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// BOOT — DOMContentLoaded
+// ═══════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // Detect starting page
+    const activePage = document.querySelector('.page.active');
+    if (activePage) _currentPageId = activePage.id;
+
+    // Auth
     try {
         const { data: { user } } = await supabase.auth.getUser();
-
         if (user) {
             currentUserId = user.id;
-            console.log('Logged-in user ID:', currentUserId);
-
-            // Only load count + subscribe when there is a real user
             await loadInitialNotificationCount();
             subscribeToNotifications();
-
-            // You can also load avatar, start loading posts, etc. here
-        } else {
-            console.log('No user logged in');
-            // Optional: show login modal
-            // document.getElementById('auth-modal').style.display = 'block';
         }
     } catch (err) {
         console.error('Error during initial load:', err);
     }
+
+    // Start feed if we open on home
+    if (_currentPageId === 'food') loadMorePosts();
+
+    // Infinite scroll — only fires when feed is visible
+    window.addEventListener('scroll', () => {
+        if (_currentPageId !== 'food') return;
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+            loadMorePosts();
+        }
+    });
+
+    // Styles
+    addMinimalReactionStyles();
+    addRepostStyles();
+    addMasonryHeartAnimationStyles();
+    addActionMenuStyles();
+
+    // Lazy loading
+    initializeLazyLoading();
+
+    // Account icon → my profile
+    const accountIcon = document.querySelector('.account-icon');
+    if (accountIcon) accountIcon.addEventListener('click', () => showMyProfile());
+
+    // Load avatar into top-right
+    supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+            supabase.from('users').select('avatar').eq('id', user.id).single()
+                .then(({ data }) => {
+                    if (data?.avatar) {
+                        const usero = document.getElementById('usero');
+                        if (usero) usero.src = data.avatar;
+                    }
+                });
+        }
+    });
+
+    // File input change → preview
+    const imageInput = document.getElementById('postImageInput');
+    if (imageInput) imageInput.addEventListener('change', handleMediaSelect);
+
+    // Textarea → update post button state
+    const textarea = document.getElementById('postContent');
+    if (textarea) textarea.addEventListener('input', updatePostButtonState);
+});
+
+// Wallet: QR icon click
+document.addEventListener('click', e => {
+    if (e.target.classList.contains('kiy')) openWallet();
+});
+
+// Prevent context menu on images / SVGs
+document.addEventListener('contextmenu', e => {
+    if (e.target.closest('img, svg, .poster')) e.preventDefault();
 });
 
 
-// ───────────────────────────────────────────────
-// REAL LIKE HELPERS – persistent across sessions
-// ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// LIKE HELPERS
+// ═══════════════════════════════════════════════════════════════════
 
 async function isPostLikedByCurrentUser(postId) {
     if (!currentUserId) return false;
-
     const { data, error } = await supabase
-        .from('likes')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', currentUserId)
-        .maybeSingle();
-
-    if (error) {
-        console.error("Like check failed:", error.message);
-        return false;
-    }
+        .from('likes').select('id')
+        .eq('post_id', postId).eq('user_id', currentUserId).maybeSingle();
+    if (error) { console.error("Like check failed:", error.message); return false; }
     return !!data?.id;
 }
 
 async function toggleLike(postId, heartContainer) {
-    if (!currentUserId) {
-        alert("Please sign in to like posts");
-        return false;
-    }
+    if (!currentUserId) { alert("Please sign in to like posts"); return false; }
 
-    const heartIcon = heartContainer.querySelector('.heart-icon');
+    const heartIcon   = heartContainer.querySelector('.heart-icon');
     const likeCountEl = heartContainer.querySelector('.like-count');
-
     const currentlyLiked = heartContainer.getAttribute('data-liked') === 'true';
     let count = parseInt(likeCountEl?.textContent.trim() || '0', 10);
     if (isNaN(count)) count = 0;
 
-    // Optimistic UI - only apply to the clicked heart (not broadcast yet)
     const newLiked = !currentlyLiked;
     const optimisticCount = newLiked ? count + 1 : Math.max(0, count - 1);
 
@@ -81,58 +197,66 @@ async function toggleLike(postId, heartContainer) {
     likeCountEl?.classList.toggle('liked', newLiked);
     if (likeCountEl) likeCountEl.textContent = optimisticCount > 0 ? optimisticCount : '';
 
-    // Animation
     heartIcon?.classList.add(newLiked ? 'heart-animation' : 'unfill-animation');
     setTimeout(() => heartIcon?.classList.remove('heart-animation', 'unfill-animation'), 400);
 
     try {
         if (newLiked) {
-            const { error } = await supabase.from('likes').insert({
-                post_id: postId,
-                user_id: currentUserId
-            });
-            if (error && error.code !== '23505') throw error; // ignore duplicate
+            const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: currentUserId });
+            if (error && error.code !== '23505') throw error;
         } else {
             const { error } = await supabase.from('likes').delete()
-                .eq('post_id', postId)
-                .eq('user_id', currentUserId);
+                .eq('post_id', postId).eq('user_id', currentUserId);
             if (error) throw error;
         }
 
-        // Get the REAL authoritative count from the server
         const { data: updatedPost, error: fetchError } = await supabase
-            .from('posts')
-            .select('like_count')
-            .eq('id', postId)
-            .single();
+            .from('posts').select('like_count').eq('id', postId).single();
+        let finalCount = optimisticCount;
+        if (!fetchError && updatedPost) finalCount = updatedPost.like_count ?? optimisticCount;
+        else if (fetchError) console.warn("Failed to fetch updated like count:", fetchError.message);
 
-        let finalCount = optimisticCount; // fallback
-
-        if (!fetchError && updatedPost) {
-            finalCount = updatedPost.like_count ?? optimisticCount;
-        } else if (fetchError) {
-            console.warn("Failed to fetch updated like count:", fetchError.message);
-        }
-
-        // Now sync EVERY visible heart with the real number
         syncLikeUI(postId, newLiked, finalCount);
-
         return true;
     } catch (err) {
         console.error("Like toggle failed:", err.message);
-
-        // Revert the clicked heart only
         heartContainer.setAttribute('data-liked', currentlyLiked ? 'true' : 'false');
         heartIcon?.classList.toggle('liked', currentlyLiked);
         likeCountEl?.classList.toggle('liked', currentlyLiked);
         if (likeCountEl) likeCountEl.textContent = count > 0 ? count : '';
-
         alert("Couldn't update like. Please try again.");
         return false;
     }
 }
 
-// Paste this exactly as-is — add at the top of view.js
+function syncLikeUI(postId, isLiked = null, count) {
+    document.querySelectorAll(`.heart-ai[data-post-id="${postId}"]`).forEach(container => {
+        const icon    = container.querySelector('.heart-icon');
+        const countEl = container.querySelector('.like-count');
+        if (isLiked !== null) {
+            container.setAttribute('data-liked', isLiked ? 'true' : 'false');
+            icon?.classList.toggle('liked', isLiked);
+            countEl?.classList.toggle('liked', isLiked);
+        }
+        if (countEl) countEl.textContent = count > 0 ? count : '';
+    });
+
+    document.querySelectorAll(`.masonry-wrapper[data-post-id="${postId}"] .masonry-meta`).forEach(meta => {
+        const heartSvg  = meta.querySelector('.meta-heart');
+        const likesSpan = meta.querySelector('.meta-likes');
+        if (isLiked !== null) {
+            heartSvg?.classList.toggle('liked', isLiked);
+            likesSpan?.classList.toggle('liked', isLiked);
+        }
+        if (likesSpan) likesSpan.textContent = count > 0 ? count : '';
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// SKELETON
+// ═══════════════════════════════════════════════════════════════════
+
 function createSkeletonPost() {
     const skeleton = document.createElement('div');
     skeleton.className = 'poster skeleton';
@@ -157,324 +281,108 @@ function createSkeletonPost() {
 
 function addSkeletonStyles() {
     if (document.getElementById('skeleton-styles')) return;
-
     const style = document.createElement('style');
     style.id = 'skeleton-styles';
     style.textContent = `
-        .skeleton {
-            background: #f0f0f0;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
+        .skeleton { background:#f0f0f0; border-radius:8px; overflow:hidden; position:relative; }
         .skeleton::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+            content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+            background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+            background-size:200% 100%; animation:shimmer 1.5s infinite;
         }
-        .skeleton-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0e0e0;
-        }
-        .skeleton-text {
-            height: 16px;
-            background: #e0e0e0;
-            margin: 8px 0;
-            border-radius: 4px;
-        }
-        .skeleton-text.short { width: 60%; }
-        .skeleton-text.medium { width: 80%; }
-        .skeleton-text.long { width: 100%; }
-        .skeleton-reactions {
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 4px;
-        }
+        .skeleton-avatar { width:40px; height:40px; border-radius:50%; background:#e0e0e0; }
+        .skeleton-text { height:16px; background:#e0e0e0; margin:8px 0; border-radius:4px; }
+        .skeleton-text.short  { width:60%; }
+        .skeleton-text.medium { width:80%; }
+        .skeleton-text.long   { width:100%; }
+        .skeleton-reactions   { height:30px; background:#e0e0e0; border-radius:4px; }
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0%   { background-position:-200% 0; }
+            100% { background-position:200% 0; }
         }
     `;
     document.head.appendChild(style);
 }
 
-// Keep these important parts
-history.scrollRestoration = "manual";
 
-let loadedPostIds = new Set();
-let isLoading = false;
-let postsPerLoad = 5;
+// ═══════════════════════════════════════════════════════════════════
+// GLOBAL VARS (non-navigation)
+// ═══════════════════════════════════════════════════════════════════
 
-// Use the logged-in user as fallback for all posts
+let loadedPostIds  = new Set();
+let isLoading      = false;
+let postsPerLoad   = 5;
+let selectedMediaFile = null;
+
 const fallbackUser = {
-    id: 999,                    // doesn't matter
+    id: 999,
     username: "@jeremyx",
     name: "Jeremy X",
-    avatar: "pics/9.jpg",  // change this path if needed
+    avatar: "pics/9.jpg",
     cover: "pics/vu.jpg"
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════════
 
 function formatTimeSince(dateStr) {
     if (!dateStr) return 'just now';
-
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return 'invalid date';
-
     const seconds = Math.floor((new Date() - date) / 1000);
-
-    if (seconds < 60) {
-        return seconds + 's ago';
-    }
-
+    if (seconds < 60)  return seconds + 's ago';
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) {
-        return minutes + 'm ago';
-    }
-
+    if (minutes < 60)  return minutes + 'm ago';
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-        return hours + 'h ago';
-    }
-
-    // 24–47 hours → yesterday
-    if (hours < 48) {
-        return 'yesterday';
-    }
-
+    if (hours < 24)    return hours + 'h ago';
+    if (hours < 48)    return 'yesterday';
     const days = Math.floor(hours / 24);
-    if (days < 7) {
-        return days + 'd ago';
-    }
-
-    const weeks = Math.floor(days / 7);
-    return weeks + 'w ago';
+    if (days < 7)      return days + 'd ago';
+    return Math.floor(days / 7) + 'w ago';
 }
 
-// ─────────────────────────────────────────────────────────────
-// Helper function: shortenText (was missing)
-// ─────────────────────────────────────────────────────────────
 function shortenText(text, limit, showSeeMore = true) {
     if (!text) return '';
     if (text.length <= limit) return text;
-
     let shortened = text.slice(0, limit);
     const lastSpace = shortened.lastIndexOf(' ');
-
-    if (lastSpace > 0) {
-        shortened = shortened.slice(0, lastSpace);
-    }
-
-    return showSeeMore ?
-        shortened + `...<br><span class="reer">see more</span>` :
-        shortened + "...";
+    if (lastSpace > 0) shortened = shortened.slice(0, lastSpace);
+    return showSeeMore
+        ? shortened + `...<br><span class="reer">see more</span>`
+        : shortened + '...';
 }
 
-// ─────────────────────────────────────────────────────────────
-// Updated loadMorePosts() – with users table join (Option A)
-// ─────────────────────────────────────────────────────────────
-
-
-// Start loading when homepage is shown
-document.addEventListener('DOMContentLoaded', function() {
-    const activePage = document.querySelector(".page.active");
-    if (activePage && activePage.id === "food") {
-        console.log("Homepage detected → starting to load posts");
-        loadMorePosts();
-    }
-
-    // Also load more when scrolling near bottom
-    window.addEventListener('scroll', () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
-            loadMorePosts();
-        }
-    });
-});
-
-// ─────────────────────────────────────────────────────────────
-// Minimal reaction styles to fix oversized icons
-// Paste this at the bottom of view.js
-// ─────────────────────────────────────────────────────────────
-function addMinimalReactionStyles() {
-    if (document.getElementById('minimal-reaction-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'minimal-reaction-styles';
-    style.textContent = `
-       
-.heart-ai {
-    width: 55px;
-    gap: 5px;
-    display: flex;
-    align-items: center;
-}
-.heart-clickable {
-    cursor: pointer;
-}
-.mee {
-    display: flex;
-    gap: 20px;
-}
-.call {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-}
-.feeling {
-    width: 22px;
-}
-.like-count {
-    font-size: 14px;
-    font-family: 'Noto Sans JP', roboto;
-} 
-.like-count.liked {
-    font-weight: 500;
-    color: rgb(244, 7, 82);
-}
-.like-count:empty {
-    display: none;
-}
-.heart-icon {
-    transition: all 0.3s ease;
-}
-.heart-icon .heart-path {
-    stroke: rgb(0, 0, 0);
-    fill: none;
-    transition: all 0.3s ease;
-}
-.heart-icon.liked {
-    transform: scale(1);
-}
-.heart-icon.liked .heart-path {
-    fill: rgb(244, 7, 82);
-    stroke: rgb(244, 7, 82);
-}
-@keyframes heartBeat {
-    0% { transform: scale(0.5); }
-    50% { transform: scale(1.7); }
-    100% { transform: scale(1); }
-}
-.heart-animation {
-    animation: heartBeat 0.7s ease-in-out;
-}
-.heart-icon {
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-.heart-animation {
-    animation: pop 0.3s ease forwards;
-}
-.unfill-animation {
-    animation: shrinkFade 0.3s ease forwards;
-}
-@keyframes pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.5); }
-    100% { transform: scale(1); }
-}
-@keyframes shrinkFade {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.5); opacity: 0.5; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.reaction-container {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.donate-btn {
-    display: flex;
-    align-items: center;
-}
-.comment-btn, .repost-btn {
-    display: flex; 
-    width: 55px;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    font-size: 15px;
-    font-family: 'Noto Sans JP', roboto;
-}
-
+function showToast(message, duration = 2200) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+        background:rgba(0,0,0,0.85); color:white; padding:12px 24px;
+        border-radius:999px; z-index:9999; font-size:15px;
     `;
-    document.head.appendChild(style);
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
 }
 
-// Call it once after the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    addMinimalReactionStyles();
-    addRepostStyles();
-    addMasonryHeartAnimationStyles();
-    addActionMenuStyles();
-});
-
-
-
-// Paste this exactly as-is — add at the bottom of view.js
-function initializeLazyLoading() {
-    const placeholders = document.querySelectorAll('.placeholder');
-
-    placeholders.forEach(placeholder => {
-        const smallImg = placeholder.querySelector('.img-small');
-        if (!smallImg) return;
-
-        // Load small image first
-        const small = new Image();
-        small.src = smallImg.src;
-        small.onload = () => {
-            smallImg.classList.add('loaded');
-        };
-
-        // Load large image
-        const largeSrc = placeholder.getAttribute('data-large');
-        if (largeSrc) {
-            const large = new Image();
-            large.src = largeSrc;
-            large.onload = () => {
-                const largeImg = document.createElement('img');
-                largeImg.src = largeSrc;
-                largeImg.classList.add('loaded');
-                placeholder.appendChild(largeImg);
-            };
-        }
-    });
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
 }
 
-// Paste this exactly as-is — add at the bottom of view.js
-function updateCreatePostElementForLazy() {
-    // No need to change createPostElement — just call initializeLazyLoading after posts are added
-    // Make sure your placeholder divs in createPostElement have:
-    // class="placeholder" data-large="..." 
-    // and contain <img src="low-res.jpg" class="img-small">
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    initializeLazyLoading();
-    
-});
+// ═══════════════════════════════════════════════════════════════════
+// PROFILE DATA FETCH
+// ═══════════════════════════════════════════════════════════════════
 
-// Paste this exactly as-is — add at the bottom of view.js
 async function fetchUserProfile(userId) {
     const { data: user, error: userError } = await supabase
         .from('users')
         .select('id, username, avatar, cover, bio, location, followers, following')
-        .eq('id', userId)
-        .single();
+        .eq('id', userId).single();
+    if (userError || !user) { console.error('User fetch error:', userError); return null; }
 
-    if (userError || !user) {
-        console.error('User fetch error:', userError);
-        return null;
-    }
-
-    // ── Include reposted_post in query ────────────────────────────────────
     const { data: userPosts, error: postsError } = await supabase
         .from('posts')
         .select(`
@@ -485,226 +393,107 @@ async function fetchUserProfile(userId) {
                 user:users ( id, username, avatar )
             )
         `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(12);
-
-    if (postsError) {
-        console.error('Posts fetch error:', postsError);
-    }
-
-    return {
-        ...user,
-        posts: userPosts || []
-    };
+        .eq('user_id', userId).order('created_at', { ascending: false }).limit(12);
+    if (postsError) console.error('Posts fetch error:', postsError);
+    return { ...user, posts: userPosts || [] };
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// SHOW PROFILE (other user)
+// ═══════════════════════════════════════════════════════════════════
+
 async function showProfile(userId) {
-    // Save scroll position
-    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
+    navTo('profile', true);
 
-    // Switch page  
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));  
-    const profileSection = document.getElementById('profile');  
-    if (!profileSection) return;  
-    profileSection.classList.add('active');  
+    const ireti = document.getElementById('ireti');
+    if (!ireti) return;
+    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';
 
-    const ireti = document.getElementById('ireti');  
-    if (!ireti) return;  
+    const userData = await fetchUserProfile(userId);
+    if (!userData) { ireti.innerHTML = '<p>User not found</p>'; return; }
 
-    ireti.innerHTML = '<div class="skeleton" style="height:400px;"></div><p>Loading...</p>';  
-
-    const userData = await fetchUserProfile(userId);  
-    if (!userData) {  
-        ireti.innerHTML = '<p>User not found</p>';  
-        return;  
-    }  
-
-    ireti.innerHTML = `  
+    ireti.innerHTML = `
     <header class="heado file">
         <div class="heador" style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 16px;">
-            
-            <!-- Left: Back -->
             <div class="exp-order" onclick="goBack()">
                 <img class="flat" src="pics/angle.svg">
-                
             </div>
-
-            <!-- Right: Dots (more options) -->
             <div class="profile-header-right">
                 <img class="dot" src="pics/dots.svg" style="width:18px; height:18px; cursor:pointer;">
             </div>
-            
         </div>
     </header>
-        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">  
-        <div>  
-            <img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}">  
-        </div>  
-        <div class="klr">  
-            <div class="drun">  
-                <div>  
-                    <p class="spe">${userData.username}</p>  
-                </div>  
-                <div>  
-                    <img class="verify" src="pics/very.svg">  
-                </div>  
-            </div>  
-            <div class="druu">  
-                <div>  
-                    <p class="rkl">${userData.location || 'No location'}</p>  
-                </div>  
-            </div>  
-            <div class="nin">  
-                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>  
-            </div>  
-            <div class="cha">  
-                <p>${userData.bio || 'No bio yet'}</p>  
-            </div>  
-            <div class="man">  
-                <div class="vre">  
-                    <button class="aasw">Follow</button>  
-                </div>  
-                <div class="vre">  
-                    <button class="aasw">1 : 1</button>  
-                </div>  
-            </div>  
-        </div>  
-        <div class="ewe">  
-            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>  
-            <div class="yeb"><img class="dee" src="pics/store.svg"></div>  
-        </div>  
-        <div class="mansonro">  
-            <div class="masonri">  
-                <div class="column left-column"></div>  
-                <div class="column right-column"></div>  
-            </div>  
-        </div>  
-    `;  
+        <img class="frin" src="${userData.cover || 'pics/default-cover.jpg'}">
+        <div><img class="kor" src="${userData.avatar || 'pics/default-avatar.png'}"></div>
+        <div class="klr">
+            <div class="drun">
+                <div><p class="spe">${userData.username}</p></div>
+                <div><img class="verify" src="pics/very.svg"></div>
+            </div>
+            <div class="druu">
+                <div><p class="rkl">${userData.location || 'No location'}</p></div>
+            </div>
+            <div class="nin">
+                <p class="rkl"><span class="bld">${userData.following || 0}</span>following · <span class="bld">${userData.followers || 0}</span>followers</p>
+            </div>
+            <div class="cha"><p>${userData.bio || 'No bio yet'}</p></div>
+            <div class="man">
+                <div class="vre"><button class="aasw">Follow</button></div>
+                <div class="vre"><button class="aasw">1 : 1</button></div>
+            </div>
+        </div>
+        <div class="ewe">
+            <div class="yeb"><img class="dee" src="pics/apps.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/newspaper.svg"></div>
+            <div class="yeb"><img class="dee" src="pics/store.svg"></div>
+        </div>
+        <div class="mansonro">
+            <div class="masonri">
+                <div class="column left-column"></div>
+                <div class="column right-column"></div>
+            </div>
+        </div>
+    `;
 
-    const leftColumn = document.querySelector('.left-column');  
-    const rightColumn = document.querySelector('.right-column');  
-    leftColumn.innerHTML = '';  
-    rightColumn.innerHTML = '';  
+    const leftColumn  = document.querySelector('.left-column');
+    const rightColumn = document.querySelector('.right-column');
+    leftColumn.innerHTML  = '';
+    rightColumn.innerHTML = '';
 
-    if (!userData.posts || userData.posts.length === 0) {  
-        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';  
-    } else {  
+    if (!userData.posts || userData.posts.length === 0) {
+        leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
+    } else {
         userData.posts.forEach((post, index) => {
             const tile = buildMasonryTile(post, userData.avatar, userData.username);
             if (index % 2 === 0) leftColumn.appendChild(tile);
             else                 rightColumn.appendChild(tile);
         });
-    }  
-
+    }
     initializeMasonryHeartReactions();
-    window.scrollTo(0, 0);
 }
 
-// Paste this exactly as-is — add at the bottom
-function goBack() {
-    returnToFeedAndRestoreScroll();
-}
-
-// Quick switch to home (used from bottom nav)
-function switchToHome() {
-  returnToFeedAndRestoreScroll();
-}
-
-// Go back from notifications → home
-function goBackToHome() {
-  returnToFeedAndRestoreScroll();
-}
-
-function returnToFeedAndRestoreScroll() {
-    // 1. Deactivate current page(s)
-    document.querySelectorAll('.page.active').forEach(p => p.classList.remove('active'));
-
-    // 2. Activate feed / home
-    const feedPage = document.getElementById('food');
-    if (feedPage) {
-        feedPage.classList.add('active');
-    }
-
-    // 3. Restore scroll position if we have it
-    const saved = sessionStorage.getItem('scrollPosition_feed');
-    if (saved) {
-        // Small delay helps mobile browsers respect scrollTo after layout
-        setTimeout(() => {
-            window.scrollTo(0, parseInt(saved, 10));
-            // Optional: clear it so we don't restore again on next refresh
-            // sessionStorage.removeItem('scrollPosition_feed');
-        }, 60);
-    }
-
-    // 4. Optional: update bottom nav active state
-    document.querySelectorAll('.bottom .note1').forEach(el => el.classList.remove('active'));
-    // activate home icon if you have selector for it
-    // document.querySelector('.bottom .home-icon')?.classList.add('active');
-}
-
-// Switch to notifications
-async function switchToNotifications() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('notifications').classList.add('active');
-    
-    // Reset unread count when user opens the tab
-    unreadNotificationCount = 0;
-    updateNotificationBadge();
-
-    // Mark all notifications as read (optional but strongly recommended)
-    if (currentUserId) {
-        const { error } = await supabase
-            .from('notifications')
-            .update({ read: true })
-            .eq('user_id', currentUserId)
-            .eq('read', false);
-
-        if (error) {
-            console.error("Failed to mark notifications as read:", error);
-        } else {
-            console.log("Marked all notifications as read");
-        }
-    }
-    
-    // Highlight bell in bottom nav
-    document.querySelectorAll('.bottom .note1').forEach(el => el.classList.add('active'));
-    
-    renderNotifications();
-    window.scrollTo(0, 0);
-}
+// ═══════════════════════════════════════════════════════════════════
+// SHOW MY PROFILE
+// ═══════════════════════════════════════════════════════════════════
 
 async function showMyProfile() {
-    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
-
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const profileSection = document.getElementById('profile');
-    if (!profileSection) {
-        console.error('Profile section (#profile) not found');
-        return;
-    }
-    profileSection.classList.add('active');
+    navTo('profile', true);
 
     const ireti = document.getElementById('ireti');
     if (!ireti) return;
-
     ireti.innerHTML = '<div class="skeleton" style="height:400px; margin:20px;"></div><p>Loading your profile...</p>';
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
         ireti.innerHTML = '<p style="text-align:center; padding:40px;">Not logged in. Please sign in.</p>';
         return;
     }
 
     const userId = user.id;
-
     const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('id, username, avatar, cover, bio, location, followers, following')
-        .eq('id', userId)
-        .maybeSingle();
+        .eq('id', userId).maybeSingle();
 
     if (profileError) {
         console.error('Profile fetch error:', profileError);
@@ -717,7 +506,7 @@ async function showMyProfile() {
             <div style="text-align:center; padding:80px 20px; color:#555;">
                 <h3 style="margin-bottom:16px;">Profile setup required</h3>
                 <p>We couldn't find your profile information.</p>
-                <button onclick="createMissingProfile()" 
+                <button onclick="createMissingProfile()"
                         style="margin-top:24px; padding:12px 32px; background:#f40752; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
                     Create My Profile
                 </button>
@@ -726,7 +515,6 @@ async function showMyProfile() {
         return;
     }
 
-    // ── CHANGE 1: query now includes reposted_post relation ──────────────
     const { data: userPosts } = await supabase
         .from('posts')
         .select(`
@@ -737,26 +525,18 @@ async function showMyProfile() {
                 user:users ( id, username, avatar )
             )
         `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(12);
+        .eq('user_id', userId).order('created_at', { ascending: false }).limit(12);
 
     ireti.innerHTML = `
       <header class="heado file">
         <div class="heador" style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 16px;">
-            
-            <!-- Left: Back -->
             <div class="exp-order" onclick="goBack()">
                 <img class="flat" src="pics/angle.svg">
                 <div class="tool"><p>Back</p></div>
             </div>
-
-            <!-- Right: Share icon -->
             <div class="profile-header-right">
-                <img class="share-icon" src="pics/share.svg" style="width:24px; height:24px; cursor:pointer;" 
-                     onclick="shareProfile()">
+                <img class="share-icon" src="pics/share.svg" style="width:24px; height:24px; cursor:pointer;" onclick="shareProfile()">
             </div>
-            
         </div>
     </header>
 
@@ -764,50 +544,29 @@ async function showMyProfile() {
 
         <div>
             <label class="avatar-upload">
-                <img 
-                    class="kor" 
-                    id="myProfileAvatar"
-                    src="${profile.avatar || 'pics/default-avatar.png'}"
-                >
-                <input 
-                    type="file" 
-                    id="avatarInput" 
-                    accept="image/*" 
-                    hidden
-                >
+                <img class="kor" id="myProfileAvatar" src="${profile.avatar || 'pics/default-avatar.png'}">
+                <input type="file" id="avatarInput" accept="image/*" hidden>
             </label>
         </div>
 
         <div class="klr">
             <div class="drun">
-                <div>
-                    <p class="spe">${profile.username}</p>
-                </div>
-                <div>
-                    <img class="verify" src="pics/very.svg">
-                </div>
+                <div><p class="spe">${profile.username}</p></div>
+                <div><img class="verify" src="pics/very.svg"></div>
             </div>
             <div class="druu">
-                <div>
-                    <p class="rkl">${profile.location || 'No location'}</p>
-                </div>
-                <div class="drum">
-                    <img class="kiy" src="pics/qr.svg">
-                </div>
+                <div><p class="rkl">${profile.location || 'No location'}</p></div>
+                <div class="drum"><img class="kiy" src="pics/qr.svg"></div>
             </div>
             <div class="nin">
                 <p class="rkl">
-                    <span class="bld">${profile.following || 0}</span> following · 
+                    <span class="bld">${profile.following || 0}</span> following ·
                     <span class="bld">${profile.followers || 0}</span> followers
                 </p>
             </div>
-            <div class="cha">
-                <p>${profile.bio || 'No bio yet'}</p>
-            </div>
+            <div class="cha"><p>${profile.bio || 'No bio yet'}</p></div>
             <div class="man">
-                <div class="vre">
-                    <button class="aasw edit-profile-btn">Edit Profile</button>
-                </div>
+                <div class="vre"><button class="aasw edit-profile-btn">Edit Profile</button></div>
                 <div class="vre">
                     <button class="aas settings-btn" onclick="showSettings()">
                         <img class="offi" src="pics/setting.svg">
@@ -838,26 +597,19 @@ async function showMyProfile() {
     avatarInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            alert('Please select an image file');
-            return;
-        }
-        if (file.size > 2 * 1024 * 1024) {
-            alert('Image must be under 2MB');
-            return;
-        }
+        if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
+        if (file.size > 2 * 1024 * 1024)    { alert('Image must be under 2MB');       return; }
         uploadAvatar(file);
     });
 
-    const leftColumn = document.querySelector('.left-column');
+    const leftColumn  = document.querySelector('.left-column');
     const rightColumn = document.querySelector('.right-column');
-    leftColumn.innerHTML = '';
+    leftColumn.innerHTML  = '';
     rightColumn.innerHTML = '';
 
     if (!userPosts || userPosts.length === 0) {
         leftColumn.innerHTML = '<p style="text-align:center; padding:20px;">No posts yet</p>';
     } else {
-        // ── CHANGE 2: use buildMasonryTile() instead of the old manual block ──
         userPosts.forEach((post, index) => {
             const tile = buildMasonryTile(post, profile.avatar, profile.username);
             if (index % 2 === 0) leftColumn.appendChild(tile);
@@ -866,54 +618,16 @@ async function showMyProfile() {
     }
 
     initializeMasonryHeartReactions();
-    window.scrollTo(0, 0);
-
-    document.querySelector('.edit-profile-btn')
-        ?.addEventListener('click', openEditProfileModal);
+    document.querySelector('.edit-profile-btn')?.addEventListener('click', openEditProfileModal);
 }
 
 
-// Paste this exactly as-is — add at the bottom
-document.addEventListener('DOMContentLoaded', () => {
-    const accountIcon = document.querySelector('.account-icon');
-    if (accountIcon) {
-        accountIcon.addEventListener('click', () => {
-            showMyProfile();
-        });
-    }
-
-    // Load logged-in user's avatar in top-right
-    supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user) {
-            supabase
-                .from('users')
-                .select('avatar')
-                .eq('id', user.id)
-                .single()
-                .then(({ data }) => {
-                    if (data?.avatar) {
-                        document.getElementById('usero').src = data.avatar;
-                    }
-                });
-        }
-    });
-});
-
-
-
-// ───────────────────────────────────────────────────────────────
-// SECTION 5 — REPLACE showDetail()
-// The repost button in the comment bar now has data-original-id
-// so syncRepostUI can find it, and it wires up toggleRepost().
-// Everything else is identical to your current showDetail().
-// ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// SHOW DETAIL
+// ═══════════════════════════════════════════════════════════════════
 
 async function showDetail(postId, scrollToComments = false) {
-    sessionStorage.setItem('scrollPosition_feed', window.scrollY);
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const detailPage = document.getElementById('meal');
-    if (!detailPage) { console.error('Detail page (#meal) not found'); return; }
-    detailPage.classList.add('active');
+    navTo('meal', true);
 
     const nuba = document.getElementById('nuba');
     if (!nuba) { console.error('nuba container not found'); return; }
@@ -931,8 +645,7 @@ async function showDetail(postId, scrollToComments = false) {
                 user:users ( id, username, avatar )
             )
         `)
-        .eq('id', postId)
-        .single();
+        .eq('id', postId).single();
 
     if (error || !postData) {
         console.error('Post fetch error:', error);
@@ -957,10 +670,9 @@ async function showDetail(postId, scrollToComments = false) {
     };
 
     const isOwnPost = currentUserId && post.userId === currentUserId;
-
-    const isRepost = !!postData.reposted_post_id && !!postData.reposted_post;
-    const original = isRepost ? postData.reposted_post : null;
-    const origUser = original ? {
+    const isRepost  = !!postData.reposted_post_id && !!postData.reposted_post;
+    const original  = isRepost ? postData.reposted_post : null;
+    const origUser  = original ? {
         username: original.user?.username || '@unknown',
         avatar:   original.user?.avatar   || 'pics/default-avatar.png',
     } : null;
@@ -975,55 +687,35 @@ async function showDetail(postId, scrollToComments = false) {
                         <p class="tiri" style="white-space:pre-wrap;">${post.content}</p>
                     </div>
                 ` : ''}
-
                 <div class="detail-original-card" data-original-id="${original.id}">
                     <div class="doc-quote-bg">"</div>
-
                     <div class="doc-header">
                         <div class="small-photo1" style="width:34px;height:34px;">
                             <a class="lino" onclick="showProfile('${original.user_id}')">
-                                <img class="small-photo" src="${origUser.avatar}"
-                                     onerror="this.src='pics/default-avatar.png'">
+                                <img class="small-photo" src="${origUser.avatar}" onerror="this.src='pics/default-avatar.png'">
                             </a>
                         </div>
                         <div class="pos">
                             <a class="home-click" onclick="showProfile('${original.user_id}')">
                                 <div class="post1">
-                                    <div class="jerr">
-                                        <p class="jerry" style="font-size:15px;">${origUser.username}</p>
-                                    </div>
+                                    <div class="jerr"><p class="jerry" style="font-size:15px;">${origUser.username}</p></div>
                                     <img class="verif" src="pics/very.svg">
                                 </div>
                             </a>
                             <p class="time" style="font-size:14px;">${formatTimeSince(original.created_at)}</p>
                         </div>
                     </div>
-
-                    ${original.content ? `
-                        <div style="font-size:15px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>
-                    ` : ''}
-
-                    ${original.image ? `
-                        <div style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
-                            <img src="${original.image}" alt="Original image"
-                                 style="width:100%; display:block; max-height:300px; object-fit:cover;">
-                        </div>
-                    ` : ''}
-
+                    ${original.content ? `<div style="font-size:15px; color:#374151; line-height:1.55; margin:10px 0; white-space:pre-wrap;">${original.content.length > 250 ? original.content.slice(0, 250).trimEnd() + '…' : original.content}</div>` : ''}
+                    ${original.image ? `<div style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;"><img src="${original.image}" alt="Original image" style="width:100%; display:block; max-height:300px; object-fit:cover;"></div>` : ''}
                     ${original.video && !original.image ? `
-                        <div class="video-container" data-post-id="${original.id}"
-                             style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
-                            <video class="video-thumbnail" preload="metadata" style="width:100%;">
-                                <source src="${original.video}" type="video/mp4">
-                            </video>
-                            <div class="video-overlay">
-                                <div class="play-button">
-                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                        <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                        <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                    </svg>
-                                </div>
-                            </div>
+                        <div class="video-container" data-post-id="${original.id}" style="margin:10px -16px -16px; border-radius:0 0 14px 14px; overflow:hidden;">
+                            <video class="video-thumbnail" preload="metadata" style="width:100%;"><source src="${original.video}" type="video/mp4"></video>
+                            <div class="video-overlay"><div class="play-button">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                                </svg>
+                            </div></div>
                         </div>
                     ` : ''}
                 </div>
@@ -1034,27 +726,17 @@ async function showDetail(postId, scrollToComments = false) {
             <div class="tir">
                 <p class="tiri" style="white-space:pre-wrap;">${post.content}<br></p>
             </div>
-            ${post.image ? `
-                <div class="swet">
-                    <div class="laptop1">
-                        <img class="lapto" src="${post.image}">
-                    </div>
-                </div>
-            ` : ''}
+            ${post.image ? `<div class="swet"><div class="laptop1"><img class="lapto" src="${post.image}"></div></div>` : ''}
             ${post.video ? `
                 <div class="swet">
                     <div class="video-container" data-post-id="${post.id}">
-                        <video class="video-thumbnail" preload="metadata">
-                            <source src="${post.video}" type="video/mp4">
-                        </video>
-                        <div class="video-overlay">
-                            <div class="play-button">
-                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                    <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
-                                    <path d="M34 24L18 34V14L34 24Z" fill="white"/>
-                                </svg>
-                            </div>
-                        </div>
+                        <video class="video-thumbnail" preload="metadata"><source src="${post.video}" type="video/mp4"></video>
+                        <div class="video-overlay"><div class="play-button">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="24" r="22" fill="rgba(244,7,82,0.5)" stroke="white" stroke-width="3"/>
+                                <path d="M34 24L18 34V14L34 24Z" fill="white"/>
+                            </svg>
+                        </div></div>
                     </div>
                 </div>
             ` : ''}
@@ -1074,18 +756,14 @@ async function showDetail(postId, scrollToComments = false) {
                         <div class="link-wrapper">
                             <a class="home-click" onclick="${isOwnPost ? 'showMyProfile()' : `showProfile('${post.userId}')`}">
                                 <div class="post1">
-                                    <div class="jerr">
-                                        <p class="jerry">${post.username}</p>
-                                    </div>
+                                    <div class="jerr"><p class="jerry">${post.username}</p></div>
                                     <div><img class="verif" src="pics/very.svg"></div>
                                 </div>
                             </a>
                         </div>
                     </div>
                     <div class="comp1">
-                        <div class="cll">
-                            <p class="time">${post.date || post.timestamp}</p>
-                        </div>
+                        <div class="cll"><p class="time">${post.date || post.timestamp}</p></div>
                     </div>
                 </div>
             </div>
@@ -1129,21 +807,15 @@ async function showDetail(postId, scrollToComments = false) {
             </div>
         </div>
 
-        <!-- Comment box -->
         <div class="comment-container">
             <div class="comment-wrapper">
                 <div class="comment-box">
-                    <textarea class="comment-textarea"
-                        placeholder="Reply to @${post.username}..."
-                        rows="1"></textarea>
+                    <textarea class="comment-textarea" placeholder="Reply to @${post.username}..." rows="1"></textarea>
                 </div>
             </div>
             <div class="actions">
                 <div class="dil">
-                    <!-- KEY FIX: data-post-id="${post.id}" so updateCurrentUserRepostButtons finds it -->
-                    <div class="repost-btn sted buyt"
-                         data-post-id="${post.id}"
-                         data-reposted="false">
+                    <div class="repost-btn sted buyt" data-post-id="${post.id}" data-reposted="false">
                         <img class="feeling spoil repost-icon" src="pics/retweet.svg" alt="Repost">
                     </div>
                     <div class="heart-ai" data-post-id="${post.id}" data-liked="false">
@@ -1163,7 +835,7 @@ async function showDetail(postId, scrollToComments = false) {
         </div>
     `;
 
-    // ── Original card tap → go to original post ──
+    // Original card tap → open original post
     const origCard = nuba.querySelector('.detail-original-card');
     if (origCard) {
         origCard.style.cursor = 'pointer';
@@ -1173,27 +845,23 @@ async function showDetail(postId, scrollToComments = false) {
         });
     }
 
-    // ── Detail repost button ──
-    // KEY FIX: targets post.id (not repostTargetId / original.id)
-    // This post's own button reflects whether THIS post was reposted by you.
+    // Detail repost button
     const detailRepostBtn = nuba.querySelector('.repost-btn');
     if (detailRepostBtn) {
         const targetPostId = post.id;
-
         getMyRepostOfPost(targetPostId).then(myRepostId => {
             if (myRepostId) {
                 detailRepostBtn.setAttribute('data-reposted', 'true');
                 detailRepostBtn.classList.add('reposted');
             }
         });
-
         detailRepostBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleRepost(targetPostId, detailRepostBtn);
         });
     }
 
-    // ── Like functionality ──
+    // Like
     const detailHeart = document.querySelector('#nuba .heart-ai');
     if (detailHeart) {
         const alreadyLiked = await isPostLikedByCurrentUser(post.id);
@@ -1209,6 +877,7 @@ async function showDetail(postId, scrollToComments = false) {
             });
         });
     }
+
     await trackDetailView(postId);
     await mountCommentSection(postId);
 
@@ -1218,17 +887,9 @@ async function showDetail(postId, scrollToComments = false) {
             const targetY = commentsHeader.getBoundingClientRect().top + window.scrollY - 50.8;
             window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
         }
-    } else {
-        window.scrollTo(0, 0);
     }
 }
 
-
-// Global variable to hold the currently selected image file
-let selectedMediaFile = null;
-
-// ───────────────────────────────────────────────
-// Open composer (only from profile)
 function makePost() {
     // Optional safety: only allow from profile page
    // const profilePage = document.getElementById('profile');
@@ -1365,23 +1026,6 @@ function handleMediaSelect(e) {
     reader.readAsDataURL(file);
 }
 
-
-// ───────────────────────────────────────────────
-// Attach event listeners once when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    // File input change → preview
-    const imageInput = document.getElementById('postImageInput');
-    if (imageInput) {
-        imageInput.addEventListener('change', handleMediaSelect);
-    }
-
-    // Textarea input → update post button state
-    const textarea = document.getElementById('postContent');
-    if (textarea) {
-        textarea.addEventListener('input', updatePostButtonState);
-    }
-});
-
 // ───────────────────────────────────────────────
 // LONG PRESS / THREE-DOTS MENU – improved 2025 style
 // ───────────────────────────────────────────────
@@ -1392,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let activeActionBar = null;
 
+function enablePostLongPress(posterElement, post) {
 function enablePostLongPress(posterElement, post) {
     if (!posterElement || !post?.id) return { showActions: () => {}, closeActions: () => {}, isActive: () => false };
 
@@ -1688,10 +1333,6 @@ function addActionMenuStyles() {
 // ───────────────────────────────────────────────
 
 
-function goBackFromDetail() {
-   returnToFeedAndRestoreScroll();
-}
-
 async function uploadAvatar(file) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -1768,20 +1409,6 @@ async function createMissingProfile() {
     }
 }
 
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('kiy')) {
-    openWallet();
-  }
-});
-
-function openWallet() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('wallet').classList.add('active');
-  window.scrollTo(0, 0);
-}
-// ─────────────────────────────────────────────────────────────
-// Masonry grid heart animation (safe – reuses existing classes)
-// ─────────────────────────────────────────────────────────────
 function addMasonryHeartAnimationStyles() {
     if (document.getElementById('masonry-heart-anim-styles')) return;
 
@@ -1876,44 +1503,6 @@ function initializeMasonryHeartReactions() {
             heart.classList.toggle('liked', v === 'true')
         });
       });
-    });
-}
-
-
-// ─────────────────────────────────────────────────────────────
-// SYNC LIKE STATE ACROSS FEED, DETAIL & MASONRY
-// ─────────────────────────────────────────────────────────────
-function syncLikeUI(postId, isLiked = null, count) {
-    // Feed + detail hearts
-    document.querySelectorAll(`.heart-ai[data-post-id="${postId}"]`).forEach(container => {
-        const icon = container.querySelector('.heart-icon');
-        const countEl = container.querySelector('.like-count');
-
-        // Only update liked visual state if we have an explicit value
-        if (isLiked !== null) {
-            container.setAttribute('data-liked', isLiked ? 'true' : 'false');
-            icon?.classList.toggle('liked', isLiked);
-            countEl?.classList.toggle('liked', isLiked);
-        }
-
-        if (countEl) {
-            countEl.textContent = count > 0 ? count : '';
-        }
-    });
-
-    // Masonry / profile grid hearts
-    document.querySelectorAll(`.masonry-wrapper[data-post-id="${postId}"] .masonry-meta`).forEach(meta => {
-        const heartSvg = meta.querySelector('.meta-heart');
-        const likesSpan = meta.querySelector('.meta-likes');
-
-        if (isLiked !== null) {
-            heartSvg?.classList.toggle('liked', isLiked);
-            likesSpan?.classList.toggle('liked', isLiked);
-        }
-
-        if (likesSpan) {
-            likesSpan.textContent = count > 0 ? count : '';
-        }
     });
 }
 
@@ -4864,4 +4453,3 @@ CHANGE 3 — showDetail()
   
       await trackDetailView(postId);
 
-*/
